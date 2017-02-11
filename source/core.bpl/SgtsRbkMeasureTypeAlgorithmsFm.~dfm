@@ -1,0 +1,40 @@
+inherited SgtsRbkMeasureTypeAlgorithmsForm: TSgtsRbkMeasureTypeAlgorithmsForm
+  Left = 391
+  Top = 158
+  Width = 465
+  Height = 438
+  Caption = #1040#1083#1075#1086#1088#1080#1090#1084#1099' '#1074#1080#1076#1086#1074' '#1080#1079#1084#1077#1088#1077#1085#1080#1103
+  Constraints.MinHeight = 375
+  Constraints.MinWidth = 465
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited BevelStatus: TBevel
+    Top = 331
+    Width = 457
+  end
+  inherited StatusBar: TStatusBar
+    Top = 373
+    Width = 457
+  end
+  inherited ToolBar: TToolBar
+    Height = 331
+  end
+  inherited PanelView: TPanel
+    Width = 422
+    Height = 331
+    inherited GridPattern: TDBGrid
+      Width = 416
+      Height = 325
+    end
+  end
+  inherited PanelButton: TPanel
+    Top = 334
+    Width = 457
+    inherited ButtonCancel: TButton
+      Left = 376
+    end
+    inherited ButtonOk: TButton
+      Left = 294
+    end
+  end
+end

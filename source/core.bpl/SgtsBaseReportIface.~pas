@@ -1,0 +1,45 @@
+unit SgtsBaseReportIface;
+
+interface
+
+uses Classes, Controls, Forms, 
+     SgtsReportFm;
+
+type
+
+  TSgtsBaseReportIface=class(TSgtsReportIface)
+  private
+    FReportId: Variant;
+  public
+    procedure Init(AReportId: Variant; AName, ADescription, AMenuPath: String); reintroduce; virtual;
+    function CanShow: Boolean; override;
+    procedure Show; override;
+  end;
+
+implementation
+
+uses SgtsDialogs;
+
+{ TSgtsBaseReportIface }
+
+procedure TSgtsBaseReportIface.Init(AReportId: Variant; AName, ADescription, AMenuPath: String);
+begin
+  inherited Init(AMenuPath);
+  InterfaceName:=AName;
+  Caption:=ADescription;
+  FReportId:=AReportId;
+end;
+
+function TSgtsBaseReportIface.CanShow: Boolean;
+begin
+  Result:=true;
+end;
+
+procedure TSgtsBaseReportIface.Show;
+begin
+  if CanShow then begin
+    ShowInfo('ֱאחמגûי מעקוע')
+  end;
+end;
+
+end.

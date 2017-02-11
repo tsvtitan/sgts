@@ -1,0 +1,703 @@
+unit SgtsUtils;
+
+interface
+
+uses Variants, Menus, ComCtrls, Windows, Classes, SysUtils, ShellApi, Graphics,
+     Types, Controls, SgtsMenus;
+
+function Iff(IsTrue: Boolean; ValueTrue, ValueFalse: Variant): Variant;
+
+function CreateUniqueId: String;
+procedure CreateMenuByToolBar(MenuParent: TMenuItem; ToolBar: TToolbar);
+procedure CreateMenuByMenu(MenuParent,MenuAdd: TMenuItem);
+procedure UpdateMenuByButtons(MenuParent: TMenuItem);
+function GetFirstDefaultMenu(MenuParent: TMenuItem): TMenuItem;
+function GetMenuVisibleCount(MenuParent: TMenuItem): Integer;
+
+function CharIsControl(const C: AnsiChar): Boolean;
+function CharIsPrintable(const C: AnsiChar): Boolean;
+function CharIsNumber(const C: AnsiChar): Boolean;
+function CharIsNumberEx(const C: Char): Boolean;
+function CharIsDigit(const C: AnsiChar): Boolean;
+function CharIsAlpha(const C: AnsiChar): Boolean;
+function CharValidDate(const C: AnsiChar): Boolean;
+
+procedure ReadPropertiesByStrings(Component: TComponent; Strings: TStrings);
+
+function GetChangedText(const Text: string; SelStart, SelLength: integer; Key: char): string;
+function PosChar(const F: AnsiChar; const S: AnsiString;
+          const Index: Integer = 1): Integer;
+function ChangeChar(Value: string; chOld, chNew: char): string;
+function StrIPos(const SubStr, S: AnsiString): Integer;
+function StrLeft(const S: AnsiString; Count: Integer): AnsiString;
+function StrStripNonNumberChars(const S: AnsiString): AnsiString;
+function StrDelete(const psSub, psMain: string): string;
+function StrBetweenChar(const S: AnsiString;
+          const FirstDelim, SecondDelim: AnsiChar;
+          const FirstOptional: Boolean = False;
+          const SecondOptional: Boolean = False): AnsiString;
+
+function IsClassParent(AClassIn: TClass; AClassParent: TClass): Boolean;
+function VarToDateDef(const V: Variant; const ADefault: TDate): TDate;
+function VarToIntDef(const V: Variant; const ADefault: Integer): Integer;
+function VarToExtendedDef(const V: Variant; const ADefault: Extended): Extended;
+procedure GetStringsByString(S,Delim: String; Strings: TStrings);
+procedure ClearStrings(Strings: TStrings);
+
+function GetFilterString(Strings: TStrings; Operator: String): String;
+function DeleteDuplicate(S: String; Ch: Char): String;
+function DeleteToOne(S: String; Ch: Char): String;
+
+procedure SetDisplayFormat(Instance: TObject; DisplayFormat: String);
+
+function GetFileVersionEx(FileName: String): String;
+function GetFileSizeEx(FileName: String): Integer;
+
+function GetNameByClass(AClassName: String): String;
+function RemoveNotFileNameChars(FileName: string): string;
+function ReverseString(const S: String): String;
+
+implementation
+
+uses TypInfo, ActiveX,
+     SgtsVersionInfo, SgtsConsts;
+
+var
+  AnsiCharTypes: array [AnsiChar] of Word;
+const
+  AnsiSigns=['-', '+'];
+  DigitSigns=['0','1','2','3','4','5','6','7','8','9'];
+
+const
+  // CharType return values
+  C1_UPPER  = $0001; // Uppercase
+  C1_LOWER  = $0002; // Lowercase
+  C1_DIGIT  = $0004; // Decimal digits
+  C1_SPACE  = $0008; // Space characters
+  C1_PUNCT  = $0010; // Punctuation
+  C1_CNTRL  = $0020; // Control characters
+  C1_BLANK  = $0040; // Blank characters
+  C1_XDIGIT = $0080; // Hexadecimal digits
+  C1_ALPHA  = $0100; // Any linguistic character: alphabetic, syllabary, or ideographic
+
+
+function Iff(IsTrue: Boolean; ValueTrue, ValueFalse: Variant): Variant;
+begin
+  if IsTrue then Result:=ValueTrue
+  else Result:=ValueFalse;
+end;
+
+function CreateClassID: string;
+var
+  ClassID: TCLSID;
+  P: PWideChar;
+begin
+  CoCreateGuid(ClassID);
+  StringFromCLSID(ClassID, P);
+  Result := P;
+  CoTaskMemFree(P);
+end;
+
+function DeleteDelimAndReverse(S: string): string;
+begin
+  Result:=Copy(s, 26, 12)+Copy(s, 21, 4)+Copy(s, 16, 4)+Copy(s, 11, 4)+Copy(s, 2, 8);
+end;
+
+function CreateUniqueId: String;
+var
+  s: string;
+begin
+  s:=Copy(CreateClassID, 1, 37);
+  Result:=DeleteDelimAndReverse(s);
+end;
+
+procedure CreateMenuByMenu(MenuParent,MenuAdd: TMenuItem);
+var
+  i: Integer;
+  mi: SgtsMenus.TMenuItem;
+begin
+  for i:=0 to MenuAdd.Count-1 do begin
+    with MenuAdd.Items[i] do begin
+      mi:=TMenuItem.Create(nil);
+      mi.Caption:=Caption;
+      mi.Hint:=Hint;
+      mi.ImageIndex:=ImageIndex;
+      mi.Visible:=Visible;
+      mi.Enabled:=Enabled;
+      mi.OnClick:=OnClick;
+      mi.Tag:=Integer(Pointer(MenuAdd.Items[i]));;
+      mi.GroupIndex:=GroupIndex;
+      mi.RadioItem:=RadioItem;
+      mi.Checked:=Checked;
+      mi.Default:=Default;
+      if Count>0 then
+        CreateMenuByMenu(mi,TMenuItem(MenuAdd.Items[i]));
+      MenuParent.Add(mi);
+    end;
+  end;
+end;
+
+procedure CreateMenuByToolBar(MenuParent: TMenuItem; ToolBar: TToolbar);
+var
+  i: Integer;
+  mi: TMenuItem;
+begin
+  for i:=0 to ToolBar.ButtonCount-1 do begin
+    with ToolBar.Buttons[i] do begin
+      mi:=TMenuItem.Create(nil);
+      case Style of
+        tbsButton,tbsDropDown: begin
+          mi.Caption:=Caption;
+          mi.Hint:=Hint;
+          mi.ImageIndex:=ImageIndex;
+          mi.Visible:=Visible;
+          mi.Enabled:=Enabled;
+          mi.OnClick:=OnClick;
+          mi.Tag:=Integer(Pointer(ToolBar.Buttons[i]));
+          if (Style=tbsDropDown) or Assigned(DropdownMenu) then begin
+            mi.OnClick:=nil;
+            CreateMenuByMenu(mi,TMenuItem(DropdownMenu.Items));
+          end;  
+        end;
+        tbsSeparator: begin
+          mi.Caption:=cLineCaption;
+        end;
+      end;
+      MenuParent.Add(mi);
+    end;
+  end;
+end;
+
+procedure UpdateMenuByButtons(MenuParent: TMenuItem);
+var
+  i: Integer;
+  obj: TObject;
+  mi: TMenuItem;
+begin
+  for i:=0 to MenuParent.Count-1 do begin
+    mi:=TMenuItem(MenuParent.Items[i]);
+    if Assigned(mi) then begin
+      with mi do begin
+        obj:=TObject(Pointer(Tag));
+        if Assigned(Obj) then begin
+          if Obj is TMenuITem then begin
+            Caption:=TMenuITem(Obj).Caption;
+            Hint:=TMenuITem(Obj).Hint;
+            RadioItem:=TMenuITem(Obj).RadioItem;
+            Visible:=TMenuITem(Obj).Visible;
+            Enabled:=TMenuITem(Obj).Enabled;
+            Default:=TMenuITem(Obj).Default;
+            ImageIndex:=TMenuITem(Obj).ImageIndex;
+            Checked:=TMenuITem(Obj).Checked;
+            GroupIndex:=TMenuITem(Obj).GroupIndex;
+          end;
+          if Obj is TToolButton then begin
+            Caption:=TToolButton(Obj).Caption;
+            Hint:=TToolButton(Obj).Hint;
+            Visible:=TToolButton(Obj).Visible;
+            Enabled:=TToolButton(Obj).Enabled;
+            ImageIndex:=TToolButton(Obj).ImageIndex;
+          end;
+        end;
+      end;
+      if mi.Count>0 then
+        UpdateMenuByButtons(mi);
+    end;
+  end;
+end;
+
+function GetFirstDefaultMenu(MenuParent: TMenuItem): TMenuItem;
+var
+  mi: TMenuItem;
+  i: Integer;
+begin
+  Result:=nil;
+  for i:=0 to MenuParent.Count-1 do begin
+    mi:=TMenuITem(MenuParent.Items[i]);
+    if Assigned(mi) then begin
+      if mi.Enabled and mi.Default then begin
+        Result:=mi;
+        exit;
+      end;
+    end;
+  end;
+end;
+
+function GetMenuVisibleCount(MenuParent: TMenuItem): Integer;
+var
+  mi: TMenuItem;
+  i: Integer;
+begin
+  Result:=0;
+  if Assigned(MenuParent) then begin
+    for i:=0 to MenuParent.Count-1 do begin
+      mi:=TMenuITem(MenuParent.Items[i]);
+      if Assigned(mi) then begin
+        if mi.Visible and not mi.IsLine then begin
+          Inc(Result);
+          if mi.Count> 0 then
+            Result:=Result+GetMenuVisibleCount(mi);
+        end;
+      end;
+    end;  
+  end;
+end;
+
+function CharIsNumber(const C: AnsiChar): Boolean;
+begin
+  Result := ((AnsiCharTypes[C] and C1_DIGIT) <> 0) or
+             (C in AnsiSigns) or (C = DecimalSeparator);
+end;
+
+function CharIsNumberEx(const C: Char): Boolean;
+begin
+  Result := (C in DigitSigns) or
+            (C in AnsiSigns) or (C = DecimalSeparator);
+end;
+
+function CharIsDigit(const C: AnsiChar): Boolean;
+begin
+  Result := (AnsiCharTypes[C] and C1_DIGIT) <> 0;
+end;
+
+function CharIsControl(const C: AnsiChar): Boolean;
+begin
+  Result := (AnsiCharTypes[C] and C1_CNTRL) <> 0;
+end;
+
+function CharIsPrintable(const C: AnsiChar): Boolean;
+begin
+  Result := not CharIsControl(C);
+end;
+
+function CharIsAlpha(const C: AnsiChar): Boolean;
+begin
+  Result := (AnsiCharTypes[C] and C1_ALPHA) <> 0;
+end;
+
+function CharValidDate(const C: AnsiChar): Boolean;
+begin
+  Result:=CharIsDigit(C) or
+          (C = DateSeparator);
+end;
+
+procedure ReadPropertiesByStrings(Component: TComponent; Strings: TStrings);
+var
+  i: Integer;
+  S,V: String;
+  Old: Variant;
+begin
+  for i:=0 to Strings.Count-1 do begin
+    S:=Strings.Names[i];
+    V:=Strings.ValueFromIndex[i];
+    if IsPublishedProp(Component,S) then begin
+      Old:=GetPropValue(Component,S);
+      case PropType(Component,S) of
+        tkString, tkLString, tkWString: begin
+          SetStrProp(Component,S,V);
+        end;
+        tkInteger, tkChar, tkWChar: begin
+          SetOrdProp(Component,S,StrToIntDef(V,Old));
+        end;
+      end;
+    end;
+  end;
+end;
+
+function ChangeChar(Value: string; chOld, chNew: char): string;
+var
+  i: Integer;
+  tmps: string;
+begin
+  for i:=1 to Length(Value) do begin
+    if Value[i]=chOld then
+     Value[i]:=chNew;
+    tmps:=tmps+Value[i];
+  end;
+  Result:=tmps;
+end;
+
+function StrLeft(const S: AnsiString; Count: Integer): AnsiString;
+begin
+  Result := Copy(S, 1, Count);
+end;
+
+function GetChangedText(const Text: string; SelStart, SelLength: integer; Key: char): string;
+begin
+  Result := Text;
+  if SelLength > 0 then
+    Delete(Result, SelStart + 1, SelLength);
+  if Key <> #0 then
+    Insert(Key, Result, SelStart + 1);
+end;
+
+function PosChar(const F: AnsiChar; const S: AnsiString; const Index: Integer): Integer;
+var P    : PAnsiChar;
+    L, I : Integer;
+begin
+  L := Length(S);
+  if (L = 0) or (Index > L) then
+    begin
+      Result := 0;
+      exit;
+    end;
+  if Index < 1 then
+    I := 1 else
+    I := Index;
+  P := Pointer(S);
+  Inc(P, I - 1);
+  While I <= L do
+    if P^ = F then
+      begin
+        Result := I;
+        exit;
+      end else
+      begin
+        Inc(P);
+        Inc(I);
+      end;
+  Result := 0;
+end;
+
+function CopyRange(const S: AnsiString; const StartIndex, StopIndex: Integer): AnsiString;
+var L, I : Integer;
+begin
+  L := Length(S);
+  if (StartIndex > StopIndex) or (StopIndex < 1) or (StartIndex > L) or (L = 0) then
+    Result := '' else
+    begin
+      if StartIndex <= 1 then
+        if StopIndex >= L then
+          begin
+            Result := S;
+            exit;
+          end else
+          I := 1
+      else
+        I := StartIndex;
+      Result := Copy(S, I, StopIndex - I + 1);
+    end;
+end;
+
+function StrIPos(const SubStr, S: AnsiString): integer;
+begin
+  Result := Pos(AnsiUpperCase(SubStr), AnsiUpperCase(S));
+end;
+
+function StrStripNonNumberChars(const S: AnsiString): AnsiString;
+var
+  I: Integer;
+  C: AnsiChar;
+begin
+  Result := '';
+  for I := 1 to Length(S) do
+  begin
+    C := S[I];
+    if CharIsNumber(C) then
+      Result := Result + C;
+  end;
+end;
+
+function StrRestOf(const ps: AnsiString; const n: integer): AnsiString;
+begin
+  Result := Copy(ps, n, (Length(ps) - n + 1));
+end;
+
+function StrDeleteChars(const ps: string; const piPos: integer; const piCount: integer): string;
+begin
+  Result := StrLeft(ps, piPos - 1) + StrRestOf(ps, piPos + piCount);
+end;
+
+function StrDelete(const psSub, psMain: string): string;
+var
+  liPos: integer;
+begin
+  Result := psMain;
+  if psSub = '' then
+    exit;
+
+  liPos := StrIPos(psSub, psMain);
+
+  while liPos > 0 do
+    begin
+      Result := StrDeleteChars(Result, liPos, Length(psSub));
+      liPos := StrIPos(psSub, Result);
+    end;
+end;
+
+function StrBetweenChar(const S: AnsiString;
+    const FirstDelim, SecondDelim: AnsiChar;
+    const FirstOptional: Boolean; const SecondOptional: Boolean): AnsiString;
+var I, J: Integer;
+begin
+  Result := '';
+  I := PosChar(FirstDelim, S);
+  if (I = 0) and not FirstOptional then
+    exit;
+  J := PosChar(SecondDelim, S, I + 1);
+  if J = 0 then
+    if not SecondOptional then
+      exit else
+      J := Length(S) + 1;
+  Result := CopyRange(S, I + 1, J - 1);
+end;
+
+function IsClassParent(AClassIn: TClass; AClassParent: TClass): Boolean;
+var
+  AncestorClass: TClass;
+begin
+  AncestorClass := AClassIn;
+  while (AncestorClass <> AClassParent) do
+  begin
+    if AncestorClass=nil then begin Result:=false; exit; end;
+    AncestorClass := AncestorClass.ClassParent;
+  end;
+  Result:=true;
+end;
+
+function VarToDateDef(const V: Variant; const ADefault: TDate): TDate;
+begin
+  try
+    if not VarIsNull(V) then
+      Result:=VarToDateTime(V)
+    else
+      Result:=ADefault;
+  except
+    Result:=ADefault;
+  end;
+end;
+
+function VarToIntDef(const V: Variant; const ADefault: Integer): Integer;
+begin
+  try
+    if not VarIsNull(V) then
+      Result:=V
+    else
+      Result:=ADefault;
+  except
+    Result:=ADefault;
+  end;    
+end;
+
+function VarToExtendedDef(const V: Variant; const ADefault: Extended): Extended;
+begin
+  try
+    if not VarIsNull(V) then
+      Result:=V
+    else
+      Result:=ADefault;  
+  except
+    Result:=ADefault
+  end;    
+end;
+
+procedure GetStringsByString(S,Delim: String; Strings: TStrings);
+var
+  Apos: Integer;
+  S1: String;
+begin
+  Apos:=-1;
+  while Apos<>0 do begin
+    Apos:=AnsiPos(Delim,S);
+    if Apos>0 then begin
+      S1:=Copy(S,1,Apos-Length(Delim));
+      S:=Copy(S,Apos+Length(Delim),Length(S));
+      if Trim(S1)<>'' then
+        Strings.Add(S1);
+    end else
+      Strings.Add(S);
+  end;
+end;
+
+procedure ClearStrings(Strings: TStrings);
+var
+  i: Integer;
+  Obj: TObject;
+begin
+  Strings.BeginUpdate;
+  try
+    for i:=0 to Strings.Count-1 do begin
+      Obj:=Strings.Objects[i];
+      if Assigned(Obj) then
+        Obj.Free;
+    end;
+    Strings.Clear;
+  finally
+    Strings.EndUpdate;
+  end;
+end;
+
+function GetFilterString(Strings: TStrings; Operator: String): String;
+var
+  i: Integer;
+  Flag: Boolean;
+begin
+  Result:='';
+  Flag:=false;
+  for i:=0 to Strings.Count-1 do begin
+    if Flag and (Strings.Strings[i]<>'') then begin
+      Result:=Format('%s %s %s',[Result,Operator,Strings[i]]);
+    end;
+    if not Flag and (Strings[i]<>'') then begin
+      Flag:=true;
+      Result:=Strings[i];
+    end;
+  end;
+end;
+
+function DeleteDuplicate(S: String; Ch: Char): String;
+var
+  i: Integer;
+  OldCh: Char;
+  Flag: Boolean;
+begin
+  Result:='';
+  OldCh:=#0;
+  Flag:=false;
+  for i:=1 to Length(S) do begin
+    if OldCh<>Ch then begin
+      Flag:=false;
+      Result:=Result+S[i];
+    end else begin
+      if not Flag then
+        Result:=Result+S[i];
+      Flag:=true;
+    end;
+    OldCh:=S[i];
+  end;
+end;
+
+function DeleteToOne(S: String; Ch: Char): String;
+var
+  i: Integer;
+  Flag: Boolean;
+begin
+  Result:='';
+  Flag:=false;
+  for i:=1 to Length(S) do begin
+    if S[i]=Ch then begin
+      if not Flag then
+        Result:=Result+S[i];
+      Flag:=true;
+    end else
+      Result:=Result+S[i];
+  end;
+end;
+
+procedure SetDisplayFormat(Instance: TObject; DisplayFormat: String);
+begin
+  if Assigned(Instance) then begin
+    if IsPublishedProp(Instance,SPropertyDisplayFormat) then
+      SetPropValue(Instance,SPropertyDisplayFormat,DisplayFormat);
+  end;
+end;
+
+procedure FillEnumTypes(EnumTypeInfo: Pointer; Strings: TStrings);
+var
+  i: Integer;
+  PInfo: PTypeInfo;
+  PData: PTypeData;
+begin
+  Strings.BeginUpdate;
+  try
+    Strings.Clear;
+    PData:=nil;
+    PInfo:=EnumTypeInfo;
+    if Assigned(PInfo) then
+      PData:=GetTypeData(PInfo);
+    if Assigned(PData) then
+      for i:=PData.MinValue to PData.MaxValue do begin
+        Strings.Add(GetEnumName(PInfo,i));
+      end;
+  finally
+    Strings.EndUpdate;
+  end;
+end;
+
+function GetFileVersionEx(FileName: String): String;
+var
+  VInfo: TSgtsVersionInfo;
+begin
+  VInfo:=TSgtsVersionInfo.Create(FileName);
+  try
+    Result:=VInfo.GetFileVersion;
+  finally
+    VInfo.Free;
+  end;
+end;
+
+function GetFileSizeEx(FileName: String): Integer;
+var
+  H: THandle;
+begin
+  H:=FileOpen(FileName,fmOpenRead or fmShareDenyNone);
+  try
+    Result:=Windows.GetFileSize(H,nil);
+  finally
+    FileClose(H);
+  end;
+end;
+
+function GetNameByClass(AClassName: String): String;
+var
+  APos: Integer;
+begin
+  Result:=AClassName;
+  APos:=Pos('TSgts',Result);
+  if APos>0 then begin
+    Result:=Copy(Result,APos+Length('TSgts'),Length(Result));
+    APos:=Pos('Iface',Result);
+    if APos>0 then begin
+      Result:=Copy(Result,1,APos-1);
+    end;
+  end;
+end;
+
+function RemoveNotFileNameChars(FileName: string): string;
+var
+  i: Integer;
+const
+  Fuck: set of char = ['/','\','"','?','*','<','>',':','|'];
+begin
+  Result:='';
+  for i:=1 to Length(FileName) do begin
+    if not (FileName[i] in Fuck) then begin
+      Result:=Result+FileName[i];
+    end;
+  end;
+end;
+
+function ReverseString(const S: String): String;
+var
+  Str: TStringList;
+begin
+  Str:=TStringList.Create;
+  try
+
+  finally
+    Str.Free;
+  end;
+  Str.Text:=S;
+
+end;
+
+procedure LoadCharTypes;
+var
+  CurrChar: AnsiChar;
+  CurrType: Word;
+begin
+  {$IFDEF MSWINDOWS}
+  for CurrChar := Low(AnsiChar) to High(AnsiChar) do
+  begin
+    GetStringTypeExA(LOCALE_USER_DEFAULT, CT_CTYPE1, @CurrChar, SizeOf(AnsiChar), CurrType);
+    AnsiCharTypes[CurrChar] := CurrType;
+  end;
+  {$ENDIF}
+end;
+
+initialization
+
+  LoadCharTypes;
+
+
+end.

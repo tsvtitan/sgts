@@ -1,0 +1,16 @@
+/* Создание таблицы чертежей */
+
+CREATE TABLE DRAWINGS
+(
+  DRAWING_ID INTEGER NOT NULL, 
+  NAME VARCHAR2(100) NOT NULL,
+  DESCRIPTION VARCHAR2(250),
+  FILE_NAME VARCHAR2(250) NOT NULL,
+  PRIMARY KEY (DRAWING_ID)
+)
+
+--
+
+/* Фиксация изменений */
+
+COMMIT

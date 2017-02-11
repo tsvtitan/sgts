@@ -1,0 +1,12 @@
+unit SgtsOraRptConsts;
+
+interface
+
+resourcestring
+  SParamFileRuntime='FileRuntime';
+
+  SCmdLineFormat=' REPORT=''%s'' USERID=''%s/%s@%s'' PARAMFORM=NO';
+  
+implementation
+
+end.

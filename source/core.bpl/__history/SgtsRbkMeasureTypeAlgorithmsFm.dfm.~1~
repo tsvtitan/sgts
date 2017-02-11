@@ -1,0 +1,84 @@
+inherited SgtsRbkMeasureTypeAlgorithmsForm: TSgtsRbkMeasureTypeAlgorithmsForm
+  Left = 391
+  Top = 158
+  Width = 465
+  Height = 438
+  Caption = #1040#1083#1075#1086#1088#1080#1090#1084#1099' '#1074#1080#1076#1086#1074' '#1080#1079#1084#1077#1088#1077#1085#1080#1103
+  Constraints.MinHeight = 375
+  Constraints.MinWidth = 465
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited BevelStatus: TBevel
+    Top = 348
+    Width = 457
+  end
+  inherited StatusBar: TStatusBar
+    Top = 390
+    Width = 457
+  end
+  inherited ToolBar: TToolBar
+    Width = 66
+    Height = 348
+    inherited ToolButtonRefresh: TToolButton
+      Wrap = False
+    end
+    inherited ToolButtonInsert: TToolButton
+      Left = 31
+      Top = 0
+    end
+    inherited ToolButtonUpdate: TToolButton
+      Top = 32
+      Wrap = False
+    end
+    inherited ToolButtonDelete: TToolButton
+      Left = 31
+      Top = 32
+    end
+    inherited ToolButtonCopy: TToolButton
+      Top = 64
+      Wrap = False
+    end
+    inherited ToolButtonReport: TToolButton
+      Left = 31
+      Top = 64
+    end
+    inherited ToolButtonAdjust: TToolButton
+      Top = 96
+      Wrap = False
+    end
+    inherited ToolButtonFirst: TToolButton
+      Left = 31
+      Top = 96
+    end
+    inherited ToolButtonPrior: TToolButton
+      Top = 128
+      Wrap = False
+    end
+    inherited ToolButtonNext: TToolButton
+      Left = 31
+      Top = 128
+    end
+    inherited ToolButtonLast: TToolButton
+      Top = 160
+    end
+  end
+  inherited PanelView: TPanel
+    Left = 66
+    Width = 391
+    Height = 348
+    inherited GridPattern: TDBGrid
+      Width = 385
+      Height = 342
+    end
+  end
+  inherited PanelButton: TPanel
+    Top = 351
+    Width = 457
+    inherited ButtonCancel: TButton
+      Left = 376
+    end
+    inherited ButtonOk: TButton
+      Left = 294
+    end
+  end
+end

@@ -1,0 +1,1 @@
+sgts.exe /uninstall_sql uninstall.que OracleTest

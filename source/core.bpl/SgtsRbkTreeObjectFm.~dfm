@@ -1,0 +1,76 @@
+inherited SgtsRbkTreeObjectForm: TSgtsRbkTreeObjectForm
+  Left = 551
+  Top = 165
+  Width = 437
+  Height = 431
+  Caption = #1044#1077#1088#1077#1074#1086' '#1086#1073#1098#1077#1082#1090#1086#1074
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited BevelStatus: TBevel
+    Top = 324
+    Width = 429
+  end
+  inherited StatusBar: TStatusBar
+    Top = 366
+    Width = 429
+  end
+  inherited ToolBar: TToolBar
+    Width = 35
+    Height = 324
+    inherited ToolButtonInsert: TToolButton
+      Left = 0
+      Top = 32
+    end
+    inherited ToolButtonLast: TToolButton
+      Top = 64
+      Wrap = True
+    end
+    inherited ToolButtonUpdate: TToolButton
+      Left = 0
+      Top = 96
+    end
+    inherited ToolButtonPrior: TToolButton
+      Top = 128
+      Wrap = True
+    end
+    inherited ToolButtonDelete: TToolButton
+      Left = 0
+      Top = 160
+    end
+    inherited ToolButtonFirst: TToolButton
+      Top = 192
+      Wrap = True
+    end
+    inherited ToolButtonCopy: TToolButton
+      Left = 0
+      Top = 224
+    end
+    inherited ToolButtonNext: TToolButton
+      Top = 256
+      Wrap = True
+    end
+    inherited ToolButtonExport: TToolButton
+      Left = 0
+      Top = 288
+    end
+  end
+  inherited PanelView: TPanel
+    Left = 35
+    Width = 394
+    Height = 324
+    inherited TreePattern: TTreeView
+      Width = 388
+      Height = 318
+    end
+  end
+  inherited PanelButton: TPanel
+    Top = 327
+    Width = 429
+    inherited ButtonCancel: TButton
+      Left = 348
+    end
+    inherited ButtonOk: TButton
+      Left = 266
+    end
+  end
+end

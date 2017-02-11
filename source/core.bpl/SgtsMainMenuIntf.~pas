@@ -1,0 +1,14 @@
+unit SgtsMainMenuIntf;
+
+interface
+
+type
+
+  ISgtsMainMenu=interface
+  { methods}
+    function Find
+  end;
+
+implementation
+
+end.

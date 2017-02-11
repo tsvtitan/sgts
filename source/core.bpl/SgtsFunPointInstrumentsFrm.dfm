@@ -1,0 +1,2 @@
+inherited SgtsFunPointInstrumentsFrame: TSgtsFunPointInstrumentsFrame
+end

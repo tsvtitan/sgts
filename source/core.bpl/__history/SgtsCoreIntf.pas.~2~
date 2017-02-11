@@ -1,0 +1,203 @@
+unit SgtsCoreIntf;
+
+interface
+
+uses Classes,
+
+     SgtsObj,
+      
+     SgtsObjIntf, SgtsConfigIntf, SgtsCmdLineIntf, SgtsLogIntf,
+     SgtsIfaceIntf, SgtsDatabaseModulesIntf, SgtsInterfaceModulesIntf, SgtsDataFmIntf,
+     SgtsReportModulesIntf, SgtsExportSqlFmIntf, SgtsDatabaseConfigIntf,
+     SgtsChildFmIntf, SgtsReportFmIntf,
+
+     SgtsAboutFmIntf,SgtsSplashFmIntf,SgtsOptionsFmIntf,SgtsMainFmIntf,
+     SgtsInstallSqlFmIntf, SgtsDataInsertFmIntf;
+
+type
+
+  TObjectClass=class of TObject;
+
+  ISgtsCore=interface(ISgtsObj)
+  ['{FF3D7648-E2BF-4CFF-AC99-92726AFEB152}']
+  { methods }
+    procedure Start;
+    procedure Stop;
+    procedure ReadParams;
+    procedure WriteParams;
+    function Exists: Boolean;
+    procedure GetInterfaceNames(Names: TStrings; AClass: TComponentClass=nil);
+    procedure GetInterfacePermissions(const IntrefaceName: String; Permissions: TStrings);
+    procedure GetInterfacePermissionValues(const InterfaceName, Permission: String; Values: TStrings);
+    procedure GetReportModules(Names: TStrings);
+    function InterfaceExists(const InterfaceName: String): Boolean;
+    procedure CheckPermissions;
+    procedure RefreshReports;
+    procedure RefreshGraphs;
+    procedure RegisterObj(Obj: TSgtsObj);
+    procedure UnRegisterObj(Obj: TSgtsObj);
+
+  { properties }
+    function _GetConfig: ISgtsConfig;
+    function _GetCmdLine: ISgtsCmdLine;
+    function _GetLog: ISgtsLog;
+    function _GetDatabaseModules: ISgtsDatabaseModules;
+    function _GetReportModules: ISgtsReportModules;
+    function _GetInterfaceModules: ISgtsInterfaceModules;
+    function _GetDatabaseConfig: ISgtsDatabaseConfig;
+
+    function _GetAboutForm: ISgtsAboutForm;
+    function _GetSplashForm: ISgtsSplashForm;
+    function _GetOptionsForm: ISgtsOptionsForm;
+    function _GetMainForm: ISgtsMainForm;
+    function _GetInstallSqlForm: ISgtsInstallSqlForm;
+    function _GetExportSqlForm: ISgtsExportSqlForm; 
+    function _GetRefreshCutsForm: ISgtsChildForm; 
+
+    function _GetRbkAccountsForm: ISgtsDataForm;
+    function _GetRbkRolesForm: ISgtsDataForm;
+    function _GetRbkPersonnelsForm: ISgtsDataForm;
+    function _GetRbkPermissionForm: ISgtsDataForm;
+    function _GetRbkAccountsRolesForm: ISgtsDataForm;
+    function _GetRbkDivisionsForm: ISgtsDataForm;
+    function _GetRbkObjectsForm: ISgtsDataForm;
+    function _GetFunPersonnelManagementForm: ISgtsDataForm;
+    function _GetRbkPointTypesForm: ISgtsDataForm;
+    function _GetRbkPointsForm: ISgtsDataForm;
+    function _GetRbkRoutesForm: ISgtsDataForm;
+    function _GetRbkMeasureTypesForm: ISgtsDataForm;
+    function _GetRbkInstrumentTypesForm: ISgtsDataForm;
+    function _GetRbkInstrumentsForm: ISgtsDataForm;
+    function _GetRbkMeasureUnitsForm: ISgtsDataForm;
+    function _GetRbkInstrumentUnitsForm: ISgtsDataForm;
+    function _GetRbkRoutePointsForm: ISgtsDataForm;
+    function _GetRbkMeasureTypeRoutesForm: ISgtsDataForm;
+    function _GetRbkPersonnelRoutesForm: ISgtsDataForm;
+    function _GetRbkCyclesForm: ISgtsDataForm;
+    function _GetRbkPlansForm: ISgtsDataForm;
+    function _GetRbkObjectTreesForm: ISgtsDataForm;
+    function _GetFunPointManagementForm: ISgtsDataForm;
+    function _GetRbkAlgorithmsForm: ISgtsDataForm;
+    function _GetRbkMeasureTypeAlgorithmsForm: ISgtsDataForm;
+    function _GetRbkLevelsForm: ISgtsDataForm;
+    function _GetRbkParamsForm: ISgtsDataForm;
+    function _GetRbkMeasureTypeParamsForm: ISgtsDataForm;
+    function _GetRbkParamLevelsForm: ISgtsDataForm;
+    function _GetJrnJournalFieldsForm: ISgtsDataForm;
+    function _GetJrnJournalObservationsForm: ISgtsDataForm;
+    function _GetJrnJournalsForm: ISgtsDataForm;
+    function _GetRbkAccountInsertForm: ISgtsDataInsertForm;
+    function _GetFunSourceDataForm: ISgtsChildForm;
+    function _GetRbkFileReportsForm: ISgtsDataForm;
+    function _GetRbkBaseReportsForm: ISgtsDataForm;
+    function _GetRbkParamInstrumentsForm: ISgtsDataForm;
+    function _GetRbkDocumentsForm: ISgtsDataForm;
+    function _GetRbkPointDocumentsForm: ISgtsDataForm;
+    function _GetRbkConvertersForm: ISgtsDataForm;
+    function _GetRbkComponentsForm: ISgtsDataForm;
+    function _GetRbkDevicesForm: ISgtsDataForm;
+    function _GetRbkDevicePointsForm: ISgtsDataForm;
+    function _GetRbkDrawingsForm: ISgtsDataForm;
+    function _GetRbkObjectDrawingsForm: ISgtsDataForm;
+    function _GetRbkObjectDocumentsForm: ISgtsDataForm;
+    function _GetRbkConverterPassportsForm: ISgtsDataForm;
+    function _GetRbkInstrumentPassportsForm: ISgtsDataForm;
+    function _GetRbkPointPassportsForm: ISgtsDataForm;
+    function _GetRbkObjectPassportsForm: ISgtsDataForm;
+    function _GetJrnJournalActionsForm: ISgtsDataForm;
+    function _GetRbkInterfaceReportsForm: ISgtsDataForm;
+    function _GetRbkCheckingsForm: ISgtsDataForm;
+    function _GetRbkCutsForm: ISgtsDataForm;
+    function _GetRbkPointInstrumentsForm: ISgtsDataForm;
+    function _GetRbkGraphsForm: ISgtsDataForm;
+    function _GetRbkGroupsForm: ISgtsDataForm;
+    function _GetRbkGroupObjectsForm: ISgtsDataForm;
+
+    function _GetTitle: String;
+    function _GetInstallSqlFile: String;
+    function _GetInstallSqlDBModule: String;
+
+    property Config: ISgtsConfig read _GetConfig;
+    property CmdLine: ISgtsCmdLine read _GetCmdLine;
+    property Log: ISgtsLog read _GetLog;
+    property DatabaseModules: ISgtsDatabaseModules read _GetDatabaseModules;
+    property ReportModules: ISgtsReportModules read _GetReportModules;
+    property InterfaceModules: ISgtsInterfaceModules read _GetInterfaceModules;
+    property DatabaseConfig: ISgtsDatabaseConfig read _GetDatabaseConfig;
+
+    property AboutForm: ISgtsAboutForm read _GetAboutForm;
+    property SplashForm: ISgtsSplashForm read _GetSplashForm;
+    property OptionsForm: ISgtsOptionsForm read _GetOptionsForm;
+    property MainForm: ISgtsMainForm read _GetMainForm;
+    property InstallSqlForm: ISgtsInstallSqlForm read _GetInstallSqlForm;
+    property ExportSqlForm: ISgtsExportSqlForm read _GetExportSqlForm;
+    property RefreshCutsForm: ISgtsChildForm read _GetRefreshCutsForm;
+
+    property RbkAccountsForm: ISgtsDataForm read _GetRbkAccountsForm;
+    property RbkRolesForm: ISgtsDataForm read _GetRbkRolesForm;
+    property RbkPersonnelsForm: ISgtsDataForm read _GetRbkPersonnelsForm;
+    property RbkPermissionForm: ISgtsDataForm read _GetRbkPermissionForm;
+    property RbkAccountsRolesForm: ISgtsDataForm read _GetRbkAccountsRolesForm;
+    property RbkDivisionsForm: ISgtsDataForm read _GetRbkDivisionsForm;
+    property RbkObjectsForm: ISgtsDataForm read _GetRbkObjectsForm;
+    property FunPersonnelManagementForm: ISgtsDataForm read _GetFunPersonnelManagementForm;
+    property RbkPointTypesForm: ISgtsDataForm read _GetRbkPointTypesForm;
+    property RbkPointsForm: ISgtsDataForm read _GetRbkPointsForm;
+    property RbkRoutesForm: ISgtsDataForm read _GetRbkRoutesForm;
+    property RbkMeasureTypesForm: ISgtsDataForm read _GetRbkMeasureTypesForm;
+    property RbkInstrumentTypesForm: ISgtsDataForm read _GetRbkInstrumentTypesForm;
+    property RbkInstrumentsForm: ISgtsDataForm read _GetRbkInstrumentsForm;
+    property RbkMeasureUnitsForm: ISgtsDataForm read _GetRbkMeasureUnitsForm;
+    property RbkInstrumentUnitsForm: ISgtsDataForm read _GetRbkInstrumentUnitsForm;
+    property RbkRoutePointsForm: ISgtsDataForm read _GetRbkRoutePointsForm;
+    property RbkMeasureTypeRoutesForm: ISgtsDataForm read _GetRbkMeasureTypeRoutesForm;
+    property RbkPersonnelRoutesForm: ISgtsDataForm read _GetRbkPersonnelRoutesForm;
+    property RbkCyclesForm: ISgtsDataForm read _GetRbkCyclesForm;
+    property RbkPlansForm: ISgtsDataForm read _GetRbkPlansForm;
+    property RbkObjectTreesForm: ISgtsDataForm read _GetRbkObjectTreesForm;
+    property FunPointManagementForm: ISgtsDataForm read _GetFunPointManagementForm;
+    property RbkAlgorithmsForm: ISgtsDataForm read _GetRbkAlgorithmsForm;
+    property RbkMeasureTypeAlgorithmsForm: ISgtsDataForm read _GetRbkMeasureTypeAlgorithmsForm;
+    property RbkLevelsForm: ISgtsDataForm read _GetRbkLevelsForm;
+    property RbkParamsForm: ISgtsDataForm read _GetRbkParamsForm;
+    property RbkMeasureTypeParamsForm: ISgtsDataForm read _GetRbkMeasureTypeParamsForm;
+    property RbkParamLevelsForm: ISgtsDataForm read _GetRbkParamLevelsForm;
+    property JrnJournalFieldsForm: ISgtsDataForm read _GetJrnJournalFieldsForm;
+    property JrnJournalObservationsForm: ISgtsDataForm read _GetJrnJournalObservationsForm;
+    property JrnJournalsForm: ISgtsDataForm read _GetJrnJournalsForm;
+    property RbkAccountInsertForm: ISgtsDataInsertForm read _GetRbkAccountInsertForm;
+    property FunSourceDataForm: ISgtsChildForm read _GetFunSourceDataForm;
+    property RbkFileReportsForm: ISgtsDataForm read _GetRbkFileReportsForm;
+    property RbkBaseReportsForm: ISgtsDataForm read _GetRbkBaseReportsForm;
+    property RbkParamInstrumentsForm: ISgtsDataForm read _GetRbkParamInstrumentsForm;
+    property RbkDocumentsForm: ISgtsDataForm read _GetRbkDocumentsForm;
+    property RbkPointDocumentsForm: ISgtsDataForm read _GetRbkPointDocumentsForm;
+    property RbkConvertersForm: ISgtsDataForm read _GetRbkConvertersForm;
+    property RbkComponentsForm: ISgtsDataForm read _GetRbkComponentsForm;
+    property RbkDevicesForm: ISgtsDataForm read _GetRbkDevicesForm;
+    property RbkDevicePointsForm: ISgtsDataForm read _GetRbkDevicePointsForm;
+    property RbkDrawingsForm: ISgtsDataForm read _GetRbkDrawingsForm;
+    property RbkObjectDrawingsForm: ISgtsDataForm read _GetRbkObjectDrawingsForm;
+    property RbkObjectDocumentsForm: ISgtsDataForm read _GetRbkObjectDocumentsForm;
+    property RbkConverterPassportsForm: ISgtsDataForm read _GetRbkConverterPassportsForm;
+    property RbkInstrumentPassportsForm: ISgtsDataForm read _GetRbkInstrumentPassportsForm;
+    property RbkPointPassportsForm: ISgtsDataForm read _GetRbkPointPassportsForm;
+    property RbkObjectPassportsForm: ISgtsDataForm read _GetRbkObjectPassportsForm;
+    property JrnJournalActionsForm: ISgtsDataForm read _GetJrnJournalActionsForm;
+    property RbkInterfaceReportsForm: ISgtsDataForm read _GetRbkInterfaceReportsForm;
+    property RbkCheckingsForm: ISgtsDataForm read _GetRbkCheckingsForm;
+    property RbkCutsForm: ISgtsDataForm read _GetRbkCutsForm;
+    property RbkPointInstrumentsForm: ISgtsDataForm read _GetRbkPointInstrumentsForm;
+    property RbkGraphsForm: ISgtsDataForm read _GetRbkGraphsForm;
+    property RbkGroupsForm: ISgtsDataForm read _GetRbkGroupsForm;
+    property RbkGroupObjectsForm: ISgtsDataForm read _GetRbkGroupObjectsForm;
+
+    property Title: String read _GetTitle;
+    property Version: String read _GetVersionl
+    property InstallSqlFile: String read _GetInstallSqlFile;
+    property InstallSqlDBModule: String read _GetInstallSqlDBModule;
+  end;
+
+implementation
+
+end.

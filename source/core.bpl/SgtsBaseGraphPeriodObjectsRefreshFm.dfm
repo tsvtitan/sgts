@@ -1,0 +1,72 @@
+inherited SgtsBaseGraphPeriodObjectsRefreshForm: TSgtsBaseGraphPeriodObjectsRefreshForm
+  Caption = #1059#1089#1083#1086#1074#1080#1103' '#1075#1088#1072#1092#1080#1082#1072' '#1086#1073#1098#1077#1082#1090#1086#1074' '#1079#1072' '#1087#1077#1088#1080#1086#1076
+  ClientHeight = 428
+  Constraints.MinHeight = 455
+  ExplicitHeight = 455
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited PanelDialog: TPanel
+    Height = 390
+    ExplicitHeight = 390
+    inherited PanelAxis: TPanel
+      Top = 287
+      Height = 103
+      TabOrder = 4
+      ExplicitTop = 287
+      ExplicitHeight = 103
+      inherited GroupBoxAxis: TGroupBox
+        Height = 97
+        ExplicitHeight = 97
+        inherited PanelAxis2: TPanel
+          Height = 80
+          ExplicitHeight = 80
+          inherited TabControlAxis: TTabControl
+            Height = 76
+            ExplicitHeight = 76
+            inherited CheckListBoxParams: TCheckListBox
+              Height = 45
+              ExplicitHeight = 45
+            end
+          end
+        end
+      end
+    end
+    object PanelGroups: TPanel
+      Left = 0
+      Top = 229
+      Width = 372
+      Height = 58
+      Align = alTop
+      BevelOuter = bvNone
+      BorderWidth = 3
+      TabOrder = 3
+      object GroupBoxGroups: TGroupBox
+        Left = 3
+        Top = 3
+        Width = 366
+        Height = 52
+        Align = alClient
+        Caption = ' '#1043#1088#1091#1087#1087#1072' '#1086#1073#1098#1077#1082#1090#1086#1074' '
+        TabOrder = 0
+        DesignSize = (
+          366
+          52)
+        object ComboBoxGroups: TComboBox
+          Left = 11
+          Top = 20
+          Width = 344
+          Height = 21
+          Style = csDropDownList
+          Anchors = [akLeft, akTop, akRight]
+          ItemHeight = 13
+          TabOrder = 0
+          OnChange = ComboBoxGroupsChange
+        end
+      end
+    end
+  end
+  inherited PanelButton: TPanel
+    Top = 390
+    ExplicitTop = 390
+  end
+end

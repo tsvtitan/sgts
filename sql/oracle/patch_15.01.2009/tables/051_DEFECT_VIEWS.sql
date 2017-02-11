@@ -1,0 +1,16 @@
+/* Создание таблицы видов дефектов */
+
+CREATE TABLE DEFECT_VIEWS
+(
+  DEFECT_VIEW_ID INTEGER NOT NULL, 
+  NAME VARCHAR2(100) NOT NULL,
+  DESCRIPTION VARCHAR2(250),
+  PRIORITY INTEGER NOT NULL,
+  PRIMARY KEY (DEFECT_VIEW_ID)
+)
+
+--
+
+/* Фиксация изменений БД */
+
+COMMIT

@@ -1,0 +1,79 @@
+unit SgtsKgesGraphGmoRefreshFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, CheckLst, Menus,
+  SgtsKgesGraphPeriodRefreshFm;
+
+type
+  TSgtsKgesGraphGmoRefreshForm = class(TSgtsKgesGraphPeriodRefreshForm)
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+  end;
+
+  TSgtsKgesGraphGmoRefreshIface=class(TSgtsKgesGraphRefreshIface)
+  private
+    FMetrGroup: Integer;
+    FTemperatureGroup: Integer;
+    FExpenseVolumeGroup: Integer;
+  public
+    procedure Init; override;
+  end;
+
+var
+  SgtsKgesGraphGmoRefreshForm: TSgtsKgesGraphGmoRefreshForm;
+
+implementation
+
+uses SgtsConsts, SgtsGraphFm, SgtsKgesGraphsConsts, SgtsProviderConsts,
+     SgtsSelectDefs;
+
+{$R *.dfm}
+
+{ TSgtsKgesGraphGmoRefreshIface }
+
+procedure TSgtsKgesGraphGmoRefreshIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsKgesGraphGmoRefreshForm;
+  InterfaceName:=SInterfaceGraphGmoRefresh;
+
+  FMetrGroup:=0;
+  FTemperatureGroup:=1;
+  FExpenseVolumeGroup:=2;
+
+  with LeftAxisParams do begin
+    Add('Уровень верхнего бьефа','UVB',FMetrGroup);
+    Add('Уровень нижнего бьефа','UNB',FMetrGroup);
+    Add('Приращение УВБ','UVB_INC');
+    Add('Температура воздуха','T_AIR',FTemperatureGroup);
+    Add('Температура воздуха за 10 суток','T_AIR_10',FTemperatureGroup);
+    Add('Температура воздуха за 30 суток','T_AIR_30',FTemperatureGroup);
+    Add('Температура воды','T_WATER',FTemperatureGroup);
+    Add('Осадков за сутки','RAIN_DAY');
+    Add('Осадков с начала года','RAIN_YEAR');
+    Add('Осадков за период','RAIN_PERIOD');
+    Add('Сброс','UNSET',FExpenseVolumeGroup);
+    Add('Приток','INFLUX',FExpenseVolumeGroup);
+    Add('Объем водохранилища','V_VAULT');
+  end;
+
+  with BottomAxisParams do begin
+    Add('Дата наблюдения','DATE_OBSERVATION');
+    Add('Цикл','CYCLE_NUM');
+  end;
+
+  RightAxisParams.CopyFrom(LeftAxisParams);
+end;
+
+{ TSgtsKgesGraphGmoRefreshForm }
+
+constructor TSgtsKgesGraphGmoRefreshForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+
+end;
+
+end.

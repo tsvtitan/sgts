@@ -1,0 +1,332 @@
+unit SgtsFunPointManagementFilterFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ExtCtrls, DB, Grids,  DBGrids,
+  SgtsCoreIntf, SgtsFm, SgtsDialogFm, SgtsFloatEdit, SgtsDbGrid, SgtsGetRecordsConfig,
+  SgtsCDS, SgtsSelectDefs, SgtsControls;
+
+type
+  TSgtsFunPointManagementFilterForm = class(TSgtsDialogForm)
+    GroupBoxMeasureType: TGroupBox;
+    EditMeasureType: TEdit;
+    ButtonMeasureType: TButton;
+    GroupBoxCoordinateZ: TGroupBox;
+    LabelCoordinateZFrom: TLabel;
+    EditCoordinateZFrom: TEdit;
+    LabelCoordinateZTo: TLabel;
+    EditCoordinateZTo: TEdit;
+    GroupBoxObjects: TGroupBox;
+    EditObject: TEdit;
+    ButtonObject: TButton;
+    GroupBoxParams: TGroupBox;
+    PanelParams: TPanel;
+    GridPattern: TDBGrid;
+    DataSource: TDataSource;
+    procedure ButtonObjectClick(Sender: TObject);
+    procedure ButtonMeasureTypeClick(Sender: TObject);
+  private
+    FGrid: TSgtsDbGrid;
+    FDataSet: TSgtsCDS;
+    FSelectDefs: TSgtsSelectDefs;
+    FObjectTreeId: Variant;
+    FMeasureTypeId: Variant;
+    FEditFloatFrom: TSgtsFloatEdit;
+    FEditFloatTo: TSgtsFloatEdit;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+
+    property DataSet: TSgtsCDS read FDataSet;
+  end;
+
+  TSgtsFunPointManagementFilterFormIface=class(TSgtsDialogIface)
+  private
+    FCoordinateZFrom: Variant;
+    FCoordinateZTo: Variant;
+    FObjectPaths: Variant;
+    FMeasureTypeId: Variant;
+    FMeasureTypePath: String;
+    FFilterGroups: TSgtsGetRecordsConfigFilterGroups;
+    function GetForm: TSgtsFunPointManagementFilterForm;
+  protected
+    function GetFormClass: TSgtsFormClass; override;
+    procedure BeforeShowModal; override;
+    procedure AfterShowModal(ModalResult: TModalResult); override;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+
+    property Form: TSgtsFunPointManagementFilterForm read GetForm;
+    property CoordinateZFrom: Variant read FCoordinateZFrom write FCoordinateZFrom;
+    property CoordinateZTo: Variant read FCoordinateZTo write FCoordinateZTo;
+    property ObjectPaths: Variant read FObjectPaths write FObjectPaths;
+    property MeasureTypeId: Variant read FMeasureTypeId write FMeasureTypeId;
+    property MeasureTypePath: String read FMeasureTypePath write FMeasureTypePath;
+    property FilterGroups: TSgtsGetRecordsConfigFilterGroups read FFilterGroups;
+  end;
+
+var
+  SgtsFunPointManagementFilterForm: TSgtsFunPointManagementFilterForm;
+
+implementation
+
+uses SgtsRbkObjectTreesFm, SgtsDatabaseCDS, SgtsProviderConsts, SgtsExecuteDefs,
+     SgtsRbkMeasureTypesFm, SgtsUtils;
+
+{$R *.dfm}
+
+{ TSgtsFunPointManagementFilterFormIface }
+
+constructor TSgtsFunPointManagementFilterFormIface.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  StoredInConfig:=true;
+  FCoordinateZFrom:=Null;
+  FCoordinateZTo:=Null;
+  FObjectPaths:=Null;
+  FFilterGroups:=TSgtsGetRecordsConfigFilterGroups.Create;
+end;
+
+destructor TSgtsFunPointManagementFilterFormIface.Destroy;
+begin
+  FFilterGroups.Free;
+  inherited Destroy;
+end;
+
+function TSgtsFunPointManagementFilterFormIface.GetForm: TSgtsFunPointManagementFilterForm;
+begin
+  Result:=TSgtsFunPointManagementFilterForm(inherited Form);
+end;
+
+function TSgtsFunPointManagementFilterFormIface.GetFormClass: TSgtsFormClass;
+begin
+  Result:=TSgtsFunPointManagementFilterForm;
+end;
+
+procedure TSgtsFunPointManagementFilterFormIface.BeforeShowModal;
+var
+  i: Integer;
+  j: Integer;
+  Group: TSgtsGetRecordsConfigFilterGroup;
+  Filter: TSgtsGetRecordsConfigFilter;
+  Found: Boolean;
+begin
+  inherited BeforeShowModal;
+  if Assigned(Form) then begin
+    Form.FMeasureTypeId:=FMeasureTypeId;
+    Form.EditMeasureType.Text:=FMeasureTypePath;
+    Form.FEditFloatFrom.Text:='';
+    if not VarIsNull(FCoordinateZFrom) then
+      Form.FEditFloatFrom.Value:=VarToExtendedDef(FCoordinateZFrom,0.0);
+    Form.FEditFloatTo.Text:='';
+    if not VarIsNull(FCoordinateZTo) then
+      Form.FEditFloatTo.Value:=VarToExtendedDef(FCoordinateZTo,0.0);
+    Form.EditObject.Text:='';
+    if not VarIsNull(FObjectPaths) then
+      Form.EditObject.Text:=VarToStrDef(FObjectPaths,'');
+
+    if Form.DataSet.Active then begin
+      Form.DataSet.DisableControls;
+      try
+        Form.DataSet.EmptyDataSet;
+        for i:=0 to FFilterGroups.Count-1 do begin
+          Group:=FFilterGroups.Items[i];
+          Found:=false;
+          for j:=0 to Group.Filters.Count-1 do begin
+            Filter:=Group.Filters.Items[j];
+            if AnsiSameText(Filter.FieldName,'COMPONENT_NAME') or
+               AnsiSameText(Filter.FieldName,'VALUE') then begin
+              if not Found then begin
+                Form.DataSet.Append;
+                Found:=true;
+              end;
+              Form.DataSet.FieldByName(Filter.FieldName).Value:=Filter.Value;
+            end;
+          end;
+          if Found then
+            Form.DataSet.Post;
+        end;
+      finally
+        Form.DataSet.EnableControls;;
+      end;
+    end;
+
+  end;
+end;
+
+procedure TSgtsFunPointManagementFilterFormIface.AfterShowModal(ModalResult: TModalResult);
+var
+  Group: TSgtsGetRecordsConfigFilterGroup;
+  S: String;
+begin
+  inherited AfterShowModal(ModalResult);
+  if ModalResult=mrOk then begin
+    if Assigned(Form) then begin
+      FMeasureTypeId:=Null;
+      FMeasureTypePath:='';
+      if Trim(Form.EditMeasureType.Text)<>'' then begin
+        FMeasureTypeId:=Form.FMeasureTypeId;
+        FMeasureTypePath:=Form.EditMeasureType.Text;
+      end;
+      with Form do begin
+        FCoordinateZFrom:=Null;
+        if Trim(FEditFloatFrom.Text)<>'' then
+          FCoordinateZFrom:=FEditFloatFrom.Value;
+        FCoordinateZTo:=Null;
+        if Trim(FEditFloatTo.Text)<>'' then
+          FCoordinateZTo:=FEditFloatTo.Value;
+        FObjectPaths:=Null;
+        if Trim(EditObject.Text)<>'' then
+          FObjectPaths:=Trim(EditObject.Text);
+
+        FFilterGroups.Clear;
+        if DataSet.Active and not DataSet.IsEmpty then begin
+          DataSet.First;
+          while not DataSet.Eof do begin
+            Group:=FFilterGroups.Add;
+            Group.Operator:=foOr;
+            with Group.Filters do begin
+              S:=DataSet.FieldByName('COMPONENT_NAME').AsString;
+              if Trim(S)<>'' then
+                with Add('COMPONENT_NAME',fcLike,S) do begin
+                  LeftSide:=true;
+                end;
+              S:=DataSet.FieldByName('VALUE').AsString;
+              if Trim(S)<>'' then
+                with Add('VALUE',fcLike,S) do begin
+                  LeftSide:=true;
+                end;
+            end;
+            DataSet.Next;
+          end;
+        end;
+         
+      end;
+    end;
+  end;
+end;
+
+{ TSgtsFunPointManagementFilterForm }
+
+constructor TSgtsFunPointManagementFilterForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FEditFloatFrom:=ReplaceEditFloat(EditCoordinateZFrom);
+  LabelCoordinateZFrom.FocusControl:=FEditFloatFrom;
+  FEditFloatTo:=ReplaceEditFloat(EditCoordinateZTo);
+  LabelCoordinateZTo.FocusControl:=FEditFloatTo;
+
+  FGrid:=TSgtsDbGrid.Create(Self);
+  with FGrid do begin
+    Parent:=GridPattern.Parent;
+    Align:=GridPattern.Align;
+    Font.Assign(GridPattern.Font);
+    LocateEnabled:=false;
+    ColumnSortEnabled:=false;
+    Options:=Options-[dgTabs];
+    ColMoving:=false;
+    AutoFit:=true;
+    VisibleRowNumber:=true;
+    DataSource:=GridPattern.DataSource;
+    ReadOnly:=False;
+    PopupMenu:=GridPattern.PopupMenu;
+  end;
+
+  GridPattern.Free;
+  GridPattern:=nil;
+
+  FDataSet:=TSgtsCDS.Create(nil);
+  with FDataSet.FieldDefs do begin
+    Add('COMPONENT_NAME',ftString,100);
+    Add('VALUE',ftString,100);
+  end;
+  FDataSet.CreateDataSet;
+
+  DataSource.DataSet:=FDataSet;
+
+  FSelectDefs:=TSgtsSelectDefs.Create;
+  FSelectDefs.Add('COMPONENT_NAME','Компонент',150);
+  FSelectDefs.Add('VALUE','Значение',150);
+
+  CreateGridColumnsBySelectDefs(FGrid,FSelectDefs);
+
+end;
+
+destructor TSgtsFunPointManagementFilterForm.Destroy;
+begin
+  FSelectDefs.Free;
+  FDataSet.Free;
+  inherited Destroy;
+end;
+
+procedure TSgtsFunPointManagementFilterForm.ButtonMeasureTypeClick(
+  Sender: TObject);
+var
+  Iface: TSgtsRbkMeasureTypesIface;
+  DS: TSgtsCDS;
+  Buffer: String;
+begin
+  Iface:=TSgtsRbkMeasureTypesIface.Create(CoreIntf);
+  try
+    if Iface.SelectOnlyLastNode('MEASURE_TYPE_ID',FMeasureTypeId,Buffer) then begin
+      DS:=TSgtsCDS.Create(nil);
+      try
+        DS.XMLData:=Buffer;
+        if DS.Active and not DS.IsEmpty then begin
+          FMeasureTypeId:=DS.FieldByName('MEASURE_TYPE_ID').Value;
+          EditMeasureType.Text:=DS.FieldByName('PATH').AsString;
+        end;
+      finally
+        DS.Free;
+      end;
+    end;
+  finally
+    Iface.Free;
+  end;
+end;
+
+procedure TSgtsFunPointManagementFilterForm.ButtonObjectClick(Sender: TObject);
+var
+  AIface: TSgtsRbkObjectTreesIface;
+  DS: TSgtsCDS;
+  P: TSgtsDatabaseCDS;
+  Buffer: String;
+  OldCursor: TCursor;
+begin
+  AIface:=TSgtsRbkObjectTreesIface.Create(CoreIntf);
+  DS:=TSgtsCDS.Create(nil);
+  try
+    if AIface.SelectVisible('OBJECT_TREE_ID',FObjectTreeId,Buffer) then begin
+      DS.XMLData:=Buffer;
+      if DS.Active and not DS.IsEmpty then begin
+        FObjectTreeId:=DS.FieldByName('OBJECT_TREE_ID').Value;
+        OldCursor:=Screen.Cursor;
+        Screen.Cursor:=crHourGlass;
+        P:=TSgtsDatabaseCDS.Create(CoreIntf);
+        try
+          P.StopException:=true;
+          P.ProviderName:=SProviderGetObjectPaths;
+          with P.ExecuteDefs do begin
+            AddInvisible('OBJECT_ID').Value:=DS.FieldByName('OBJECT_ID').Value;
+            AddInvisible('PATHS',ptOutput);
+            AddInvisible('NAME',ptOutput);
+          end;
+          P.Execute;
+          if P.ExecuteSuccess then
+            EditObject.Text:=VarToStrDef(P.ExecuteDefs.Find('PATHS').Value,'');
+        finally
+          P.Free;
+          Screen.Cursor:=OldCursor;
+        end;
+      end;
+    end;
+  finally
+    DS.Free;
+    AIface.Free;
+  end;
+end;
+
+end.

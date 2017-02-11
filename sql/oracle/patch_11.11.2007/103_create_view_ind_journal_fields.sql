@@ -1,0 +1,175 @@
+/* Создание типа объекта Индикатора прогиба полевого журнала */
+
+CREATE OR REPLACE TYPE IND_JOURNAL_FIELD_OBJECT 
+AS OBJECT
+(
+  CYCLE_ID INTEGER,
+  CYCLE_NUM INTEGER,
+  JOURNAL_NUM VARCHAR2(100),
+  DATE_OBSERVATION DATE,
+  POINT_ID INTEGER,
+  POINT_NAME INTEGER,
+  CONVERTER_ID INTEGER,
+  CONVERTER_NAME VARCHAR2(100),
+  OBJECT_PATHS VARCHAR2(1000),
+  COORDINATE_Z FLOAT,
+  INDICATOR_TYPE INTEGER,
+  VALUE FLOAT,
+  OFFSET_BEGIN FLOAT,
+  CURRENT_OFFSET FLOAT
+)
+
+--
+
+/* Создание типа таблицы Индикатора прогиба полевого журнала */
+
+CREATE OR REPLACE TYPE IND_JOURNAL_FIELD_TABLE 
+AS TABLE OF IND_JOURNAL_FIELD_OBJECT
+
+--
+
+/* Создание функции просмотра Индикатора прогиба в полевом журнале */
+
+CREATE OR REPLACE FUNCTION GET_IND_JOURNAL_FIELDS
+(
+  IS_CLOSE INTEGER
+)
+RETURN IND_JOURNAL_FIELD_TABLE
+PIPELINED
+IS
+  INC2 IND_JOURNAL_FIELD_OBJECT:=IND_JOURNAL_FIELD_OBJECT(NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+                                                          NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+  NUM_MIN INTEGER:=NULL;
+  NUM_MAX INTEGER:=NULL;
+BEGIN
+  FOR INC IN (SELECT MIN(CYCLE_NUM) AS NUM_MIN, MAX(CYCLE_NUM) AS NUM_MAX 
+                FROM CYCLES
+               WHERE IS_CLOSE=GET_IND_JOURNAL_FIELDS.IS_CLOSE) LOOP
+    NUM_MIN:=INC.NUM_MIN;
+	NUM_MAX:=INC.NUM_MAX;    			   
+    EXIT;			   
+  END LOOP;			    
+   
+  FOR INC1 IN (SELECT /*+ INDEX (JF) INDEX (C) INDEX (P) INDEX (RP) INDEX (CR) */
+                      JF.DATE_OBSERVATION,
+                      JF.CYCLE_ID,
+                      C.CYCLE_NUM,
+                      JF.POINT_ID,
+                      P.NAME AS POINT_NAME,
+                      CR.CONVERTER_ID,
+                      CR.NAME AS CONVERTER_NAME,
+					  JF.JOURNAL_NUM,
+  					  MIN(DECODE(JF.PARAM_ID,30015,JF.VALUE,NULL)) AS VALUE,  
+  					  MIN(DECODE(JF.PARAM_ID,30017,JF.VALUE,NULL)) AS OFFSET_BEGIN,  
+  					  MIN(DECODE(JF.PARAM_ID,30030,JF.VALUE,NULL)) AS CURRENT_OFFSET,
+                      (SELECT TO_NUMBER(CP.VALUE) 
+					     FROM CONVERTER_PASSPORTS CP, COMPONENTS CM 
+                        WHERE CP.COMPONENT_ID=CM.COMPONENT_ID
+                          AND CM.CONVERTER_ID=CR.CONVERTER_ID
+                          AND CM.PARAM_ID=30014 /* Тип индикатора */ ) AS INDICATOR_TYPE,
+					  OT.OBJECT_PATHS,
+					  P.COORDINATE_Z
+                 FROM JOURNAL_FIELDS JF, CYCLES C, POINTS P,
+                      ROUTE_POINTS RP, CONVERTERS CR,
+                      (SELECT OT1.OBJECT_ID, SUBSTR(MAX(SYS_CONNECT_BY_PATH(O1.NAME,'\')),2) AS OBJECT_PATHS
+                         FROM OBJECT_TREES OT1, OBJECTS O1
+                        WHERE OT1.OBJECT_ID=O1.OBJECT_ID
+                        START WITH OT1.PARENT_ID IS NULL
+                      CONNECT BY OT1.PARENT_ID=PRIOR OT1.OBJECT_TREE_ID
+					    GROUP BY OT1.OBJECT_ID) OT
+                WHERE JF.CYCLE_ID=C.CYCLE_ID
+                  AND JF.POINT_ID=P.POINT_ID
+                  AND RP.POINT_ID=JF.POINT_ID
+                  AND CR.CONVERTER_ID=P.POINT_ID
+				  AND P.OBJECT_ID=OT.OBJECT_ID 
+				  AND JF.MEASURE_TYPE_ID=30008 /* Индикаторы прогиба */
+                  AND JF.PARAM_ID IN (30015, /* Отсчет */
+                                      30017, /* Смещение с начала наблюдений */
+                                      30030 /* Текущее смещение */)
+                  AND C.CYCLE_NUM>=NUM_MIN AND C.CYCLE_NUM<=NUM_MAX
+				  AND C.IS_CLOSE=GET_IND_JOURNAL_FIELDS.IS_CLOSE								  
+				GROUP BY JF.DATE_OBSERVATION, JF.CYCLE_ID, C.CYCLE_NUM, JF.POINT_ID, 
+				         P.NAME, CR.CONVERTER_ID, CR.NAME, JF.GROUP_ID, RP.PRIORITY,  
+						 JF.JOURNAL_NUM, OT.OBJECT_PATHS, P.COORDINATE_Z
+                ORDER BY JF.DATE_OBSERVATION, JF.GROUP_ID, RP.PRIORITY) LOOP
+	INC2.CYCLE_ID:=INC1.CYCLE_ID;
+	INC2.CYCLE_NUM:=INC1.CYCLE_NUM;
+	INC2.JOURNAL_NUM:=INC1.JOURNAL_NUM;
+	INC2.DATE_OBSERVATION:=INC1.DATE_OBSERVATION;
+	INC2.POINT_ID:=INC1.POINT_ID;
+	INC2.POINT_NAME:=INC1.POINT_NAME;
+	INC2.CONVERTER_ID:=INC1.CONVERTER_ID;
+	INC2.CONVERTER_NAME:=INC1.CONVERTER_NAME;
+	INC2.OBJECT_PATHS:=INC1.OBJECT_PATHS;
+	INC2.COORDINATE_Z:=INC1.COORDINATE_Z;
+	INC2.INDICATOR_TYPE:=INC1.INDICATOR_TYPE;
+    INC2.VALUE:=INC1.VALUE;
+    INC2.OFFSET_BEGIN:=INC1.OFFSET_BEGIN;
+    INC2.CURRENT_OFFSET:=INC1.CURRENT_OFFSET;
+	
+    PIPE ROW (INC2);
+  END LOOP;	
+  RETURN;
+END;
+
+--
+
+/* Создание просмотра Индикатора прогиба в полевом журнале старых данных */
+
+CREATE MATERIALIZED VIEW S_IND_JOURNAL_FIELDS_O
+NOLOGGING
+NOCACHE
+NOPARALLEL
+BUILD DEFERRED
+REFRESH COMPLETE
+START WITH TO_DATE('01.06.2007','DD.MM.YYYY')
+DISABLE QUERY REWRITE AS
+SELECT * FROM TABLE(GET_IND_JOURNAL_FIELDS(1))
+
+--
+
+/* Обновление просмотра Индикатора прогиба в полевом журнале старых данных */
+
+BEGIN
+  DBMS_REFRESH.REFRESH('S_IND_JOURNAL_FIELDS_O');
+END;
+
+--
+
+/* Создание индекса на цикл просмотра Индикатора прогиба в полевом журнале старых данных */
+
+CREATE INDEX IDX_IND_JF_O_1
+ ON S_IND_JOURNAL_FIELDS_O(CYCLE_ID)
+
+--
+
+/* Создание индекса на дату наблюдения просмотра Индикатора прогиба в полевом журнале старых данных */
+
+CREATE INDEX IDX_IND_JF_O_2
+ ON S_IND_JOURNAL_FIELDS_O(DATE_OBSERVATION)
+
+--
+
+/* Создание просмотра Индикатора прогиба в полевом журнале новых данных */
+
+CREATE OR REPLACE VIEW S_IND_JOURNAL_FIELDS_N
+AS
+  SELECT * FROM TABLE(GET_IND_JOURNAL_FIELDS(0))
+
+--
+
+/* Создание просмотра Индикатора прогиба в полевом журнале */
+
+CREATE OR REPLACE VIEW S_IND_JOURNAL_FIELDS
+AS
+  SELECT JFO.*
+    FROM S_IND_JOURNAL_FIELDS_O JFO
+   UNION
+  SELECT JFN.*
+    FROM S_IND_JOURNAL_FIELDS_N JFN
+
+--
+
+/* Фиксация изменений БД */
+
+COMMIT

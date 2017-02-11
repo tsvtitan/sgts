@@ -1,0 +1,80 @@
+unit SgtsDatabaseIntf;
+
+interface
+
+uses Classes,
+     SgtsGetRecordsConfig, SgtsExecuteConfig, SgtsProviders;
+
+type
+
+  ISgtsDatabaseGetRecordsConfig=interface
+  ['{8A59E77F-7DB7-433F-B009-E57A99BA66A9}']
+
+  { properties }
+    function _GetStartPos: Integer;
+
+    property StartPos: Integer read _GetStartPos;
+  end;
+
+  TSgtsDatabaseExportType=(etUnknown,etScript,etTable,etTableAsScript);
+  TSgtsDatabaseInstallType=(itUnknown,itScript,itTable,itFile);
+
+  TSgtsDatabaseProgressProc=procedure(Min,Max,Position: Integer; var Breaked: Boolean) of object;
+
+  ISgtsDatabase=interface
+  ['{BECB542F-9BC1-44D7-8019-CCF43DCABB89}']
+  { methods }
+
+    function Login(const Account, Password: String): Boolean;
+    procedure Logout;
+    function CheckPermission(const InterfaceName, Permission, Value: String): Boolean;
+    function GetRecords(const Provider: String; Config: TSgtsGetRecordsConfig; ProgressProc: TSgtsDatabaseProgressProc=nil): OleVariant;
+    function GetNewId(const Provider: String): Variant;
+    procedure Execute(const Provider: String; Config: TSgtsExecuteConfig);
+    function GetConnectionParams: String;
+    function LoginDefault(Params: String): Boolean;
+    procedure LogoutDefault;
+    function Install(Value: String; InstallType: TSgtsDatabaseInstallType; ProgressProc: TSgtsDatabaseProgressProc=nil): Boolean;
+    function ProviderExists(const Provider: String): Boolean;
+    function Export(Value: String; ExportType: TSgtsDatabaseExportType; ProgressProc: TSgtsDatabaseProgressProc=nil): String;
+    procedure RefreshPermissions;
+    procedure LoadConfig(Stream: TStream);
+    procedure SaveConfig(Stream: TStream);
+
+  { properties }
+    function _GetAccount: String;
+    function _GetAccountId: Variant;
+    function _GetConnected: Boolean;
+    function _GetPersonnel: String;
+    function _GetPersonnelId: Variant;
+    function _GetPersonnelFirstName: String;
+    function _GetPersonnelSecondName: String;
+    function _GetPersonnelLastName: String;
+
+    function _GetDbUserName: String;
+    function _GetDbPassword: String;
+    function _GetDbSource: String;
+    function _GetExecuteProviders: TSgtsExecuteProviders;
+    function _GetRecordsProviders: TSgtsGetRecordsProviders;
+
+    property Account: String read _GetAccount;
+    property AccountId: Variant read _GetAccountId;
+
+    property Personnel: String read _GetPersonnel;
+    property PersonnelId: Variant read _GetPersonnelId;
+    property PersonnelFirstName: String read _GetPersonnelFirstName;
+    property PersonnelSecondName: String read _GetPersonnelSecondName;
+    property PersonnelLastName: String read _GetPersonnelLastName;
+
+    property DbUserName: String read _GetDbUserName;
+    property DbPassword: String read _GetDbPassword;
+    property DbSource: String read _GetDbSource;
+    
+    property Connected: Boolean read _GetConnected;
+    property ExecuteProviders: TSgtsExecuteProviders read _GetExecuteProviders;
+    property GetRecordsProviders: TSgtsGetRecordsProviders read _GetRecordsProviders;
+  end;
+
+implementation
+
+end.

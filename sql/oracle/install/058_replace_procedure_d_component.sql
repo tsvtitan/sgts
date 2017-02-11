@@ -1,0 +1,21 @@
+/* Изменение процедуры удаления компонента преобразователя */
+
+CREATE OR REPLACE PROCEDURE D_COMPONENT
+(
+  OLD_COMPONENT_ID IN INTEGER
+)
+AS
+BEGIN
+  DELETE FROM CONVERTER_PASSPORTS
+        WHERE COMPONENT_ID=OLD_COMPONENT_ID;
+		
+  DELETE FROM COMPONENTS
+        WHERE COMPONENT_ID=OLD_COMPONENT_ID;
+  COMMIT;        
+END;
+
+--
+
+/* Фиксация изменений БД */
+
+COMMIT

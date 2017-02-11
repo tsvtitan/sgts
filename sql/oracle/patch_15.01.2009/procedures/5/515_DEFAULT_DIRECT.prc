@@ -1,0 +1,24 @@
+/* Создание процедуры по умолчанию для направления */
+
+CREATE OR REPLACE PROCEDURE DEFAULT_DIRECT (
+   POINT_ID INTEGER,
+   CYCLE_ID INTEGER,
+   PARAM_ID_1 IN INTEGER,
+   INSTRUMENT_ID_2 IN INTEGER,
+   MEASHURE_UNIT_ID_2 IN INTEGER,
+   VALUE_1 IN OUT FLOAT,
+   VALUE_2 IN OUT FLOAT
+)
+AS
+BEGIN
+   IF (VALUE_2 IS NULL)
+   THEN
+      VALUE_2 := 0.0;
+   END IF;
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT

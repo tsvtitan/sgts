@@ -1,0 +1,300 @@
+unit SgtsRbkMeasureTypeEditFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, ToolWin, ImgList, Menus, ExtCtrls, StdCtrls, DB,
+  SgtsDataEditFm, SgtsDataInsertFm, SgtsDataUpdateFm, SgtsDataDelete,
+  SgtsFm, SgtsExecuteDefs, SgtsControls, SgtsCoreIntf;
+
+type
+
+  TSgtsRbkMeasureTypeEditForm = class(TSgtsDataEditForm)
+    LabelName: TLabel;
+    EditName: TEdit;
+    MemoNote: TMemo;
+    LabelNote: TLabel;
+    LabelParent: TLabel;
+    EditParent: TEdit;
+    ButtonParent: TButton;
+    LabelDate: TLabel;
+    DateTimePicker: TDateTimePicker;
+    CheckBoxIsActive: TCheckBox;
+    CheckBoxIsVisual: TCheckBox;
+    CheckBoxIsBase: TCheckBox;
+    LabelPriority: TLabel;
+    EditPriority: TEdit;
+  private
+    { Private declarations }
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+  end;
+
+  TSgtsRbkMeasureTypeInsertIface=class(TSgtsDataInsertIface)
+  private
+    FIdDef: TSgtsExecuteDefKey;
+    FParentIdDef: TSgtsExecuteDefEditLink;
+    FNameDef: TSgtsExecuteDefEdit;
+//    FPriorityDef: TSgtsExecuteDefCalc;
+    FPriorityDef: TSgtsExecuteDefEditInteger;
+    FIsVisualDef: TSgtsExecuteDefCheck;
+    function GetPriorityProc(Def: TSgtsExecuteDefCalc): Variant;
+  protected
+    procedure AfterCreateForm(AForm: TSgtsForm); override;
+    property IdDef: TSgtsExecuteDefKey read FIdDef;
+    property ParentIdDef: TSgtsExecuteDefEditLink read FParentIdDef;
+    property NameDef: TSgtsExecuteDefEdit read FNameDef;
+  public
+    procedure Init; override;
+    procedure SetDefValues; override;
+  end;
+
+  TSgtsRbkMeasureTypeInsertChildIface=class(TSgtsRbkMeasureTypeInsertIface)
+  protected
+  public
+    procedure Init; override;
+    procedure SetDefValues; override;
+    function CanShow: Boolean; override;
+  end;
+
+  TSgtsRbkMeasureTypeUpdateIface=class(TSgtsDataUpdateIface)
+  private
+    FIdDef: TSgtsExecuteDefKeyLink;
+    FParentIdDef: TSgtsExecuteDefEditLink;
+    FNameDef: TSgtsExecuteDefEdit;
+    procedure ParentIdCheckValue(Def: TSgtsExecuteDef; var NewValue: Variant; var CanSet: Boolean);
+  protected
+    procedure AfterCreateForm(AForm: TSgtsForm); override;
+    property IdDef: TSgtsExecuteDefKeyLink read FIdDef;
+    property ParentIdDef: TSgtsExecuteDefEditLink read FParentIdDef;
+    property NameDef: TSgtsExecuteDefEdit read FNameDef;
+  public
+    procedure Init; override;
+    procedure SetDefValues; override;
+  end;
+
+  TSgtsRbkMeasureTypeDeleteIface=class(TSgtsDataDeleteIface)
+  public
+    procedure Init; override;
+  end;
+
+var
+  SgtsRbkMeasureTypeEditForm: TSgtsRbkMeasureTypeEditForm;
+
+implementation
+
+uses DBClient,
+     SgtsIface, SgtsConsts, SgtsProviderConsts, SgtsGetRecordsConfig,
+     SgtsDatabaseCDS, SgtsDialogs, SgtsRbkMeasureTypesFm, SgtsUtils;
+
+{$R *.dfm}
+
+{ TSgtsRbkMeasureTypeInsertIface }
+
+procedure TSgtsRbkMeasureTypeInsertIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkMeasureTypeEditForm;
+  InterfaceName:=SInterfaceMeasureTypeInsert;
+  with DataSet do begin
+    ProviderName:=SProviderInsertMeasureType;
+    with ExecuteDefs do begin
+      FIdDef:=AddKey('MEASURE_TYPE_ID');
+      FParentIdDef:=AddEditLink('PARENT_ID','EditParent','LabelParent','ButtonParent',
+                                TSgtsRbkMeasureTypesIface,'PARENT_NAME','NAME','MEASURE_TYPE_ID',false);
+      FNameDef:=AddEdit('NAME','EditName','LabelName',true);
+      FIsVisualDef:=AddCheck('IS_VISUAL','CheckBoxIsVisual');
+      AddMemo('DESCRIPTION','MemoNote','LabelNote',false);
+      AddDate('DATE_BEGIN','DateTimePicker','LabelDate',true);
+      AddCheck('IS_ACTIVE','CheckBoxIsActive');
+      AddCheck('IS_BASE','CheckBoxIsBase');
+      AddEditInteger('PRIORITY','EditPriority','LabelPriority',true);
+  //    FPriorityDef:=AddCalc('PRIORITY',GetPriorityProc);
+    end;
+  end;
+end;
+
+procedure TSgtsRbkMeasureTypeInsertIface.SetDefValues;
+var
+  Field: TField;
+begin
+  inherited SetDefValues;
+  if Assigned(IfaceIntf) then begin
+    Field:=IfaceIntf.DataSet.FindField(FParentIdDef.FieldName);
+    if Assigned(Field) then begin
+      FParentIdDef.DefaultValue:=Field.Value;
+      FParentIdDef.SetDefault;
+    end;
+    Field:=IfaceIntf.DataSet.FindField(FParentIdDef.Link.FieldName);
+    if Assigned(Field) then begin
+      FParentIdDef.Link.DefaultValue:=Field.Value;
+      FParentIdDef.Link.SetDefault;
+    end;
+
+    FPriorityDef.DefaultValue:=GetPriorityProc(FPriorityDef);
+    FPriorityDef.SetDefault;
+
+    Field:=IfaceIntf.DataSet.FindField(FIsVisualDef.FieldName);
+    if Assigned(Field) then begin
+      FIsVisualDef.DefaultValue:=iff(VarIsNull(Field.Value),0,1);
+      FIsVisualDef.SetDefault;
+    end;
+  end;
+end;
+
+function TSgtsRbkMeasureTypeInsertIface.GetPriorityProc(Def: TSgtsExecuteDefCalc): Variant;
+begin
+  Result:=Def.DefaultValue;
+  if Assigned(IfaceIntf) then begin
+    Result:=IfaceIntf.DataSet.FieldByName('PRIORITY').AsInteger+1;
+  end;
+end;
+
+procedure TSgtsRbkMeasureTypeInsertIface.AfterCreateForm(AForm: TSgtsForm);
+begin
+  inherited AfterCreateForm(AForm);
+  with TSgtsRbkMeasureTypeEditForm(AForm) do begin
+    if VarIsNull(FParentIdDef.Value) then
+      CheckBoxIsVisual.Enabled:=true
+    else begin
+      CheckBoxIsVisual.Enabled:=false;
+    end;
+  end;
+end;
+
+{ TSgtsRbkMeasureTypeInsertChildIface }
+
+procedure TSgtsRbkMeasureTypeInsertChildIface.Init;
+begin
+  inherited Init;
+  InterfaceName:=SInterfaceMeasureTypeInsertChild;
+end;
+
+function TSgtsRbkMeasureTypeInsertChildIface.CanShow: Boolean;
+begin
+  Result:=inherited CanShow and
+          Assigned(IfaceIntf) and
+          not IfaceIntf.DataSet.IsEmpty;
+end;
+
+procedure TSgtsRbkMeasureTypeInsertChildIface.SetDefValues;
+var
+  Field: TField;
+begin
+  inherited SetDefValues;
+  if Assigned(IfaceIntf) then begin
+    Field:=IfaceIntf.DataSet.FindField(FIdDef.FieldName);
+    if Assigned(Field) then begin
+      FParentIdDef.DefaultValue:=Field.Value;
+      FParentIdDef.SetDefault;
+    end;
+    Field:=IfaceIntf.DataSet.FindField(FNameDef.FieldName);
+    if Assigned(Field) then begin
+      FParentIdDef.Link.DefaultValue:=Field.Value;
+      FParentIdDef.Link.SetDefault;
+    end;
+
+    Field:=IfaceIntf.DataSet.FindField(FIsVisualDef.FieldName);
+    if Assigned(Field) then begin
+      FIsVisualDef.DefaultValue:=Field.Value;
+      FIsVisualDef.SetDefault;
+    end;
+  end;
+end;
+
+{ TSgtsRbkMeasureTypeUpdateIface }
+
+procedure TSgtsRbkMeasureTypeUpdateIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkMeasureTypeEditForm;
+  InterfaceName:=SInterfaceMeasureTypeUpdate;
+  with DataSet do begin
+    ProviderName:=SProviderUpdateMeasureType;
+    with ExecuteDefs do begin
+      FIdDef:=AddKeyLink('MEASURE_TYPE_ID');
+      FParentIdDef:=AddEditLink('PARENT_ID','EditParent','LabelParent','ButtonParent',
+                                TSgtsRbkMeasureTypesIface,'PARENT_NAME','NAME','MEASURE_TYPE_ID',false);
+      FParentIdDef.OnCheckValue:=ParentIdCheckValue;
+      FNameDef:=AddEdit('NAME','EditName','LabelName',true);
+      AddCheck('IS_VISUAL','CheckBoxIsVisual');
+      AddMemo('DESCRIPTION','MemoNote','LabelNote',false);
+      AddDate('DATE_BEGIN','DateTimePicker','LabelDate',true);
+      AddCheck('IS_ACTIVE','CheckBoxIsActive');
+      AddCheck('IS_BASE','CheckBoxIsBase');
+      AddInvisible('PRIORITY');
+    end;
+  end;
+end;
+
+procedure TSgtsRbkMeasureTypeUpdateIface.ParentIdCheckValue(Def: TSgtsExecuteDef; var NewValue: Variant; var CanSet: Boolean);
+var
+  DS: TSgtsDatabaseCDS;
+  OldCursor: TCursor;
+begin
+  OldCursor:=Screen.Cursor;
+  Screen.Cursor:=crHourGlass;
+  DS:=TSgtsDatabaseCDS.Create(CoreIntf);
+  try
+    DS.ProviderName:=SProviderAuditMeasureTypeParentId;
+    with DS.ExecuteDefs do begin
+      AddInvisible('MEASURE_TYPE_ID').Value:=FIdDef.Value;
+      AddInvisible('PARENT_ID').Value:=NewValue;
+    end;
+    try
+      DS.Execute;
+    except
+      On E: Exception do begin
+        CanSet:=false;
+        ShowError(E.Message);
+      end;
+    end;
+  finally
+    DS.Free;
+    Screen.Cursor:=OldCursor;
+  end;
+end;
+
+procedure TSgtsRbkMeasureTypeUpdateIface.SetDefValues;
+begin
+  inherited SetDefValues;
+end;
+
+procedure TSgtsRbkMeasureTypeUpdateIface.AfterCreateForm(AForm: TSgtsForm);
+begin
+  inherited AfterCreateForm(AForm);
+  with TSgtsRbkMeasureTypeEditForm(AForm) do begin
+    if VarIsNull(FParentIdDef.Value) then
+      CheckBoxIsVisual.Enabled:=true
+    else begin
+      CheckBoxIsVisual.Enabled:=false;
+    end;
+  end;  
+end;
+
+{ TSgtsRbkMeasureTypeDeleteIface }
+
+procedure TSgtsRbkMeasureTypeDeleteIface.Init;
+begin
+  inherited Init;
+  InterfaceName:=SInterfaceMeasureTypeDelete;
+  DeleteQuestion:='Удалить вид измерения %NAME?';
+  with DataSet do begin
+    ProviderName:=SProviderDeleteMeasureType;
+    with ExecuteDefs do begin
+      AddKeyLink('MEASURE_TYPE_ID');
+      AddInvisible('NAME');
+    end;
+  end;
+end;
+
+{ TSgtsRbkMeasureTypeEditForm }
+
+constructor TSgtsRbkMeasureTypeEditForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  DateTimePicker.Date:=Date;
+end;
+
+end.

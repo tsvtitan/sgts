@@ -1,0 +1,37 @@
+/* —оздание просмотра полевого журнала нивелировани€ марок гидронивелира */
+
+CREATE OR REPLACE VIEW S_NMH_JOURNAL_FIELDS
+AS
+SELECT JFO.CYCLE_ID,
+       JFO.CYCLE_NUM,
+       JFO.DATE_OBSERVATION,
+       JFO.MEASURE_TYPE_ID,
+       JFO.POINT_ID,
+       JFO.POINT_NAME,
+       JFO.CONVERTER_ID,
+       JFO.CONVERTER_NAME,
+       JFO.VALUE_COORDINATE_Z,
+       JFO.HDN_NUMBER,
+       JFO.OBJECT_PATHS
+  FROM S_NMH_JOURNAL_FIELDS_O JFO
+UNION
+SELECT JFN.CYCLE_ID,
+       JFN.CYCLE_NUM,
+       JFN.DATE_OBSERVATION,
+       JFN.MEASURE_TYPE_ID,
+       JFN.POINT_ID,
+       JFN.POINT_NAME,
+       JFN.CONVERTER_ID,
+       JFN.CONVERTER_NAME,
+       JFN.VALUE_COORDINATE_Z,
+       JFN.HDN_NUMBER,
+       JFN.OBJECT_PATHS
+  FROM S_NMH_JOURNAL_FIELDS_N JFN
+
+--
+
+/* ‘иксаци€ изменений */
+
+COMMIT
+
+

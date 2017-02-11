@@ -1,0 +1,152 @@
+unit SgtsJrnBaseGraphPeriodRefreshFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Menus, StdCtrls, ComCtrls,
+  CheckLst, ExtCtrls, DBGrids,
+  SgtsFm, SgtsDbGrid, 
+  SgtsBaseGraphPeriodRefreshFm, SgtsBaseGraphPeriodIface, SgtsCoreIntf;
+
+type
+  TSgtsJrnBaseGraphPeriodIface=class;
+  
+  TSgtsJrnBaseGraphPeriodRefreshForm = class(TSgtsBaseGraphRefreshForm)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+  TSgtsJrnBaseGraphPeriodRefreshIface=class(TSgtsBaseGraphPeriodRefreshIface)
+  private
+    function GetParentIface: TSgtsJrnBaseGraphPeriodIface;
+    procedure FillAxisParams;
+  public
+    procedure Init; override;
+
+    property ParentIface: TSgtsJrnBaseGraphPeriodIface read GetParentIface;
+  end;
+
+  TSgtsJrnBaseGraphPeriodIface=class(TSgtsBaseGraphPeriodIface)
+  private
+    FPeriodChecked: Boolean;
+    FDateBegin, FDateEnd: String;
+    FCycleChecked: Boolean;
+    FCycleBegin, FCycleEnd: String;
+    FGrid: TSgtsDbGrid;
+    function GetColumns: TDBGridColumns;
+  protected
+    property PeriodChecked: Boolean read FPeriodChecked;
+    property DateBegin: String read FDateBegin;
+    property DateEnd: String read FDateEnd;
+    property CycleChecked: Boolean read FCycleChecked;
+    property CycleBegin: String read FCycleBegin;
+    property CycleEnd: String read FCycleEnd;
+    property Columns: TDBGridColumns read GetColumns;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+    procedure Init; override;
+    procedure Show(AProviderName: String; ACaption: String;
+                   APeriodChecked: Boolean; ADateBegin, ADateEnd: String;
+                   ACycleChecked: Boolean; ACycleBegin, ACycleEnd: String;
+                   AColumns: TDbGridColumns); reintroduce;
+  end;
+
+var
+  SgtsJrnBaseGraphPeriodRefreshForm: TSgtsJrnBaseGraphPeriodRefreshForm;
+
+implementation
+
+uses SgtsIface, SgtsGraphFm, SgtsBaseGraphRefreshFm;
+
+{$R *.dfm}
+
+{ TSgtsJrnBaseGraphPeriodRefreshIface }
+
+function TSgtsJrnBaseGraphPeriodRefreshIface.GetParentIface: TSgtsJrnBaseGraphPeriodIface;
+begin
+  Result:=TSgtsJrnBaseGraphPeriodIface(inherited ParentIface);
+end;
+
+procedure TSgtsJrnBaseGraphPeriodRefreshIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsJrnBaseGraphPeriodRefreshForm;
+  if Assigned(ParentIface) then begin
+    GraphName:=ParentIface.Caption;
+    PeriodChecked:=ParentIface.PeriodChecked;
+    DateBegin:=ParentIface.DateBegin;
+    DateEnd:=ParentIface.DateEnd;
+    CycleChecked:=ParentIface.CycleChecked;
+    CycleBegin:=ParentIface.CycleBegin;
+    CycleEnd:=ParentIface.CycleEnd;
+    FillAxisParams;
+  end;
+end;
+
+procedure TSgtsJrnBaseGraphPeriodRefreshIface.FillAxisParams;
+var
+  i: Integer;
+  Param: TSgtsBaseGraphAxisParam;
+  Column: TColumn;
+begin
+  if Assigned(ParentIface) then begin
+    LeftAxisParams.Clear;
+    for i:=0 to ParentIface.Columns.Count-1 do begin
+      Column:=ParentIface.Columns.Items[i];
+      Param:=LeftAxisParams.Add(Column.Title.Caption,Column.FieldName);
+      if Assigned(Param) then begin
+      end;
+    end;
+    BottomAxisParams.CopyFrom(LeftAxisParams);
+    RightAxisParams.CopyFrom(LeftAxisParams);
+  end;  
+end;
+
+{ TSgtsJrnBaseGraphPeriodIface }
+
+constructor TSgtsJrnBaseGraphPeriodIface.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FGrid:=TSgtsDbGrid.Create(Self);
+  Permissions.Enabled:=false;
+end;
+
+destructor TSgtsJrnBaseGraphPeriodIface.Destroy;
+begin
+  inherited Destroy;
+end;
+
+procedure TSgtsJrnBaseGraphPeriodIface.Init;
+begin
+  inherited Init;
+  RefreshClass:=TSgtsJrnBaseGraphPeriodRefreshIface;
+end;
+
+function TSgtsJrnBaseGraphPeriodIface.GetColumns: TDBGridColumns;
+begin
+  Result:=FGrid.Columns;
+end;
+
+procedure TSgtsJrnBaseGraphPeriodIface.Show(AProviderName: String; ACaption: String;
+                                            APeriodChecked: Boolean; ADateBegin, ADateEnd: String;
+                                            ACycleChecked: Boolean; ACycleBegin, ACycleEnd: String;
+                                            AColumns: TDBGridColumns);
+begin
+  ProviderName:=AProviderName;
+  Caption:=ACaption;
+  FPeriodChecked:=APeriodChecked;
+  FDateBegin:=ADateBegin;
+  FDateEnd:=ADateEnd;
+  FCycleChecked:=ACycleChecked;
+  FCycleBegin:=ACycleBegin;
+  FCycleEnd:=ACycleEnd;
+  CopyGridColumns(AColumns,FGrid.Columns);
+  Init;
+  inherited Show;
+end;
+
+end.

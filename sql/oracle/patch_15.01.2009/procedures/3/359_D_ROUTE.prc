@@ -1,0 +1,29 @@
+/* Создание процедуры удаления маршрута */
+
+CREATE OR REPLACE PROCEDURE D_ROUTE
+( 
+  OLD_ROUTE_ID IN INTEGER 
+) 
+AS 
+BEGIN 
+  DELETE FROM MEASURE_TYPE_ROUTES 
+        WHERE ROUTE_ID=OLD_ROUTE_ID; 
+ 
+  DELETE FROM ROUTE_POINTS 
+        WHERE ROUTE_ID=OLD_ROUTE_ID; 
+ 
+  DELETE FROM PERSONNEL_ROUTES 
+        WHERE ROUTE_ID=OLD_ROUTE_ID; 
+ 
+  DELETE FROM ROUTES 
+        WHERE ROUTE_ID=OLD_ROUTE_ID; 
+ 
+  COMMIT;         
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+

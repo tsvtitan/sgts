@@ -1,0 +1,44 @@
+/* Обновление кратких наименований объектов для межсекционных швов */
+
+DECLARE
+  P1 INTEGER;
+  S VARCHAR(100);
+  S2 VARCHAR2(100);
+BEGIN
+  S:='Межсекционный шов ';
+  FOR INC IN (SELECT OBJECT_ID, NAME FROM OBJECTS WHERE NAME LIKE S||'%') LOOP
+    P1:=INSTR(INC.NAME,S);
+	IF (P1<>0) THEN
+	  S2:=SUBSTR(INC.NAME,LENGTH(S)+1);
+	  S2:=TRIM(S2);
+	  UPDATE OBJECTS
+	     SET SHORT_NAME=S2
+	   WHERE OBJECT_ID=INC.OBJECT_ID;	  
+	END IF;
+  END LOOP;
+  COMMIT;
+END;
+
+--
+
+/* Обновление кратких наименований объектов для секций */
+
+DECLARE
+  P1 INTEGER;
+  S VARCHAR(100);
+  S2 VARCHAR2(100);
+BEGIN
+  S:='Секция ';
+  FOR INC IN (SELECT OBJECT_ID, NAME FROM OBJECTS WHERE NAME LIKE S||'%') LOOP
+    P1:=INSTR(INC.NAME,S);
+	IF (P1<>0) THEN
+	  S2:=SUBSTR(INC.NAME,LENGTH(S)+1);
+	  S2:=TRIM(S2);
+	  UPDATE OBJECTS
+	     SET SHORT_NAME=S2
+	   WHERE OBJECT_ID=INC.OBJECT_ID;	  
+	END IF;
+  END LOOP;
+  COMMIT;
+END;
+

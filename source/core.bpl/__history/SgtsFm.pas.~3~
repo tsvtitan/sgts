@@ -1,0 +1,419 @@
+unit SgtsFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs,
+  SgtsIface, SgtsLogIntf,
+  SgtsCoreIntf, SgtsFmIntf, SgtsIfaceIntf, SgtsConfigIntf;
+
+type
+  TSgtsFormIface=class;
+
+  TSgtsForm = class(TForm)
+  private
+    FCoreIntf: ISgtsCore;
+    FIface: TSgtsFormIface;
+    FIsReadSize: Boolean;
+    FIsReadPosition: Boolean;
+    procedure WMSizing(var Message: TMessage); message WM_SIZING;
+    procedure WMWindowPosChanged(var Message: TWMWindowPosChanged); message WM_WINDOWPOSCHANGED;
+  protected
+    procedure Resize; override;
+    procedure Resizing(State: TWindowState); override;
+
+    property Iface: TSgtsFormIface read FIface;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); reintroduce; virtual;
+    destructor Destroy; override;
+    procedure InitByCore(ACoreIntf: ISgtsCore); virtual;
+    procedure InitByIface(AIface: TSgtsFormIface); virtual;
+    procedure ReadSize;
+    procedure ReadPosition;
+    procedure WriteSize;
+    procedure WritePosition;
+
+    property CoreIntf: ISgtsCore read FCoreIntf;
+    property IsReadSize: Boolean read FIsReadSize write FIsReadSize;
+    property IsReadPosition: Boolean read FIsReadPosition write FIsReadPosition;
+  end;
+
+  TSgtsFormClass=class of TSgtsForm;
+
+  TSgtsFormList=class(TObjectList)
+  end;
+
+  TSgtsFormIface=class(TSgtsIface,ISgtsForm)
+  private
+    FForm: TSgtsForm;
+    FFormClass: TSgtsFormClass;
+    FAsModal: Boolean;
+
+    FLeft: Integer;
+    FTop: Integer;
+    FWidth: Integer;
+    FHeight: Integer;
+    FOnlyOneForm: Boolean;
+    
+  protected
+    function _GetAsModal: Boolean;
+    function _GetCaption: String;
+
+    function GetFormClass: TSgtsFormClass; virtual;
+    function CreateForm: TSgtsForm; virtual;
+    procedure SetDefaultForm(AForm: TSgtsForm);
+    procedure AfterCreateForm(AForm: TSgtsForm); virtual;
+    procedure BeforeShowForm(AForm: TSgtsForm); virtual;
+    procedure BeforeNeedShow(AForm: TSgtsForm); virtual;
+    procedure ProcessPermissions; virtual;
+    function NeedShow: Boolean; virtual;
+    function NeedCreate: Boolean; virtual;
+
+    property FormClass: TSgtsFormClass read FFormClass write FFormClass;
+
+    property Left: Integer read FLeft write FLeft;
+    property Top: Integer read FTop write FTop;
+    property Width: Integer read FWidth write FWidth;
+    property Height: Integer read FHeight write FHeight;
+
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+    procedure ReadParams(DatabaseConfig: Boolean=true); override;
+    procedure WriteParams(DatabaseConfig: Boolean=true); override;
+    function CanShow: Boolean; override;
+    procedure Show; override;
+    procedure Hide; virtual;
+    procedure UpdateContents; virtual;
+    procedure Repaint;
+    procedure ClearPointerOnForm;
+
+    property Form: TSgtsForm read FForm write FForm;
+    property AsModal: Boolean read FAsModal write FAsModal;
+    property OnlyOneForm: Boolean read FOnlyOneForm write FOnlyOneForm;
+  end;
+
+var
+  SgtsForm: TSgtsForm;
+
+implementation
+
+uses SgtsObj, SgtsUtils, SgtsConsts;
+
+{$R *.dfm}
+
+{ TSgtsFormIface }
+
+constructor TSgtsFormIface.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FFormClass:=nil;
+  FOnlyOneForm:=true;
+end;
+
+destructor TSgtsFormIface.Destroy;
+begin
+  Hide;
+  inherited Destroy;
+end;
+
+procedure TSgtsFormIface.ReadParams(DatabaseConfig: Boolean=true);
+begin
+  inherited ReadParams(DatabaseConfig);
+  FLeft:=ReadParam(SConfigParamLeft,FLeft);
+  FTop:=ReadParam(SConfigParamTop,FTop);
+  FWidth:=ReadParam(SConfigParamWidth,FWidth);
+  FHeight:=ReadParam(SConfigParamHeight,FHeight);
+end;
+
+procedure TSgtsFormIface.WriteParams(DatabaseConfig: Boolean=true);
+begin
+  WriteParam(SConfigParamLeft,FLeft);
+  WriteParam(SConfigParamTop,FTop);
+  WriteParam(SConfigParamWidth,FWidth);
+  WriteParam(SConfigParamHeight,FHeight);
+  inherited WriteParams(DatabaseConfig)
+end;
+
+function TSgtsFormIface.CreateForm: TSgtsForm;
+var
+  AFormClass: TSgtsFormClass;
+begin
+  Result:=nil;
+  if NeedCreate then begin
+    try
+      if Assigned(FFormClass) then begin
+        Result:=FFormClass.Create(CoreIntf);
+        exit;
+      end;
+
+      AFormClass:=GetFormClass;
+      if Assigned(AFormClass) then
+        Result:=AFormClass.Create(CoreIntf);
+    finally
+      LogWrite(SInterfaceFormCreate);
+    end;    
+  end;    
+end;
+
+function TSgtsFormIface.CanShow: Boolean;
+begin
+  Result:=inherited CanShow;
+end;
+
+function TSgtsFormIface.NeedShow: Boolean;
+begin
+  Result:=true;
+end;
+
+function TSgtsFormIface.NeedCreate: Boolean;
+var
+  AClass: TClass;
+begin
+  Result:=Assigned(FFormClass);
+  if not Result then begin
+    AClass:=GetFormClass;
+    Result:=Assigned(AClass);
+  end;  
+end;
+
+procedure TSgtsFormIface.Show;
+begin
+  if CanShow then begin
+    if not FOnlyOneForm and not Assigned(FForm) then begin
+      FForm:=CreateForm;
+      if Assigned(FForm) then begin
+        FForm.InitByIface(Self);
+        AfterCreateForm(FForm);
+      end;
+    end;
+    if Assigned(FForm) then begin
+      BeforeNeedShow(FForm);
+      if NeedShow then begin
+        BeforeShowForm(FForm);
+        LogWrite(SInterfaceShow);
+        FForm.Show;
+        FForm.Update;
+        if FForm.WindowState=wsMinimized then begin
+          ShowWindow(FForm.Handle,SW_SHOW);
+          ShowWindow(FForm.Handle,SW_RESTORE);
+        end;
+        FForm.BringToFront;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsFormIface.Repaint;
+begin
+  if Assigned(FForm) then begin
+    FForm.Repaint;
+  end;
+end;
+
+procedure TSgtsFormIface.ProcessPermissions;
+var
+  i,j: Integer;
+  Perm: TSgtsIfacePermission;
+begin
+  for i:=0 to Permissions.Count-1 do begin
+    Perm:=Permissions.Items[i];
+    if Assigned(Perm.Proc) then begin
+      for j:=0 to Perm.Values.Count-1 do begin
+        Perm.Proc(Perm,Perm.Values[j],Perm.Values.Exists[j]);
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsFormIface.AfterCreateForm(AForm: TSgtsForm);
+begin
+  AForm.Caption:=iff(Trim(Caption)<>'',Caption,AForm.Caption);
+  ProcessPermissions;
+end;
+
+procedure TSgtsFormIface.BeforeShowForm(AForm: TSgtsForm);
+begin
+end;
+
+procedure TSgtsFormIface.BeforeNeedShow(AForm: TSgtsForm);
+begin
+end;
+
+procedure TSgtsFormIface.Hide;
+begin
+  if Assigned(FForm) then begin
+    FForm.Hide;
+    FreeAndNil(FForm);
+  end;
+end;
+
+function TSgtsFormIface.GetFormClass: TSgtsFormClass;
+begin
+  Result:=TSgtsForm;
+end;
+
+function TSgtsFormIface._GetAsModal: Boolean;
+begin
+  Result:=AsModal;
+end;
+
+function TSgtsFormIface._GetCaption: String;
+begin
+  Result:=Caption;
+end;
+
+procedure TSgtsFormIface.SetDefaultForm(AForm: TSgtsForm);
+begin
+  FForm:=AForm;
+end;
+
+procedure TSgtsFormIface.UpdateContents;
+begin
+end;
+
+procedure TSgtsFormIface.ClearPointerOnForm;
+begin
+  FForm:=nil;
+end;
+
+{ TSgtsForm }
+
+constructor TSgtsForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(Application);
+  FCoreIntf:=ACoreIntf;
+  FIsReadSize:=true;
+  FIsReadPosition:=true;
+end;
+
+destructor TSgtsForm.Destroy;
+begin
+  if Self<>Application.MainForm then
+    FIface.LogWrite(SInterfaceFormDestroy);
+  inherited Destroy;
+  if Assigned(Self) then begin
+    FIface:=nil;
+    FCoreIntf:=nil;
+  end;  
+end;
+
+procedure TSgtsForm.WMSizing(var Message: TMessage);
+var
+  NewHeight, NewWidth: Integer;
+  R: PRect;
+begin
+  R := PRect(Message.LParam);
+  NewHeight:=R.Bottom-R.Top;
+  NewWidth:=R.Right-R.Left;
+
+  if Constraints.MinHeight>0 then
+   if NewHeight<=Constraints.MinHeight then
+      NewHeight:=Constraints.MinHeight;
+
+  if Constraints.MinWidth>0 then
+   if NewWidth<=Constraints.MinWidth then
+      NewWidth:=Constraints.MinWidth;
+
+  if Constraints.MaxHeight>0 then
+    if NewHeight>=Constraints.MaxHeight then
+      NewHeight:=Constraints.MaxHeight;
+
+  if Constraints.MaxWidth>0 then
+    if NewWidth>=Constraints.MaxWidth then
+      NewWidth:=Constraints.MaxWidth;
+
+  if Message.WParam in [WMSZ_BOTTOM,WMSZ_BOTTOMRIGHT,WMSZ_BOTTOMLEFT] then begin
+    R.Bottom := R.Top + NewHeight;
+  end else begin
+    R.Top := R.Bottom - NewHeight;
+  end;
+
+  if Message.WParam in [WMSZ_RIGHT,WMSZ_TOPRIGHT,WMSZ_BOTTOMRIGHT] then begin
+    R.Right := R.Left + NewWidth;
+  end else begin
+    R.Left := R.Right - NewWidth;
+  end;
+
+  inherited;
+end;
+
+procedure TSgtsForm.InitByCore(ACoreIntf: ISgtsCore);
+begin
+  FCoreIntf:=nil;
+  FCoreIntf:=ACoreIntf;
+end;
+
+procedure TSgtsForm.InitByIface(AIface: TSgtsFormIface);
+begin
+  FIface:=AIface;
+  ReadSize;
+  ReadPosition;
+end;
+
+procedure TSgtsForm.ReadSize;
+begin
+  if Assigned(Iface) and
+     Iface.StoredInConfig and
+     IsReadSize then begin
+    Width:=Iface.Width;
+    Height:=Iface.Height;
+  end;
+end;
+
+procedure TSgtsForm.ReadPosition;
+begin
+  if Assigned(Iface) and
+     Iface.StoredInConfig and
+     IsReadPosition then begin
+    Left:=Iface.Left;
+    Top:=Iface.Top;
+  end;
+end;
+
+procedure TSgtsForm.WriteSize;
+begin
+  if Assigned(Iface) then begin
+    if Visible and
+       Iface.StoredInConfig then begin
+      if not (WindowState in [wsMaximized,wsMinimized]) then begin
+        Iface.Width:=Width;
+        Iface.Height:=Height;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsForm.WritePosition;
+begin
+  if Assigned(Iface) then begin
+    if Visible and
+       Iface.StoredInConfig then begin
+      if not (WindowState in [wsMaximized,wsMinimized]) then begin
+        Iface.Left:=Left;
+        Iface.Top:=Top;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsForm.Resize;
+begin
+  inherited Resize;
+end;
+
+procedure TSgtsForm.Resizing(State: TWindowState);
+begin
+  inherited Resizing(State);
+  if not (State in [wsMaximized,wsMinimized]) then
+    WriteSize;
+end;
+
+procedure TSgtsForm.WMWindowPosChanged(var Message: TWMWindowPosChanged);
+begin
+  inherited;
+  WritePosition;
+end;
+
+end.

@@ -1,0 +1,15 @@
+library orarpt;
+
+{$R *.res}
+
+uses
+  SgtsOraRpt in 'SgtsOraRpt.pas',
+  SgtsOraRptConsts in 'SgtsOraRptConsts.pas',
+  SgtsOraRptReport in 'SgtsOraRptReport.pas',
+  Reports_TLB in 'Reports_TLB.pas';
+
+exports
+  InitReport;
+      
+begin
+end.

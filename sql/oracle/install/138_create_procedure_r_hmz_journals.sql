@@ -1,0 +1,72 @@
+/* Создание процедуры обновления срезов Дренажи осн. 1го ряда */
+
+CREATE OR REPLACE PROCEDURE R_HMZ_JOURNALS_1
+AS
+BEGIN
+  DBMS_REFRESH.REFRESH('S_HMZ_JOURNAL_FIELDS_O1');
+  DBMS_REFRESH.REFRESH('S_HMZ_JOURNAL_OBSERVATIONS_O1');
+END;
+
+--
+
+/* Создание процедуры обновления срезов Дренажи осн. 2го ряда */
+
+CREATE OR REPLACE PROCEDURE R_HMZ_JOURNALS_2
+AS
+BEGIN
+  DBMS_REFRESH.REFRESH('S_HMZ_JOURNAL_FIELDS_O2');
+  DBMS_REFRESH.REFRESH('S_HMZ_JOURNAL_OBSERVATIONS_O2');
+END;
+
+--
+
+/* Создание процедуры обновления срезов Веерные пьезометры */
+
+CREATE OR REPLACE PROCEDURE R_HMZ_JOURNALS_3
+AS
+BEGIN
+  DBMS_REFRESH.REFRESH('S_HMZ_JOURNAL_FIELDS_O3');
+  DBMS_REFRESH.REFRESH('S_HMZ_JOURNAL_OBSERVATIONS_O3');
+END;
+
+--
+
+/* Создание процедуры обновления срезов Дренажи бетона и швы */
+
+CREATE OR REPLACE PROCEDURE R_HMZ_JOURNALS_4
+AS
+BEGIN
+  DBMS_REFRESH.REFRESH('S_HMZ_JOURNAL_FIELDS_O4');
+  DBMS_REFRESH.REFRESH('S_HMZ_JOURNAL_OBSERVATIONS_O4');
+END;
+
+--
+
+/* Создание процедуры обновления срезов Верхний бъеф */
+
+CREATE OR REPLACE PROCEDURE R_HMZ_JOURNALS_5
+AS
+BEGIN
+  DBMS_REFRESH.REFRESH('S_HMZ_JOURNAL_FIELDS_O5');
+  DBMS_REFRESH.REFRESH('S_HMZ_JOURNAL_OBSERVATIONS_O5');
+END;
+
+--
+
+/* Создание процедуры обновления срезов по Химанализу */
+
+CREATE OR REPLACE PROCEDURE R_HMZ_JOURNALS
+AS
+BEGIN
+  R_HMZ_JOURNALS_1;
+  R_HMZ_JOURNALS_2;
+  R_HMZ_JOURNALS_3;
+  R_HMZ_JOURNALS_4;
+  R_HMZ_JOURNALS_5;
+END;
+
+--
+
+/* Фиксация изменений БД */
+
+COMMIT

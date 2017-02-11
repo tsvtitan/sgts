@@ -1,0 +1,235 @@
+unit SgtsLoginFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ExtCtrls,
+  SgtsFm, SgtsDialogFm, SgtsControls,
+  SgtsLoginFmIntf, SgtsCoreIntf, SgtsDatabaseIntf;
+
+type
+  TSgtsLoginForm = class(TSgtsDialogForm)
+    ButtonParams: TButton;
+    PanelUserPass: TPanel;
+    GroupBoxUserPass: TGroupBox;
+    PanelParams: TPanel;
+    GroupBoxParams: TGroupBox;
+    LabelUser: TLabel;
+    EditUser: TEdit;
+    LabelPass: TLabel;
+    EditPass: TEdit;
+    LabelBase: TLabel;
+    ComboBoxBase: TComboBox;
+    TimerLogon: TTimer;
+    procedure ButtonParamsClick(Sender: TObject);
+    procedure ComboBoxBaseChange(Sender: TObject);
+    procedure ButtonOkClick(Sender: TObject);
+    procedure TimerLogonTimer(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+  private
+    FNoParam: Boolean;
+    FDatabase: ISgtsDatabase;
+    FFlagActivate: Boolean;
+    procedure FillDatabaseModules;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+  end;
+
+  TSgtsLoginIface=class(TSgtsDialogIface,ISgtsLoginForm)
+  private
+    FLastDataBase: String;
+    FUserName: String;
+    FPassword: String;
+    FAutoLogon: Boolean;
+    function GetForm: TSgtsLoginForm;
+  protected
+    function GetFormClass: TSgtsFormClass; override;
+  public
+    procedure Init; override;
+    procedure ReadParams(DatabaseConfig: Boolean=true); override;
+    procedure WriteParams(DatabaseConfig: Boolean=true); override;
+    function Login: Boolean;
+    procedure BeforeShowModal; override;
+    procedure AfterShowModal(ModalResult: TModalResult); override;
+    procedure AfterCreateForm(AForm: TSgtsForm); override;
+
+    property LastDataBase: String read FLastDataBase write FLastDataBase;
+    property Form: TSgtsLoginForm read GetForm;
+    property AutoLogon: Boolean read FAutoLogon;
+  end;
+
+var
+  SgtsLoginForm: TSgtsLoginForm;
+
+implementation
+
+uses SgtsUtils, SgtsConsts,
+     SgtsDatabaseModulesIntf, SgtsIface, SgtsCoreObj, SgtsConfigIntf;
+
+{$R *.dfm}
+
+{ TSgtsLoginIface }
+
+procedure TSgtsLoginIface.Init;
+begin
+  inherited Init;
+  StoredInConfig:=true;
+end;
+
+function TSgtsLoginIface.GetFormClass: TSgtsFormClass;
+begin
+  Result:=TSgtsLoginForm;
+end;
+
+function TSgtsLoginIface.GetForm: TSgtsLoginForm;
+begin
+  Result:=TSgtsLoginForm(inherited Form);
+end;
+
+procedure TSgtsLoginIface.ReadParams(DatabaseConfig: Boolean=true);
+begin
+  inherited ReadParams(false);
+  if not Assigned(CoreIntf.DatabaseModules.Current) then begin
+    FLastDataBase:=ReadParam(SConfigParamLastDatabase,FLastDataBase,cmDefault,false);
+    FUserName:=ReadParam(SConfigParamUserName,FUserName,cmDefault,false);
+    FPassword:=ReadParam(SConfigParamPassword,FPassword,cmDefault,false);
+    FAutoLogon:=ReadParam(SConfigParamAutoLogon,FAutoLogon,cmDefault,false);
+  end;
+end;
+
+procedure TSgtsLoginIface.WriteParams(DatabaseConfig: Boolean=true);
+begin
+  if not Assigned(CoreIntf.DatabaseModules.Current) then begin
+    WriteParam(SConfigParamLastDatabase,FLastDataBase,cmDefault,false);
+  end;
+  inherited WriteParams(false);
+end;
+
+procedure TSgtsLoginIface.BeforeShowModal;
+var
+  Index: Integer;
+begin
+  with Form do begin
+    Index:=ComboBoxBase.Items.IndexOf(FLastDataBase);
+    if Index<>-1 then begin
+      ComboBoxBase.ItemIndex:=Index;
+      ComboBoxBaseChange(nil);
+    end;
+  end;
+end;
+
+procedure TSgtsLoginIface.AfterShowModal(ModalResult: TModalResult);
+begin
+  if ModalResult=mrOk then begin
+    with Form do begin
+      if ComboBoxBase.ItemIndex<>-1 then
+        FLastDataBase:=ComboBoxBase.Items[ComboBoxBase.ItemIndex]
+      else
+        FLastDataBase:='';
+    end;
+  end;
+end;
+
+function TSgtsLoginIface.Login: Boolean;
+begin
+  Result:=ShowModal=mrOk;
+end;
+
+procedure TSgtsLoginIface.AfterCreateForm(AForm: TSgtsForm);
+begin
+  inherited AfterCreateForm(AForm);
+  with TSgtsLoginForm(AForm) do begin
+    EditUser.Text:=FUserName;
+    EditPass.Text:=FPassword;
+  end;
+end;
+
+{ TSgtsLoginForm }
+
+constructor TSgtsLoginForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  IsReadSize:=false;
+  IsReadPosition:=false;
+  FFlagActivate:=true;
+  Height:=158;
+  FNoParam:=true;
+  ButtonParams.Caption:=SButtonCaptionParamsOff;
+  ButtonOk.Enabled:=false;
+  FillDatabaseModules;
+end;
+
+procedure TSgtsLoginForm.FillDatabaseModules;
+var
+  i: Integer;
+begin
+  with ComboBoxBase, CoreIntf do begin
+    Items.BeginUpdate;
+    try
+      Clear;
+      for i:=0 to DatabaseModules.Count-1 do begin
+        if DatabaseModules.Items[i].Enabled then
+          Items.AddObject(DatabaseModules.Items[i].Caption,Pointer(DatabaseModules.Items[i]));
+      end;
+      if Items.Count>0 then begin
+        ItemIndex:=0;
+        ComboBoxBaseChange(nil);
+      end;  
+    finally
+      Items.EndUpdate;
+    end;
+  end;
+end;
+
+procedure TSgtsLoginForm.ButtonParamsClick(Sender: TObject);
+begin
+  Height:=iff(FNoParam,220,158);
+  FNoParam:=not FNoParam;
+  ButtonParams.Caption:=iff(FNoParam,SButtonCaptionParamsOff,SButtonCaptionParamsOn);
+end;
+
+procedure TSgtsLoginForm.ComboBoxBaseChange(Sender: TObject);
+begin
+  FDatabase:=nil;
+  with ComboBoxBase, CoreIntf do begin
+    if (ItemIndex<>-1) then begin
+      DatabaseModules.Current:=ISgtsDatabaseModule(Pointer(Items.Objects[ItemIndex]));
+      if Assigned(DatabaseModules.Current) then begin
+        FDatabase:=DatabaseModules.Current.Database;
+        ButtonOk.Enabled:=Assigned(FDatabase);
+      end else
+        ButtonOk.Enabled:=false;
+    end else
+      ButtonOk.Enabled:=false;
+  end;
+end;
+
+procedure TSgtsLoginForm.ButtonOkClick(Sender: TObject);
+begin
+  ModalResult:=mrNone;
+  if Assigned(FDatabase) then begin
+    Screen.Cursor:=crHourGlass;
+    try
+      if FDatabase.Login(EditUser.Text,EditPass.Text) then begin
+        ModalResult:=mrOk;
+      end;
+    finally
+      Screen.Cursor:=crDefault;
+    end;
+  end;    
+end;
+
+procedure TSgtsLoginForm.TimerLogonTimer(Sender: TObject);
+begin
+  TimerLogon.Enabled:=false;
+  if TSgtsLoginIface(Iface).AutoLogon then
+    ButtonOk.Click;
+end;
+
+procedure TSgtsLoginForm.FormShow(Sender: TObject);
+begin
+  TimerLogon.Enabled:=true;
+end;
+
+end.

@@ -1,0 +1,44 @@
+unit SgtsOraAdoJournalObservationsProviders;
+
+interface
+
+uses SgtsOraAdoProviders, SgtsProviders, SgtsGetRecordsConfig, SgtsDatabase;
+
+type
+
+  TSgtsOraAdoSelectGmoJournalObservationsProvider=class(TSgtsOraAdoGetRecordsProvider)
+  private
+    function GetRecords(Provider: TSgtsGetRecordsProvider; Config: TSgtsGetRecordsConfig;
+                        ProgressProc: TSgtsProviderProgressProc=nil): OleVariant;
+  public
+    constructor Create; override;
+  end;
+
+implementation
+
+uses Variants, DB,
+     SgtsProviderConsts, SgtsOraAdoConsts, SgtsCDS,
+     SgtsOraAdoDatabase;
+
+implementation
+
+{ TSgtsOraAdoSelectGmoJournalObservationsProvider }
+
+
+constructor TSgtsOraAdoSelectGmoJournalObservationsProvider.Create;
+begin
+  inherited Create;
+  Name:=SProviderSelectGmoJournalObservations;
+  Alias:=SProviderAliasSelectGmoJournalObservations;
+  Proc:=GetRecords;
+  ProviderType:=rptGetRecords;
+end;
+
+function TSgtsOraAdoSelectGmoJournalObservationsProvider.GetRecords(Provider: TSgtsGetRecordsProvider;
+                                                                    Config: TSgtsGetRecordsConfig;
+                                                                    ProgressProc: TSgtsProviderProgressProc=nil): OleVariant;
+begin
+
+end;                                                                    
+
+end.

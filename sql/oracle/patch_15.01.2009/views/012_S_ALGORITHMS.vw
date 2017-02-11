@@ -1,0 +1,14 @@
+/* Создание просмотра алгоритмов */
+
+CREATE OR REPLACE VIEW S_ALGORITHMS
+AS 
+SELECT A.ALGORITHM_ID,A.NAME,A.PROC_NAME,A.DESCRIPTION
+  FROM ALGORITHMS A
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

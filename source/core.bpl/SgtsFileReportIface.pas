@@ -1,0 +1,131 @@
+unit SgtsFileReportIface;
+
+interface
+
+uses Classes, Controls, Forms, 
+     SgtsReportFm, SgtsFileReportIntf;
+
+type
+
+  TSgtsFileReportIface=class(TSgtsReportIface)
+  private
+    FReportId: Variant;
+    FModuleName: String;
+    FFileName: String;
+    function GetCatalog: String;
+    function GetRealyFileName: String;
+    function GetReport: ISgtsFileReport;
+    function ReportExists: Boolean;
+  protected
+    procedure Progress(Min, Max, Position: Integer; var Breaked: Boolean);
+  public
+    procedure Init(AReportId: Variant; AName, ADescription, AModuleName, AFileName, AMenuPath: Variant); reintroduce; virtual;
+    function CanShow: Boolean; override;
+    procedure Show; override;
+  end;
+
+
+implementation
+
+uses SysUtils, Variants,
+     SgtsFm, SgtsCoreObj, SgtsCoreIntf, SgtsUtils, SgtsReportModules,
+     SgtsIface, SgtsObj, SgtsDialogs;
+
+{ TSgtsFileReportIface }
+
+procedure TSgtsFileReportIface.Init(AReportId: Variant; AName, ADescription, AModuleName, AFileName, AMenuPath: Variant);
+begin
+  inherited Init(VarToStrDef(AMenuPath,''));
+  InterfaceName:=VarToStrDef(AName,'');
+  Caption:=VarToStrDef(ADescription,'');
+  FReportId:=AReportId;
+  FModuleName:=VarToStrDef(AModuleName,'');
+  FFileName:=VarToStrDef(AFileName,'');
+end;
+
+function TSgtsFileReportIface.GetCatalog: String;
+begin
+  Result:=CoreIntf.OptionsForm.ReportCatalog;
+end;
+
+function TSgtsFileReportIface.GetRealyFileName: String;
+begin
+  Result:=FFileName;
+  if not FileExists(Result) then begin
+    if DirectoryExists(GetCatalog) then
+      Result:=GetCatalog+PathDelim+Result;
+  end;
+end;
+
+function TSgtsFileReportIface.GetReport: ISgtsFileReport;
+var
+  Modules: TStringList;
+  i: Integer;
+  Module: TSgtsReportModule;
+begin
+  Result:=nil;
+  Modules:=TStringList.Create;
+  try
+    CoreIntf.GetReportModules(Modules);
+    for i:=0 to Modules.Count-1 do begin
+      Module:=TSgtsReportModule(Modules.Objects[i]);
+      if Assigned(Module) then begin
+        if AnsiSameText(Module.Name,FModuleName) then begin
+          if Assigned(Module.Report) then begin
+            Result:=Module.Report;
+            exit;
+          end; 
+        end;
+      end;
+    end;
+  finally
+    Modules.Free;
+  end;
+end;
+
+function TSgtsFileReportIface.ReportExists: Boolean;
+var
+  Report: ISgtsFileReport;
+begin
+  Report:=GetReport;
+  Result:=Assigned(Report);
+end;
+
+function TSgtsFileReportIface.CanShow: Boolean;
+begin
+  Result:=inherited CanShow and
+          FileExists(GetRealyFileName) and
+          ReportExists;
+end;
+
+procedure TSgtsFileReportIface.Progress(Min, Max, Position: Integer; var Breaked: Boolean);
+begin
+  if Assigned(CoreIntf) and
+     Assigned(CoreIntf.MainForm) then
+    CoreIntf.MainForm.Progress(Min,Max,Position);
+end;
+
+procedure TSgtsFileReportIface.Show;
+var
+  Report: ISgtsFileReport;
+  OldCursor: TCursor;
+begin
+  if CanShow then begin
+    Report:=GetReport;
+    try
+      OldCursor:=Screen.Cursor;
+      Screen.Cursor:=crHourGlass;
+      try
+        Report.Generate(GetRealyFileName,Progress);
+      finally
+        Screen.Cursor:=OldCursor;
+      end;  
+    except
+      on E: Exception do begin
+        ShowError(E.Message);
+      end;
+    end;
+  end;
+end;
+
+end.

@@ -1,0 +1,26 @@
+/* Создание просмотра смещения марок гидронивелира */
+
+CREATE OR REPLACE VIEW S_HDN_MARK_DISPLACEMENT
+AS 
+SELECT CYCLE_ID,
+       CYCLE_NUM,
+       JOURNAL_FIELD_ID,
+       DATE_OBSERVATION,
+       POINT_ID,
+       MEASURE_TYPE_ID,
+       VALUE_MOTION_FORWARD,
+       VALUE_MOTION_BACK,
+       VALUE_AVERAGE,
+       VALUE_ERROR,
+       VALUE_DISPLACEMENT_BEGIN,
+       VALUE_CURRENT_DISPLACEMENT,
+       VALUE_MARK_POINT
+  FROM S_HDN_JOURNAL_OBSERVATIONS JO
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

@@ -1,0 +1,63 @@
+unit SgtsRbkTreeObjectFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, Menus, ImgList, ExtCtrls, ComCtrls, ToolWin,
+  SgtsDataTreeFm, StdCtrls;
+
+type
+  TSgtsRbkTreeObjectForm = class(TSgtsDataTreeForm)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+  TSgtsRbkObjectsIface=class(TSgtsDataTreeIface)
+  public
+    procedure Init; override;
+  end;
+
+var
+  SgtsRbkTreeObjectForm: TSgtsRbkTreeObjectForm;
+
+implementation
+
+uses DBClient,
+     SgtsDbGrid, SgtsCDS, SgtsProviderConsts, SgtsDatabaseCDS,
+     SgtsSelectDefs, SgtsConsts, SgtsRbkTreeObjectEditFm;
+
+{$R *.dfm}
+
+{ TSgtsRbkObjectsIface }
+
+procedure TSgtsRbkObjectsIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkTreeObjectForm;
+  InterfaceName:=SInterfaceTreeObject;
+  with InsertClasses do begin
+    Add(TSgtsRbkObjectInsertIface);
+    Add(TSgtsRbkObjectInsertIfaceChild);
+  end;
+  UpdateClass:=TSgtsRbkObjectUpdateIface;
+  DeleteClass:=TSgtsRbkObjectDeleteIface;
+  with DataSet do begin
+    ProviderName:=SProviderSelectObjects;
+    with SelectDefs do begin
+      AddKey('OBJECT_ID');
+      Add('NAME','Наименование');
+      AddInvisible('DESCRIPTION');
+      AddInvisible('PARENT_ID');
+      AddInvisible('PARENT_NAME');
+    end;
+    KeyFieldName:='OBJECT_ID';
+    ViewFieldName:='NAME';
+    ParentFieldName:='PARENT_ID';
+  end;
+end;
+
+
+end.

@@ -1,0 +1,19 @@
+/* Создание процедуры удаления документов осмотра */
+
+CREATE OR REPLACE PROCEDURE D_DOC_CHECKUP_JOURNAL
+( 
+  JOURNAL_CHECKUP_ID IN INTEGER 
+) 
+AS 
+BEGIN 
+  DELETE FROM DOC_CHECKUPS 
+        WHERE JOURNAL_CHECKUP_ID=D_DOC_CHECKUP_JOURNAL.JOURNAL_CHECKUP_ID; 
+  COMMIT;         
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+

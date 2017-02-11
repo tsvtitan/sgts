@@ -1,0 +1,522 @@
+unit Unit2;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, ToolWin, ImgList, Menus, ExtCtrls, StdCtrls,
+  SgtsChildFm, SgtsFm, SgtsDataIfaceIntf, SgtsDatabaseIntf,
+  SgtsDataEditFmIntf, SgtsDataFmIntf, SgtsCoreIntf, SgtsDatabaseCDS, SgtsMenus;
+
+type
+  TForm2Iface=class;
+
+  TForm2 = class(TSgtsChildForm)
+    StatusBar: TStatusBar;
+    ToolBar: TToolBar;
+    ToolButtonOk: TToolButton;
+    ToolButtonCancel: TToolButton;
+    MainMenu: TMainMenu;
+    MenuDataEdit: TMenuItem;
+    ImageList: TImageList;
+    PanelEdit: TPanel;
+    ToolButtonDefault: TToolButton;
+    PanelButton: TPanel;
+    ButtonCancel: TButton;
+    ButtonOk: TButton;
+    procedure ToolButtonCancelClick(Sender: TObject);
+    procedure ToolButtonOkClick(Sender: TObject);
+    procedure ToolButtonDefaultClick(Sender: TObject);
+  private
+    FOldFocusControl: TWinControl;
+    FChangeFlag: Boolean;
+    function GetIface: TForm2Iface;
+    procedure CMDialogKey(var Message: TCMDialogKey); message CM_DIALOGKEY;
+    procedure CMFocusChanged(var Message: TCMFocusChanged); message CM_FOCUSCHANGED;
+    procedure EnableModal(AEnabled: Boolean);
+  protected
+    procedure DoClose(var Action: TCloseAction); override;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    property Iface: TForm2Iface read GetIface;
+    property ChangeFlag: Boolean read FChangeFlag write FChangeFlag;
+  end;
+
+  TForm2Iface=class(TSgtsChildIface,ISgtsDataEditForm)
+  private
+    FDataSet: TSgtsDatabaseCDS;
+    FIfaceIntf: ISgtsDataIface;
+    FCloseQuestion: String;
+    FSaved: Boolean;
+    FStopChanges: Boolean;
+    FDisableSet: Boolean;
+    FReadOnly: Boolean;
+
+    function GetForm: TForm2;
+    function CheckControls: Boolean;
+    function GetDatabase: ISgtsDatabase;
+    procedure SetReadOnly(Value: Boolean);
+  protected
+    procedure InternalSetDefValues;
+    function ChangesArePresent: Boolean; virtual;
+    function SaveChanges: Boolean; virtual;
+    procedure SetDefaults; virtual;
+    function GetFormClass: TSgtsFormClass; override;
+    procedure LinkExecuteDefs(AForm: TSgtsForm); virtual;
+    procedure AfterCreateForm(AForm: TSgtsForm); override;
+    procedure ExecuteDefsChange(Sender: TObject); virtual;
+  public
+    constructor Create(ACoreIntf: ISgtsCore; AIfaceIntf: ISgtsDataIface); reintroduce; virtual;
+    destructor Destroy; override;
+    procedure Init; override;
+    procedure InitByCore(ACoreIntf: ISgtsCore); override;
+    function CanShow: Boolean; override;
+    procedure UpdateButtons; virtual;
+    procedure DatabaseLink; override;
+    procedure SetDefValues; virtual;
+    procedure SetChanges; virtual;
+    procedure ShowModal; virtual;
+    procedure Show; override;
+
+    procedure Sync; virtual;
+
+    property Form: TForm2 read GetForm;
+    property DataSet: TSgtsDatabaseCDS read FDataSet;
+    property CloseQuestion: String read FCloseQuestion write FCloseQuestion;
+    property IfaceIntf: ISgtsDataIface read FIfaceIntf;
+    property DisableSet: Boolean read FDisableSet write FDisableSet;
+    property Database: ISgtsDatabase read GetDatabase;
+    property ReadOnly: Boolean read FReadOnly write SetReadOnly;
+  end;
+
+var
+  SgtsDataEditForm: TForm2;
+
+implementation
+
+uses rxToolEdit, DBClient, DB,
+     SgtsConsts, SgtsUtils, SgtsExecuteDefs, SgtsDialogs,
+     SgtsCoreObj, SgtsIface;
+
+{$R *.dfm}
+
+{ TForm2Iface }
+
+constructor TForm2Iface.Create(ACoreIntf: ISgtsCore; AIfaceIntf: ISgtsDataIface);
+begin
+  inherited Create(ACoreIntf);
+  FIfaceIntf:=AIfaceIntf;
+  FDataSet:=TSgtsDatabaseCDS.Create(ACoreIntf);
+  FDataSet.ExecuteDefs.OnChange:=ExecuteDefsChange;
+end;
+
+destructor TForm2Iface.Destroy; 
+begin
+  FDataSet.Free;
+  inherited Destroy;
+end;
+
+function TForm2Iface.GetFormClass: TSgtsFormClass;
+begin
+  Result:=TForm2;
+end;
+
+function TForm2Iface.GetForm: TForm2;
+begin
+  Result:=TForm2(inherited Form);
+end;
+
+function TForm2Iface.GetDatabase: ISgtsDatabase;
+begin
+  Result:=nil;
+  if Assigned(CoreIntf) and
+     Assigned(CoreIntf.DatabaseModules.Current) then
+   Result:=CoreIntf.DatabaseModules.Current.Database;  
+end;
+
+procedure TForm2Iface.Init;
+begin
+  inherited Init;
+  FCloseQuestion:=SSaveChanges;
+  StoredInConfig:=false;
+end;
+
+procedure TForm2Iface.InitByCore(ACoreIntf: ISgtsCore);
+begin
+  inherited InitByCore(ACoreIntf);
+  FDataSet.InitByCore(ACoreIntf);
+end;
+
+function TForm2Iface.CanShow: Boolean;
+begin
+  Result:=inherited CanShow;
+end;
+
+procedure TForm2Iface.LinkExecuteDefs(AForm: TSgtsForm); 
+var
+  i: Integer;
+begin
+  with FDataSet.ExecuteDefs do begin
+    for i:=0 to Count-1 do begin
+      Items[i].LinkControls(AForm);
+    end;
+  end;
+end;
+
+procedure TForm2Iface.InternalSetDefValues;
+var
+  OldCursor: TCursor;
+begin
+  FStopChanges:=true;
+  OldCursor:=Screen.Cursor;
+  Screen.Cursor:=crHourGlass;
+  try
+    SetDefValues;
+  finally
+    Screen.Cursor:=OldCursor;
+    FStopChanges:=false;
+  end;
+end;
+
+procedure TForm2Iface.SetDefValues;
+begin
+  if Assigned(IfaceIntf) then begin
+    if not FDisableSet then
+      DataSet.GetExecuteDefsByDataSet(IfaceIntf.DataSet)
+    else
+      DataSet.GetExecuteDefsByDefs(IfaceIntf.ExecuteDefs);
+  end;
+end;
+
+procedure TForm2Iface.AfterCreateForm(AForm: TSgtsForm);
+begin
+  inherited AfterCreateForm(AForm);
+  
+  LinkExecuteDefs(AForm);
+
+  Form.ButtonOk.Visible:=not FReadOnly;
+  Form.ToolButtonOk.Visible:=Form.ButtonOk.Visible;
+
+  Form.MenuDataEdit.Caption:=AForm.Caption;
+  with Form do begin
+    CreateMenuByToolBar(MenuDataEdit,ToolBar);
+  end;
+
+  UpdateButtons;
+  InternalSetDefValues;
+
+end;
+
+procedure TForm2Iface.UpdateButtons;
+begin
+  if Assigned(Form) then begin
+    with Form do begin
+      UpdateMenuByButtons(MenuDataEdit);
+    end;
+  end;
+end;
+
+function TForm2Iface.CheckControls: Boolean;
+var
+  i: Integer;
+  Def: TSgtsExecuteDef;
+begin
+  Result:=true;
+  with DataSet.ExecuteDefs do begin
+    for i:=0 to Count-1 do begin
+      Def:=Items[i];
+      if Def.Required and Def.Empty then begin
+        ShowError(Format(SNeedElementValue,[Def.Caption]));
+        if Assigned(Def.Control) then begin
+          if Def.Control.CanFocus then begin
+            Def.Control.SetFocus;
+            Result:=false;
+            exit;
+          end;
+        end;
+      end;
+    end;
+  end;
+end;
+
+function TForm2Iface.ChangesArePresent: Boolean;
+var
+  i: Integer;
+  Def: TSgtsExecuteDef;
+begin
+  Result:=false;
+  if not FStopChanges then
+    with DataSet.ExecuteDefs do begin
+      for i:=0 to Count-1 do begin
+        Def:=Items[i];
+        if Def.Value<>Def.DefaultValue then begin
+          Result:=true;
+          exit;
+        end;
+      end;
+    end;
+end;
+
+function TForm2Iface.SaveChanges: Boolean;
+begin
+  Result:=true;
+end;
+
+procedure TForm2Iface.SetDefaults;
+var
+  i: Integer;
+  Def: TSgtsExecuteDef;
+begin
+  FStopChanges:=true;
+  try
+    with DataSet.ExecuteDefs do begin
+      for i:=0 to Count-1 do begin
+        Def:=Items[i];
+        Def.SetDefault;
+      end;
+    end;
+    SetChanges;
+  finally
+    FStopChanges:=false;
+  end;
+end;
+
+procedure TForm2Iface.SetChanges;
+begin
+  if Assigned(Form) then begin
+    with Form do begin
+      ToolButtonOk.Enabled:=ChangesArePresent or ChangeFlag;
+      ToolButtonDefault.Enabled:=ToolButtonOk.Enabled;
+      ButtonOk.Enabled:=ToolButtonOk.Enabled;
+    end;
+  end;
+  UpdateButtons;
+end;
+
+procedure TForm2Iface.Sync;
+var
+  i: Integer;
+  DSync: TSgtsDatabaseCDS;
+  Def: TSgtsExecuteDef;
+  Field: TField;
+  OldCursor: TCursor;
+begin
+  OldCursor:=Screen.Cursor;
+  Screen.Cursor:=crHourGlass;
+  try
+    if not Assigned(IfaceIntf) then begin
+      DSync:=TSgtsDatabaseCDS.Create(CoreIntf);
+      try
+        with DSync do begin
+          ProviderName:=FDataSet.ProviderName;
+          CheckProvider:=Self.FDataSet.CheckProvider;
+          PacketRecords:=0;
+          for i:=0 to FDataSet.ExecuteDefs.Count-1 do begin
+            Def:=FDataSet.ExecuteDefs.Items[i];
+            if Def.ParamType in [ptInput, ptInputOutput] then
+              SelectDefs.AddInvisible(Def.FieldName);
+          end;
+          Open;
+          if Active then begin
+            FStopChanges:=true;
+            try
+              for i:=0 to FieldCount-1 do begin
+                Field:=Fields[i];
+                Def:=FDataSet.ExecuteDefs.FindByFieldName(Field.FieldName);
+                if Assigned(Def) then begin
+                  Def.Size:=Field.Size;
+                  Def.DataType:=Field.DataType;
+                end;
+              end;
+            finally
+              FStopChanges:=false;
+            end;
+          end;
+        end;
+      finally
+        DSync.Free;
+      end;
+    end else begin
+      if Assigned(IfaceIntf.DataSet) then begin
+        with IfaceIntf.DataSet do begin
+          if Active then begin
+            FStopChanges:=true;
+            try
+              for i:=0 to FieldCount-1 do begin
+                Field:=Fields[i];
+                Def:=FDataSet.ExecuteDefs.FindByFieldName(Field.FieldName);
+                if Assigned(Def) then begin
+                  Def.Size:=Field.Size;
+                  Def.DataType:=Field.DataType;
+                end;
+              end;
+            finally
+              FStopChanges:=false;
+            end;
+          end; 
+        end;
+      end;
+    end;
+  finally
+    Screen.Cursor:=OldCursor;
+  end;
+end;
+
+procedure TForm2Iface.DatabaseLink;
+begin
+  inherited DatabaseLink;
+  Sync;
+end;
+
+procedure TForm2Iface.ExecuteDefsChange(Sender: TObject);
+begin
+  SetChanges;
+end;
+
+procedure TForm2Iface.ShowModal;
+var
+  AForm: TForm2;
+begin
+  if CanShow then begin
+    AForm:=TForm2(CreateForm);
+    if Assigned(AForm) then begin
+      try
+        AForm.InitByIface(Self);
+        SetDefaultForm(AForm);
+        Form.Caption:='';
+        AsModal:=true;
+        SetDefaultFormStyle(fsNormal);
+        AfterCreateForm(AForm);
+        if NeedShow then
+          with AForm do begin
+            MenuDataEdit.Visible:=false;
+            BorderIcons:=BorderIcons-[biMinimize,biMaximize];
+            Constraints.MinWidth:=Width;
+            Constraints.MinHeight:=Height;
+            PanelButton.Visible:=true;
+            StatusBar.Visible:=false;
+            EnableModal(true);
+            BeforeShowForm(AForm);
+            LogWrite(SInterfaceShow);
+            ShowModal;
+          end;
+      finally
+        SetDefaultForm(nil);
+        AForm.Free;
+      end;
+    end;
+  end;
+end;
+
+procedure TForm2Iface.Show;
+begin
+  ShowModal;
+end;
+
+procedure TForm2Iface.SetReadOnly(Value: Boolean);
+begin
+  if FReadOnly<>Value then
+    FReadOnly:=Value;
+end;
+
+{ TForm2 }
+
+constructor TForm2.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  if Constraints.MinHeight<>0 then
+    Constraints.MinHeight:=Constraints.MinHeight-PanelButton.Height;
+  Height:=Height-PanelButton.Height;
+end;
+
+function TForm2.GetIface: TForm2Iface;
+begin
+  Result:=TForm2Iface(inherited Iface);
+end;
+
+procedure TForm2.CMFocusChanged(var Message: TCMFocusChanged);
+begin
+  with Message do
+    FOldFocusControl:=Sender;
+  inherited;
+end;
+
+procedure TForm2.CMDialogKey(var Message: TCMDialogKey);
+begin
+  with Message do
+    if  ((CharCode = VK_RETURN) or (CharCode = VK_ESCAPE)) and
+      (KeyDataToShiftState(Message.KeyData) = [])  then  begin
+      if CharCode=VK_RETURN then begin
+        if ToolButtonOk.Enabled then begin
+          ToolButtonOk.Click;
+          Result:=1;
+        end;
+      end;
+      if CharCode=VK_ESCAPE then begin
+        if ToolButtonCancel.Enabled then begin
+          ToolButtonCancel.Click;
+          Result:=1;
+        end;
+      end;
+    end else
+      inherited;
+end;
+
+procedure TForm2.ToolButtonCancelClick(Sender: TObject);
+begin
+  Close;
+end;
+
+procedure TForm2.ToolButtonOkClick(Sender: TObject);
+begin
+  with Iface do
+    if not Iface.ReadOnly and
+       CheckControls then
+      if ChangesArePresent or ChangeFlag then begin
+        FSaved:=false;
+        if SaveChanges then begin
+          FSaved:=true;
+          Close;
+        end;
+      end;  
+end;
+
+procedure TForm2.DoClose(var Action: TCloseAction);
+begin
+  Action:=caFree;
+  with Iface do
+    if not Iface.ReadOnly and
+       not FSaved and 
+       (ChangesArePresent or ChangeFlag) then begin
+      case ShowQuestionCancel(CloseQuestion,mbCancel) of
+        mrYes: begin
+          if CheckControls then
+            if SaveChanges then
+              inherited DoClose(Action)
+          else begin
+            Action:=caNone;
+            exit;
+          end;
+        end;
+        mrNo: inherited DoClose(Action);
+        mrCancel: Action:=caNone;
+      end;
+    end;
+end;
+
+procedure TForm2.ToolButtonDefaultClick(Sender: TObject);
+begin
+  Iface.SetDefaults;
+end;
+
+procedure TForm2.EnableModal(AEnabled: Boolean);
+begin
+  if AEnabled then begin
+    if Constraints.MinHeight<>0 then
+      Constraints.MinHeight:=Constraints.MinHeight-StatusBar.Height+PanelButton.Height;
+    if Constraints.MinHeight<Height then
+      Height:=Height-StatusBar.Height+PanelButton.Height;
+  end;  
+end;
+
+end.

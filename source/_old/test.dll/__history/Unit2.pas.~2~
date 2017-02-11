@@ -1,0 +1,81 @@
+unit Unit2;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, ToolWin, ImgList, ExtCtrls, Grids, DBGrids, DB, Menus,
+  SgtsDbGrid, SgtsDatabaseCDS, SgtsCoreIntf, SgtsCDS,
+  SgtsDataInsertFm, SgtsDataUpdateFm, SgtsDataDelete, SgtsDataFmIntf,
+  SgtsDataFm, SgtsDataIfaceIntf, SgtsExecuteDefs, SgtsGetRecordsConfig, SgtsMenus,
+  SgtsConfigIntf, StdCtrls;
+
+type
+  TFrame2 = class(TFrame)//,ISgtsDataIface)
+    Edit1: TEdit;
+  private
+    { Private declarations }
+    FCoreIntf: ISgtsCore;
+    FDataSet: TSgtsDatabaseCDS;
+  public
+    { Public declarations }
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+
+    procedure InitByCore(ACoreIntf: ISgtsCore);
+    //procedure InitByIface(AIface: TSgtsDataIface);
+
+    procedure CloseData; virtual;
+    procedure OpenData; 
+
+
+    property DataSet: TSgtsDatabaseCDS read FDataSet;
+  end;
+
+implementation
+
+{$R *.dfm}
+
+
+constructor TFrame2.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  FDataSet:=TSgtsDatabaseCDS.Create(nil);
+
+end;
+
+destructor TFrame2.Destroy;
+begin
+  FDataSet.Free;
+  inherited Destroy;
+end;
+
+
+procedure TFrame2.InitByCore(ACoreIntf: ISgtsCore);
+begin
+  FCoreIntf:=ACoreIntf;
+  FDataSet.InitByCore(ACoreIntf);
+  //CreateGridColumnsBySelectDefs(FGrid,FDataSet.SelectDefs);
+end;
+
+
+procedure TFrame2.CloseData;
+begin
+  if FDataSet.Active then
+    FDataSet.Close;
+end;
+
+procedure TFrame2.OpenData;
+begin
+  if not FDataSet.Active then begin
+    try
+      FDataSet.Open;
+    except
+      on E: Exception do
+        //ShowError(E.Message);
+    end;
+  end;
+  Edit1.Text:=FDataSet.FieldByName('NAME').AsString;
+end;
+
+end.

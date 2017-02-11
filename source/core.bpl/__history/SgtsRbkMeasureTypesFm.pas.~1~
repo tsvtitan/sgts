@@ -1,0 +1,76 @@
+unit SgtsRbkMeasureTypesFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, Menus, ImgList, ExtCtrls, ComCtrls, ToolWin, StdCtrls, DBCtrls,
+  SgtsDataTreeFm, SgtsGetRecordsConfig;
+
+type
+  TSgtsRbkMeasureTypesForm = class(TSgtsDataTreeForm)
+    PanelInfo: TPanel;
+    GroupBoxInfo: TGroupBox;
+    PanelNote: TPanel;
+    DBMemoDescription: TDBMemo;
+    Splitter: TSplitter;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+  TSgtsRbkMeasureTypesIface=class(TSgtsDataTreeIface)
+  public
+    procedure Init; override;
+  end;
+
+var
+  SgtsRbkMeasureTypesForm: TSgtsRbkMeasureTypesForm;
+
+implementation
+
+uses DBClient, VirtualTrees,
+     SgtsDbGrid, SgtsCDS, SgtsProviderConsts, SgtsDatabaseCDS,
+     SgtsSelectDefs, SgtsConsts, SgtsRbkMeasureTypeEditFm, SgtsDataFm;
+
+{$R *.dfm}
+
+{ TSgtsRbkMeasureTypesIface }
+
+procedure TSgtsRbkMeasureTypesIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkMeasureTypesForm;
+  InterfaceName:=SInterfaceMeasureTypes;
+  with InsertClasses do begin
+    Add(TSgtsRbkMeasureTypeInsertIface);
+    Add(TSgtsRbkMeasureTypeInsertChildIface);
+  end;
+  UpdateClass:=TSgtsRbkMeasureTypeUpdateIface;
+  DeleteClass:=TSgtsRbkMeasureTypeDeleteIface;
+  with DataSet do begin
+    ProviderName:=SProviderSelectMeasureTypes;
+    with SelectDefs do begin
+      AddKey('MEASURE_TYPE_ID');
+      Add('NAME','Наименование');
+      AddInvisible('DESCRIPTION');
+      AddInvisible('PARENT_ID');
+      AddInvisible('DATE_BEGIN');
+      AddInvisible('IS_ACTIVE');
+      AddInvisible('PRIORITY');
+      AddInvisible('PARENT_NAME');
+      AddInvisible('IS_VISUAL');
+      AddInvisible('IS_BASE');
+    end;
+    KeyFieldName:='MEASURE_TYPE_ID';
+    ViewFieldName:='NAME';
+    ParentFieldName:='PARENT_ID';
+  end;
+end;
+
+
+{ TSgtsRbkMeasureTypesForm }
+
+
+end.

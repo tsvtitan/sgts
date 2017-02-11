@@ -1,0 +1,24 @@
+/* Создание просмотра отчета по температуре TEMP напряженно-деформированного состояния */
+
+CREATE OR REPLACE VIEW S_NDS_REPOTR_TEMP_TEMPERATURE
+AS 
+SELECT JO.CYCLE_ID,
+       JO.CYCLE_NUM,
+       JO.DATE_OBSERVATION,
+       JO.MEASURE_TYPE_ID,
+       TO_NUMBER (JO.POINT_NAME) AS POINT_NAME,
+       JO.CONVERTER_ID,
+       JO.COORDINATE_Z,
+       JO.VALUE_TEMPERATURE,
+       JO.OBJECT_PATHS
+  FROM S_NDS_JOURNAL_OBSERVATIONS JO
+ WHERE NOT JO.VALUE_TEMPERATURE IS NULL
+
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

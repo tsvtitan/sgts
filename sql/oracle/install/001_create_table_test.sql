@@ -1,0 +1,101 @@
+/* Создание последовательности для тестовой таблицы */
+
+CREATE SEQUENCE SEQ_TEST 
+INCREMENT BY 1 
+START WITH 2500
+MAXVALUE 1.0E28 
+MINVALUE 2500
+NOCYCLE 
+CACHE 20 
+NOORDER
+
+--
+
+/* Создание функции генерации идентификатора для тестовой таблицы */
+
+CREATE FUNCTION GET_TEST_ID RETURN INTEGER IS
+  ID INTEGER;
+BEGIN
+  SELECT SEQ_TEST.NEXTVAL INTO ID FROM DUAL;
+  RETURN ID;
+END;
+
+--
+
+/* Создание тестовой таблицы */
+
+CREATE TABLE TEST
+(
+TEST_ID INTEGER NOT NULL, 
+NAME VARCHAR2(50) NOT NULL,
+DESCRIPTION VARCHAR2(250),
+PRIMARY KEY(TEST_ID)
+)
+
+--
+
+/* Создание просмотра тестовой таблицы */
+
+CREATE OR REPLACE VIEW S_TEST
+AS
+  SELECT *
+    FROM TEST D1
+
+--
+
+/* Создание процедуры создания записи */
+
+CREATE OR REPLACE PROCEDURE I_TEST
+(
+  TEST_ID IN INTEGER,
+  NAME IN VARCHAR2,
+  DESCRIPTION IN VARCHAR2
+)  
+AS
+BEGIN
+  INSERT INTO TEST (TEST_ID,NAME,DESCRIPTION) 
+            VALUES (TEST_ID,NAME,DESCRIPTION);
+  COMMIT;
+END;
+
+--
+
+/* Создание процедуры изменения записи */
+
+CREATE OR REPLACE PROCEDURE U_TEST
+(
+  TEST_ID IN INTEGER,
+  NAME IN VARCHAR2, 
+  DESCRIPTION IN VARCHAR2,
+  OLD_TEST_ID IN INTEGER
+)
+AS
+BEGIN
+  UPDATE TEST 
+     SET TEST_ID=U_TEST.TEST_ID,
+         NAME=U_TEST.NAME,
+         DESCRIPTION=U_TEST.DESCRIPTION
+   WHERE TEST_ID=OLD_TEST_ID;
+  COMMIT;        
+END;
+
+--
+
+/* Создание процедуры удаления записи */
+
+CREATE OR REPLACE PROCEDURE D_TEST
+(
+  OLD_TEST_ID IN INTEGER
+)
+AS
+BEGIN
+  DELETE FROM TEST
+        WHERE TEST_ID=OLD_TEST_ID;
+  COMMIT;        
+END;
+
+--
+
+/* Фиксация изменений БД */
+
+COMMIT

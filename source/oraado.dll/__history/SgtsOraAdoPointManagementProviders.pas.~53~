@@ -1,0 +1,336 @@
+unit SgtsOraAdoPointManagementProviders;
+
+interface
+
+uses SgtsOraAdoProviders, SgtsProviders, SgtsGetRecordsConfig, SgtsDatabase;
+
+type
+
+  TSgtsOraAdoSelectPointManagementProvider=class(TSgtsOraAdoGetRecordsProvider)
+  private
+    function GetRecordsPointManagement(Provider: TSgtsGetRecordsProvider; Config: TSgtsGetRecordsConfig;
+                                       ProgressProc: TSgtsProviderProgressProc=nil): OleVariant;
+  public
+    constructor Create; override;
+  end;
+
+  TSgtsOraAdoInsertPointManagementProvider=class(TSgtsOraAdoGetRecordsProvider)
+  public
+    constructor Create; override;
+  end;
+
+implementation
+
+uses Classes, SysUtils, Variants, DB,
+     SgtsProviderConsts, SgtsOraAdoConsts, SgtsCDS,
+     SgtsOraAdoDatabase, SgtsUtils, SgtsLogIntf;
+
+{ TSgtsOraAdoSelectPointManagementProvider }
+
+constructor TSgtsOraAdoSelectPointManagementProvider.Create;
+begin
+  inherited Create;
+  Name:=SProviderSelectPointManagement;
+  Alias:=SProviderAliasSelectPointManagement;
+  Proc:=GetRecordsPointManagement;
+  ProviderType:=rptGetRecords;
+end;
+
+function TSgtsOraAdoSelectPointManagementProvider.GetRecordsPointManagement(Provider: TSgtsGetRecordsProvider;
+                                                                            Config: TSgtsGetRecordsConfig;
+                                                                            ProgressProc: TSgtsProviderProgressProc=nil): OleVariant;
+
+  function GetParentId(DataSet: TSgtsCDS; FieldName: String; ParentId: Variant): Variant;
+  begin
+    Result:=Null;
+    DataSet.First;
+    if DataSet.Locate(FieldName,ParentId,[loCaseInsensitive]) then begin
+      Result:=DataSet.FieldByName('TREE_ID').Value;
+    end;
+  end;
+
+var
+  QueryMeasures: TSgtsADOQuery;
+  QueryRoutes: TSgtsADOQuery;
+  QueryPoints: TSgtsADOQuery;
+  QueryConverters: TSgtsADOQuery;
+  Routes: TStringList;
+  Points: TStringList;
+  Converters: TStringList;
+  DSOut: TSgtsCDS;
+  DSFind: TSgtsCDS;
+  Position: Integer;
+  Breaked: Boolean;
+  I: Integer;
+  J: Integer;
+  Fields: TStringList;
+  S: String;
+  First: Boolean;
+  Filter: TSgtsGetRecordsConfigFilter; 
+  MeasureFilters: String;
+  PointFilters: String;
+  ConverterFilters: String;
+
+begin
+  Database.LogWrite(Format('GetRecords Provider:%s start...',[Provider.Name]));
+  try
+    Result:=Database.CreateDefaultGetRecordsData;
+    if Database.Connection.Connected then begin
+      QueryMeasures:=TSgtsADOQuery.Create(nil);
+      QueryRoutes:=TSgtsADOQuery.Create(nil);
+      QueryPoints:=TSgtsADOQuery.Create(nil);
+      QueryConverters:=TSgtsADOQuery.Create(nil);
+      DSOut:=TSgtsCDS.Create(nil);
+      DSFind:=TSgtsCDS.Create(nil);
+      try
+        with DSOut.FieldDefs do begin
+          Add('TREE_ID',ftInteger);
+          Add('TREE_PARENT_ID',ftInteger);
+          Add('UNION_ID',ftInteger);
+          Add('UNION_PARENT_ID',ftInteger);
+          Add('UNION_TYPE',ftInteger);
+          Add('NAME',ftString,100);
+          Add('DESCRIPTION',ftString,250);
+          Add('PARENT_NAME',ftString,100);
+          Add('PRIORITY',ftInteger);
+        end;
+        DSOut.CreateDataSet;
+
+        Fields:=TStringList.Create;
+        try
+          S:='';
+          First:=true;
+          for i:=0 to Config.FilterGroups.Count-1 do begin
+            for j:=0 to Config.FilterGroups.Items[i].Filters.Count-1 do begin
+              Filter:=Config.FilterGroups.Items[i].Filters.Items[j];
+              if AnsiSametext('MEASURE_TYPE_ID',Filter.FieldName) then begin
+                if First then
+                  S:=VarToStrDef(Filter.Value,'')
+                else
+                  S:=S+','+VarToStrDef(Filter.Value,'');
+                First:=false;
+              end;
+            end;
+          end;
+          MeasureFilters:=S;
+          Fields.Clear;
+          Fields.Add('COORDINATE_Z');
+          Fields.Add('OBJECT_PATHS');
+          PointFilters:=Database.GetRecordsFilterGroups(Config.FilterGroups,Fields);
+          Fields.Clear;
+          Fields.Add('COMPONENT_NAME');
+          Fields.Add('VALUE');
+          ConverterFilters:=Database.GetRecordsFilterGroups(Config.FilterGroups,Fields);
+        finally
+          Fields.Free;
+        end;
+
+        QueryRoutes.Connection:=Database.Connection;
+        QueryRoutes.SQL.Text:='SELECT GET_POINT_MANAGEMENT_ID AS TREE_ID,'+
+                              'MTR.ROUTE_ID, MTR.MEASURE_TYPE_ID, R.NAME, R.DESCRIPTION,'+
+                              'MT.NAME AS PARENT_NAME, MTR.PRIORITY '+
+                              'FROM MEASURE_TYPE_ROUTES MTR, ROUTES R, MEASURE_TYPES MT '+
+                              'WHERE MTR.ROUTE_ID=R.ROUTE_ID AND MTR.MEASURE_TYPE_ID=MT.MEASURE_TYPE_ID ORDER BY PRIORITY';
+        Database.LogWrite(Format('GetRecords Provider:%s SQL:%s',[Provider.Name,Trim(QueryRoutes.Sql.Text)]));
+        QueryRoutes.Open;
+
+        QueryPoints.Connection:=Database.Connection;
+        QueryPoints.SQL.Text:='SELECT * FROM ('+
+                              'SELECT GET_POINT_MANAGEMENT_ID AS TREE_ID, RP.POINT_ID, RP.ROUTE_ID,'+
+                              'P.NAME, P.DESCRIPTION, R.NAME AS PARENT_NAME, RP.PRIORITY, MTR.MEASURE_TYPE_ID, '+
+                              'P.COORDINATE_Z, P.OBJECT_PATHS '+
+                              'FROM ROUTE_POINTS RP, S_POINTS P, ROUTES R, MEASURE_TYPE_ROUTES MTR '+
+                              'WHERE RP.POINT_ID=P.POINT_ID AND RP.ROUTE_ID=R.ROUTE_ID '+
+                              'AND R.ROUTE_ID=MTR.ROUTE_ID ORDER BY PRIORITY)';
+        if Trim(PointFilters)<>'' then
+          QueryPoints.SQL.Text:=Format('%s %s',[Trim(QueryPoints.SQL.Text),PointFilters]);
+        Database.LogWrite(Format('GetRecords Provider:%s SQL:%s',[Provider.Name,Trim(QueryPoints.Sql.Text)]));
+        QueryPoints.Open;
+
+        QueryConverters.Connection:=Database.Connection;
+        QueryConverters.SQL.Text:='SELECT GET_POINT_MANAGEMENT_ID AS TREE_ID, C.CONVERTER_ID, P.POINT_ID,'+
+                                  'C.NAME, C.DESCRIPTION, P.NAME AS PARENT_NAME, MTR.MEASURE_TYPE_ID, RP.ROUTE_ID '+
+                                  'FROM CONVERTERS C, POINTS P, ROUTE_POINTS RP, MEASURE_TYPE_ROUTES MTR '+
+                                  'WHERE C.CONVERTER_ID=P.POINT_ID AND RP.POINT_ID=P.POINT_ID AND RP.ROUTE_ID=MTR.ROUTE_ID';
+        if Trim(ConverterFilters)<>'' then begin
+          ConverterFilters:='AND C.CONVERTER_ID IN (SELECT T.CONVERTER_ID FROM (SELECT C.CONVERTER_ID,C.NAME AS COMPONENT_NAME, '+
+          							    'CP.VALUE FROM COMPONENTS C, CONVERTER_PASSPORTS CP WHERE C.COMPONENT_ID=CP.COMPONENT_ID) T '+
+                            ConverterFilters+')';
+          QueryConverters.SQL.Text:=Format('%s %s',[Trim(QueryConverters.SQL.Text),ConverterFilters]);
+        end;
+
+        Database.LogWrite(Format('GetRecords Provider:%s SQL:%s',[Provider.Name,Trim(QueryConverters.Sql.Text)]));
+        QueryConverters.Open;
+
+        QueryMeasures.Connection:=Database.Connection;
+        QueryMeasures.Sql.Text:='SELECT * FROM (SELECT GET_POINT_MANAGEMENT_ID AS TREE_ID, MT.* FROM S_MEASURE_TYPES MT)';
+        if Trim(MeasureFilters)<>'' then begin
+          MeasureFilters:='WHERE IN (SELECT MEASURE_TYPE_ID FROM MEASURE_TYPES MT1 '+
+                          'START WITH MT1.PARENT_ID IN ('+MeasureFilters+') '+
+                          'CONNECT BY MT1.PARENT_ID = PRIOR MT1.MEASURE_TYPE_ID) '+
+                          'OR MEASURE_TYPE_ID IN ('+MeasureFilters+')';
+          QueryMeasures.SQL.Text:=Format('%s %s',[Trim(QueryMeasures.SQL.Text),MeasureFilters]);
+        end;
+        Database.LogWrite(Format('GetRecords Provider:%s SQL:%s',[Provider.Name,Trim(QueryMeasures.Sql.Text)]));
+        QueryMeasures.Open;
+
+        if QueryMeasures.Active and not QueryMeasures.IsEmpty and
+           QueryRoutes.Active and QueryPoints.Active then begin
+
+          Position:=1;
+          Breaked:=false;
+
+          DSFind.CreateDataSetBySource(QueryMeasures,true,true);
+
+          QueryMeasures.First;
+          while not QueryMeasures.Eof do begin
+            DSOut.Append;
+            DSOut.FieldByName('TREE_ID').Value:=QueryMeasures.FieldByName('TREE_ID').Value;
+            DSOut.FieldByName('TREE_PARENT_ID').Value:=GetParentId(DSFind,'MEASURE_TYPE_ID',QueryMeasures.FieldByName('PARENT_ID').Value);
+            DSOut.FieldByName('UNION_ID').Value:=QueryMeasures.FieldByName('MEASURE_TYPE_ID').Value;
+            DSOut.FieldByName('UNION_PARENT_ID').Value:=QueryMeasures.FieldByName('PARENT_ID').Value;
+            DSOut.FieldByName('UNION_TYPE').Value:=0;
+            DSOut.FieldByName('NAME').Value:=QueryMeasures.FieldByName('NAME').Value;
+            DSOut.FieldByName('DESCRIPTION').Value:=QueryMeasures.FieldByName('DESCRIPTION').Value;
+            DSOut.FieldByName('PARENT_NAME').Value:=QueryMeasures.FieldByName('PARENT_NAME').Value;
+            DSOut.FieldByName('PRIORITY').Value:=QueryMeasures.FieldByName('PRIORITY').Value;
+            DSOut.Post;
+
+            Routes:=TStringList.Create;
+            try
+              Routes.Add(Format('MEASURE_TYPE_ID=%s',[QueryMeasures.FieldByName('MEASURE_TYPE_ID').AsString]));
+              QueryRoutes.Filter:=GetFilterString(Routes,'AND');
+              QueryRoutes.Filtered:=true;
+
+              QueryRoutes.First;
+              while not QueryRoutes.Eof do begin
+                if QueryRoutes.FieldByName('MEASURE_TYPE_ID').Value=QueryMeasures.FieldByName('MEASURE_TYPE_ID').Value then begin
+                  DSOut.Append;
+                  DSOut.FieldByName('TREE_ID').Value:=QueryRoutes.FieldByName('TREE_ID').Value;
+                  DSOut.FieldByName('TREE_PARENT_ID').Value:=QueryMeasures.FieldByName('TREE_ID').Value;
+                  DSOut.FieldByName('UNION_ID').Value:=QueryRoutes.FieldByName('ROUTE_ID').Value;
+                  DSOut.FieldByName('UNION_PARENT_ID').Value:=QueryRoutes.FieldByName('MEASURE_TYPE_ID').Value;
+                  DSOut.FieldByName('UNION_TYPE').Value:=1;
+                  DSOut.FieldByName('NAME').Value:=QueryRoutes.FieldByName('NAME').Value;
+                  DSOut.FieldByName('DESCRIPTION').Value:=QueryRoutes.FieldByName('DESCRIPTION').Value;
+                  DSOut.FieldByName('PARENT_NAME').Value:=QueryRoutes.FieldByName('PARENT_NAME').Value;
+                  DSOut.FieldByName('PRIORITY').Value:=QueryRoutes.FieldByName('PRIORITY').Value;
+                  DSOut.Post;
+
+                  Points:=TStringList.Create;
+                  try
+                    Points.Add(Format('ROUTE_ID=%s',[QueryRoutes.FieldByName('ROUTE_ID').AsString]));
+                    Points.Add(Format('MEASURE_TYPE_ID=%s',[QueryMeasures.FieldByName('MEASURE_TYPE_ID').AsString]));
+                    QueryPoints.Filter:=GetFilterString(Points,'AND');
+                    QueryPoints.Filtered:=true;
+
+                    QueryPoints.First;
+                    while not QueryPoints.Eof do begin
+                      if (QueryPoints.FieldByName('ROUTE_ID').Value=QueryRoutes.FieldByName('ROUTE_ID').Value) and
+                         (QueryPoints.FieldByName('MEASURE_TYPE_ID').Value=QueryMeasures.FieldByName('MEASURE_TYPE_ID').Value) then begin
+                        DSOut.Append;
+                        DSOut.FieldByName('TREE_ID').Value:=QueryPoints.FieldByName('TREE_ID').Value;
+                        DSOut.FieldByName('TREE_PARENT_ID').Value:=QueryRoutes.FieldByName('TREE_ID').Value;
+                        DSOut.FieldByName('UNION_ID').Value:=QueryPoints.FieldByName('POINT_ID').Value;
+                        DSOut.FieldByName('UNION_PARENT_ID').Value:=QueryPoints.FieldByName('ROUTE_ID').Value;
+                        DSOut.FieldByName('UNION_TYPE').Value:=2;
+                        DSOut.FieldByName('NAME').Value:=QueryPoints.FieldByName('NAME').Value;
+                        DSOut.FieldByName('DESCRIPTION').Value:=QueryPoints.FieldByName('DESCRIPTION').Value;
+                        DSOut.FieldByName('PARENT_NAME').Value:=QueryPoints.FieldByName('PARENT_NAME').Value;
+                        DSOut.FieldByName('PRIORITY').Value:=QueryPoints.FieldByName('PRIORITY').Value;
+                        DSOut.Post;
+
+                        Converters:=TStringList.Create;
+                        try
+                          Converters.Add(Format('POINT_ID=%s',[QueryPoints.FieldByName('POINT_ID').AsString]));
+                          Converters.Add(Format('ROUTE_ID=%s',[QueryRoutes.FieldByName('ROUTE_ID').AsString]));
+                          Converters.Add(Format('MEASURE_TYPE_ID=%s',[QueryMeasures.FieldByName('MEASURE_TYPE_ID').AsString]));
+                          QueryConverters.Filter:=GetFilterString(Converters,'AND');
+                          QueryConverters.Filtered:=true;
+
+                          QueryConverters.First;
+                          while not QueryConverters.Eof do begin
+                            if (QueryConverters.FieldByName('POINT_ID').Value=QueryPoints.FieldByName('POINT_ID').Value) and
+                               (QueryConverters.FieldByName('ROUTE_ID').Value=QueryRoutes.FieldByName('ROUTE_ID').Value) and
+                               (QueryConverters.FieldByName('MEASURE_TYPE_ID').Value=QueryMeasures.FieldByName('MEASURE_TYPE_ID').Value) then begin
+                              DSOut.Append;
+                              DSOut.FieldByName('TREE_ID').Value:=QueryConverters.FieldByName('TREE_ID').Value;
+                              DSOut.FieldByName('TREE_PARENT_ID').Value:=QueryPoints.FieldByName('TREE_ID').Value;
+                              DSOut.FieldByName('UNION_ID').Value:=QueryConverters.FieldByName('CONVERTER_ID').Value;
+                              DSOut.FieldByName('UNION_PARENT_ID').Value:=QueryConverters.FieldByName('POINT_ID').Value;
+                              DSOut.FieldByName('UNION_TYPE').Value:=3;
+                              DSOut.FieldByName('NAME').Value:=QueryConverters.FieldByName('NAME').Value;
+                              DSOut.FieldByName('DESCRIPTION').Value:=QueryConverters.FieldByName('DESCRIPTION').Value;
+                              DSOut.FieldByName('PARENT_NAME').Value:=QueryConverters.FieldByName('PARENT_NAME').Value;
+                              DSOut.FieldByName('PRIORITY').Value:=1;
+                              DSOut.Post;
+
+                            end;
+                            QueryConverters.Next;
+                          end;
+                        finally
+                          QueryConverters.Filtered:=false;
+                          QueryConverters.Filter:='';
+                          Converters.Free;
+                        end;
+                      end;
+                      QueryPoints.Next;
+                    end;
+                  finally
+                    QueryPoints.Filtered:=false;
+                    QueryPoints.Filter:='';
+                    Points.Free;
+                  end;
+                end;
+                QueryRoutes.Next;
+              end;
+            finally
+              QueryRoutes.Filtered:=false;
+              QueryRoutes.Filter:='';
+              Routes.Free;
+            end;  
+
+            Database.ProgressByProc(ProgressProc,0,QueryMeasures.RecordCount,Position,Breaked);
+            if Breaked then
+              break;
+            Inc(Position);
+            QueryMeasures.Next;
+          end;
+        end;
+        DSOut.MergeChangeLog;
+        DSOut.First;
+
+        Config.AllCount:=DSOut.RecordCount;
+        Config.RecsOut:=Config.AllCount;
+
+        Result:=DSOut.Data;
+        Database.LogWrite(Format('GetRecords Provider:%s StartPos:%d RecordCount:%d success',[Provider.Name,Config.StartPos,Config.RecsOut]));
+                
+      finally
+        DSFind.Free;
+        DSOut.Free;
+        QueryConverters.Free;
+        QueryPoints.Free;
+        QueryRoutes.Free;
+        QueryMeasures.Free;
+      end;
+    end;
+  except
+    On E: Exception do begin
+      Database.LogWrite(Format('GetRecords Provider:%s failed:%s',[Provider.Name,E.Message]),ltError);
+      raise;
+    end;
+  end;  
+end;
+
+{ TSgtsOraAdoInsertPointManagementProvider }
+
+constructor TSgtsOraAdoInsertPointManagementProvider.Create;
+begin
+  inherited Create;
+  Name:=SProviderInsertPointManagement;
+  Alias:=SProviderAliasSelectPointManagement;
+  ProviderType:=rptExecute;
+end;
+
+end.

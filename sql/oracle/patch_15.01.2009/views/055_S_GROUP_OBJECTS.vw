@@ -1,0 +1,22 @@
+/* Создание просмотра групп объектов */
+
+CREATE OR REPLACE VIEW S_GROUP_OBJECTS
+AS 
+SELECT GO.GROUP_ID,
+       GO.OBJECT_ID,
+       GO.PRIORITY,
+       G.NAME AS GROUP_NAME,
+       O.NAME AS OBJECT_NAME
+  FROM GROUP_OBJECTS GO,
+       GROUPS G,
+       OBJECTS O
+ WHERE G.GROUP_ID = GO.GROUP_ID
+   AND O.OBJECT_ID = GO.OBJECT_ID
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

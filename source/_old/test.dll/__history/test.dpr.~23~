@@ -1,0 +1,30 @@
+library test;
+
+{$R *.res}
+                           
+uses
+  SgtsFm in '..\core.bpl\SgtsFm.pas' {SgtsForm},
+  SgtsChildFm in '..\core.bpl\SgtsChildFm.pas' {SgtsChildForm},
+  SgtsDataFm in '..\core.bpl\SgtsDataFm.pas' {SgtsDataForm},
+  SgtsDataEditFm in '..\core.bpl\SgtsDataEditFm.pas' {SgtsDataEditForm},
+  SgtsDataGridFm in '..\core.bpl\SgtsDataGridFm.pas' {SgtsDataGridForm},
+  SgtsTest in 'SgtsTest.pas',
+  SgtsTestInterface in 'SgtsTestInterface.pas',
+  SgtsTestFm in 'SgtsTestFm.pas' {SgtsTestForm},
+  SgtsRbkTestFm in 'SgtsRbkTestFm.pas' {SgtsRbkTestForm},
+  SgtsRbkTestEditFm in 'SgtsRbkTestEditFm.pas' {SgtsRbkTestEditForm},
+  SgtsMyFm in 'SgtsMyFm.pas' {SgtsMyForm},
+  SgtsDataTreeFm in '1\SgtsDataTreeFm.pas' {SgtsDataTreeForm},
+  SgtsDataTreeFmIntf in '1\SgtsDataTreeFmIntf.pas',
+  SgtsDataTreeIfaceIntf in '1\SgtsDataTreeIfaceIntf.pas',
+  SgtsMTPlanTreeFm in 'SgtsMTPlanTreeFm.pas' {SgtsMTPlanTreeForm},
+  SgtsRbkObjectTreesFm in '1\SgtsRbkObjectTreesFm.pas' {SgtsRbkObjectTreesForm},
+  SgtsDataGridFrm in '1\SgtsDataGridFrm.pas' {SgtsDataGridFrame: TFrame},
+  SgtsMTScheduleFrm in 'SgtsMTScheduleFrm.pas' {SgtsMTScheduleFrame: TFrame},
+  SgtsRbkMTPlanGridFm in 'SgtsRbkMTPlanGridFm.pas' {SgtsRbkMTPlanGridForm};
+
+exports
+  InitInterface;
+      
+begin
+end.

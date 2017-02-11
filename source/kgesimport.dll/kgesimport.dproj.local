@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2008.08.20 12:15:57.515.dproj,U:\source\kgesgraphs.dll\kgesgraphs.dproj=U:\source\test.dll\test.dproj</Transaction>
+    <Transaction>2008.08.20 12:17:09.265.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphTvlGmoRefreshFm.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:09.265.dfm,U:\source\kgesgraphs.dll\SgtsKgesGraphTvlGmoRefreshFm.dfm=</Transaction>
+    <Transaction>2008.08.20 12:17:09.312.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphTvlGmoIface.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:09.375.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphsInterface.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:09.421.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphsConsts.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:09.468.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphs.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:09.515.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphRefreshFm.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:09.515.dfm,U:\source\kgesgraphs.dll\SgtsKgesGraphRefreshFm.dfm=</Transaction>
+    <Transaction>2008.08.20 12:17:09.562.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphPzmGmoRefreshFm.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:09.562.dfm,U:\source\kgesgraphs.dll\SgtsKgesGraphPzmGmoRefreshFm.dfm=</Transaction>
+    <Transaction>2008.08.20 12:17:09.609.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphPzmGmoIface.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:09.656.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphPeriodRefreshFm.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:09.656.dfm,U:\source\kgesgraphs.dll\SgtsKgesGraphPeriodRefreshFm.dfm=</Transaction>
+    <Transaction>2008.08.20 12:17:09.687.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphPeriodPointsRefreshFm.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:09.687.dfm,U:\source\kgesgraphs.dll\SgtsKgesGraphPeriodPointsRefreshFm.dfm=</Transaction>
+    <Transaction>2008.08.20 12:17:09.734.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphPeriodPointsIface.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:09.796.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphPeriodIface.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:09.828.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphHmzIntensityRefreshFm.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:09.828.dfm,U:\source\kgesgraphs.dll\SgtsKgesGraphHmzIntensityRefreshFm.dfm=</Transaction>
+    <Transaction>2008.08.20 12:17:09.875.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphHmzIntensityIface.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:09.906.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphHmzGmoRefreshFm.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:09.906.dfm,U:\source\kgesgraphs.dll\SgtsKgesGraphHmzGmoRefreshFm.dfm=</Transaction>
+    <Transaction>2008.08.20 12:17:09.953.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphHmzGmoIface.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:10.000.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphGmoRefreshFm.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:10.000.dfm,U:\source\kgesgraphs.dll\SgtsKgesGraphGmoRefreshFm.dfm=</Transaction>
+    <Transaction>2008.08.20 12:17:10.031.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphGmoIface.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:10.062.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphFm.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:10.062.dfm,U:\source\kgesgraphs.dll\SgtsKgesGraphFm.dfm=</Transaction>
+    <Transaction>2008.08.20 12:17:10.093.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphFltGmoRefreshFm.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:10.093.dfm,U:\source\kgesgraphs.dll\SgtsKgesGraphFltGmoRefreshFm.dfm=</Transaction>
+    <Transaction>2008.08.20 12:17:10.125.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphFltGmoIface.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:11.328.pas,U:\source\core.bpl\SgtsGraphChartFm.pas=</Transaction>
+    <Transaction>2008.08.20 12:17:11.328.dfm,U:\source\core.bpl\SgtsGraphChartFm.dfm=</Transaction>
+    <Transaction>2008.08.20 12:17:44.312.pas,U:\source\kgesgraphs.dll\SgtsKgesGraphs.pas=U:\source\test.dll\SgtsTest.pas</Transaction>
+    <Transaction>2008.08.20 12:24:32.562.pas,U:\source\test.dll\Unit1.pas=U:\source\test.dll\SgtsTestFm.pas</Transaction>
+    <Transaction>2008.08.20 12:24:32.562.dfm,U:\source\test.dll\Unit1.dfm=U:\source\test.dll\SgtsTestFm.dfm</Transaction>
+    <Transaction>2008.08.20 12:41:35.250.pas,U:\source\core.bpl\SgtsGraphRefreshFm.pas=</Transaction>
+    <Transaction>2008.08.20 12:41:35.250.dfm,U:\source\core.bpl\SgtsGraphRefreshFm.dfm=</Transaction>
+    <Transaction>2008.09.08 15:53:08.203.dproj,U:\source\test.dll\test.dproj=U:\source\kgesimport.dll\kgesimport.dproj</Transaction>
+    <Transaction>2008.09.08 15:54:41.171.pas,U:\source\test.dll\SgtsRbkTestFm.pas=</Transaction>
+    <Transaction>2008.09.08 15:54:41.171.dfm,U:\source\test.dll\SgtsRbkTestFm.dfm=</Transaction>
+    <Transaction>2008.09.08 15:54:41.203.pas,U:\source\test.dll\SgtsRbkTestEditFm.pas=</Transaction>
+    <Transaction>2008.09.08 15:54:41.203.dfm,U:\source\test.dll\SgtsRbkTestEditFm.dfm=</Transaction>
+    <Transaction>2008.09.08 15:55:17.250.pas,U:\source\test.dll\SgtsTestInterface.pas=U:\source\kgesimport.dll\SgtsKgesImportInterface.pas</Transaction>
+    <Transaction>2008.09.08 15:55:57.421.pas,U:\source\test.dll\SgtsTestFm.pas=U:\source\kgesimport.dll\SgtsTestFm.pas</Transaction>
+    <Transaction>2008.09.08 15:55:57.421.dfm,U:\source\test.dll\SgtsTestFm.dfm=U:\source\kgesimport.dll\SgtsTestFm.dfm</Transaction>
+    <Transaction>2008.09.08 15:56:12.703.pas,U:\source\test.dll\SgtsTest.pas=U:\source\kgesimport.dll\SgtsKgesImport.pas</Transaction>
+    <Transaction>2008.09.14 12:41:12.574.pas,U:\source\kgesimport.dll\SgtsTestFm.pas=U:\source\kgesimport.dll\SgtsKgesImportASQFm.pas</Transaction>
+    <Transaction>2008.09.14 12:41:12.574.dfm,U:\source\kgesimport.dll\SgtsTestFm.dfm=U:\source\kgesimport.dll\SgtsKgesImportASQFm.dfm</Transaction>
+    <Transaction>2008.09.14 12:41:29.199.pas,U:\source\kgesimport.dll\SgtsKgesImportASQFm.pas=U:\source\kgesimport.dll\SgtsKgesASQImportFm.pas</Transaction>
+    <Transaction>2008.09.14 12:41:29.199.dfm,U:\source\kgesimport.dll\SgtsKgesImportASQFm.dfm=U:\source\kgesimport.dll\SgtsKgesASQImportFm.dfm</Transaction>
+  </Transactions>
+</BorlandProject>

@@ -1,0 +1,17 @@
+/* Создание таблицы маршрутов */
+
+CREATE TABLE ROUTES
+(
+  ROUTE_ID INTEGER NOT NULL, 
+  NAME VARCHAR2(100) NOT NULL,
+  DESCRIPTION VARCHAR2(250),
+  DATE_ROUTE DATE NOT NULL, 
+  IS_ACTIVE INTEGER NOT NULL,
+  PRIMARY KEY (ROUTE_ID)
+)
+
+--
+
+/* Фиксация изменений */
+
+COMMIT

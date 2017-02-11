@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{34490892-99f1-41db-b190-fe28f0ca2625}</ProjectGuid>
+    <MainSource>objects.dpk</MainSource>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+    <DCC_DependencyCheckOutputName>U:\bin\objects.bpl</DCC_DependencyCheckOutputName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_DebugInformation>False</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+    <DCC_BplOutput>U:\bin</DCC_BplOutput>
+    <DCC_DcpOutput>U:\source\dcp</DCC_DcpOutput>
+    <DCC_UnitSearchPath>U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_UnitSearchPath>
+    <DCC_ResourcePath>U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_ResourcePath>
+    <DCC_ObjPath>U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_ObjPath>
+    <DCC_IncludePath>U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_IncludePath>
+    <DCC_Define>RELEASE</DCC_Define>
+    <DCC_SYMBOL_DEPRECATED>False</DCC_SYMBOL_DEPRECATED>
+    <DCC_SYMBOL_LIBRARY>False</DCC_SYMBOL_LIBRARY>
+    <DCC_SYMBOL_PLATFORM>False</DCC_SYMBOL_PLATFORM>
+    <DCC_UNIT_LIBRARY>False</DCC_UNIT_LIBRARY>
+    <DCC_UNIT_PLATFORM>False</DCC_UNIT_PLATFORM>
+    <DCC_UNIT_DEPRECATED>False</DCC_UNIT_DEPRECATED>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_BplOutput>U:\bin</DCC_BplOutput>
+    <DCC_DcpOutput>U:\source\dcp</DCC_DcpOutput>
+    <DCC_UnitSearchPath>U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_UnitSearchPath>
+    <DCC_ResourcePath>U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_ResourcePath>
+    <DCC_ObjPath>U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_ObjPath>
+    <DCC_IncludePath>U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_IncludePath>
+    <DCC_SYMBOL_DEPRECATED>False</DCC_SYMBOL_DEPRECATED>
+    <DCC_SYMBOL_LIBRARY>False</DCC_SYMBOL_LIBRARY>
+    <DCC_SYMBOL_PLATFORM>False</DCC_SYMBOL_PLATFORM>
+    <DCC_UNIT_LIBRARY>False</DCC_UNIT_LIBRARY>
+    <DCC_UNIT_PLATFORM>False</DCC_UNIT_PLATFORM>
+    <DCC_UNIT_DEPRECATED>False</DCC_UNIT_DEPRECATED>
+  </PropertyGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Delphi.Personality</Borland.Personality>
+    <Borland.ProjectType>Package</Borland.ProjectType>
+    <BorlandProject>
+<BorlandProject><Delphi.Personality><Parameters><Parameters Name="HostApplication">U:\bin\sgts.exe</Parameters><Parameters Name="UseLauncher">False</Parameters><Parameters Name="LoadAllSymbols">True</Parameters><Parameters Name="LoadUnspecifiedSymbols">False</Parameters></Parameters><Package_Options><Package_Options Name="ImplicitBuild">False</Package_Options><Package_Options Name="DesigntimeOnly">False</Package_Options><Package_Options Name="RuntimeOnly">True</Package_Options></Package_Options><VersionInfo><VersionInfo Name="IncludeVerInfo">True</VersionInfo><VersionInfo Name="AutoIncBuild">True</VersionInfo><VersionInfo Name="MajorVer">1</VersionInfo><VersionInfo Name="MinorVer">2</VersionInfo><VersionInfo Name="Release">0</VersionInfo><VersionInfo Name="Build">2</VersionInfo><VersionInfo Name="Debug">False</VersionInfo><VersionInfo Name="PreRelease">False</VersionInfo><VersionInfo Name="Special">False</VersionInfo><VersionInfo Name="Private">False</VersionInfo><VersionInfo Name="DLL">False</VersionInfo><VersionInfo Name="Locale">1049</VersionInfo><VersionInfo Name="CodePage">1251</VersionInfo></VersionInfo><VersionInfoKeys><VersionInfoKeys Name="CompanyName"></VersionInfoKeys><VersionInfoKeys Name="FileDescription"></VersionInfoKeys><VersionInfoKeys Name="FileVersion">1.2.0.2</VersionInfoKeys><VersionInfoKeys Name="InternalName"></VersionInfoKeys><VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys><VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys><VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys><VersionInfoKeys Name="ProductName"></VersionInfoKeys><VersionInfoKeys Name="ProductVersion">1.2</VersionInfoKeys><VersionInfoKeys Name="Comments"></VersionInfoKeys></VersionInfoKeys><Source><Source Name="MainSource">objects.dpk</Source></Source></Delphi.Personality></BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
+  <ItemGroup>
+    <DelphiCompile Include="objects.dpk">
+      <MainSource>MainSource</MainSource>
+    </DelphiCompile>
+    <DCCReference Include="..\imports\ExtLib\ELControls.pas" />
+    <DCCReference Include="..\imports\ExtLib\ELPropInsp.pas" />
+    <DCCReference Include="..\imports\ExtLib\ELSConsts.pas" />
+    <DCCReference Include="..\imports\ExtLib\ELStringsEdit.pas">
+      <Form>ELStringsEditorDlg</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\ExtLib\ELUtils.pas" />
+    <DCCReference Include="..\imports\Indy\Core\IdAssignedNumbers.pas" />
+    <DCCReference Include="..\imports\Indy\Core\IdResourceStringsCore.pas" />
+    <DCCReference Include="..\imports\Indy\Protocols\IdCharsets.pas" />
+    <DCCReference Include="..\imports\Indy\Protocols\IdCoder.pas" />
+    <DCCReference Include="..\imports\Indy\Protocols\IdCoder3to4.pas" />
+    <DCCReference Include="..\imports\Indy\Protocols\IdCoderMIME.pas" />
+    <DCCReference Include="..\imports\Indy\Protocols\IdGlobalProtocols.pas" />
+    <DCCReference Include="..\imports\Indy\Protocols\IdResourceStringsProtocols.pas" />
+    <DCCReference Include="..\imports\Indy\System\IdBaseComponent.pas" />
+    <DCCReference Include="..\imports\Indy\System\IdException.pas" />
+    <DCCReference Include="..\imports\Indy\System\IdGlobal.pas" />
+    <DCCReference Include="..\imports\Indy\System\IdResourceStrings.pas" />
+    <DCCReference Include="..\imports\Indy\System\IdStack.pas" />
+    <DCCReference Include="..\imports\Indy\System\IdStackBSDBase.pas" />
+    <DCCReference Include="..\imports\Indy\System\IdStackConsts.pas" />
+    <DCCReference Include="..\imports\Indy\System\IdStackWindows.pas" />
+    <DCCReference Include="..\imports\Indy\System\IdStream.pas" />
+    <DCCReference Include="..\imports\Indy\System\IdStreamRandomAccess.pas" />
+    <DCCReference Include="..\imports\Indy\System\IdStreamVCL.pas" />
+    <DCCReference Include="..\imports\Indy\System\IdStreamVCLBase.pas" />
+    <DCCReference Include="..\imports\Indy\System\IdStreamVCLWin32.pas" />
+    <DCCReference Include="..\imports\Indy\System\IdTStrings.pas" />
+    <DCCReference Include="..\imports\Indy\System\IdWinsock2.pas" />
+    <DCCReference Include="..\imports\Indy\System\IdWship6.pas" />
+    <DCCReference Include="..\imports\RX\Units\rxApputils.pas" />
+    <DCCReference Include="..\imports\RX\Units\Rxcconst.pas" />
+    <DCCReference Include="..\imports\RX\Units\Rxconst.pas" />
+    <DCCReference Include="..\imports\RX\Units\RxCtrls.pas" />
+    <DCCReference Include="..\imports\RX\Units\rxDateutil.pas" />
+    <DCCReference Include="..\imports\RX\Units\rxFileUtil.pas" />
+    <DCCReference Include="..\imports\RX\Units\Rxhook.pas" />
+    <DCCReference Include="..\imports\RX\Units\rxMaxmin.pas" />
+    <DCCReference Include="..\imports\RX\Units\rxPickdate.pas" />
+    <DCCReference Include="..\imports\RX\Units\rxPlacemnt.pas" />
+    <DCCReference Include="..\imports\RX\Units\Rxprgrss.pas" />
+    <DCCReference Include="..\imports\RX\Units\Rxprops.pas" />
+    <DCCReference Include="..\imports\RX\Units\rxStrUtils.pas" />
+    <DCCReference Include="..\imports\RX\Units\RxTimer.pas" />
+    <DCCReference Include="..\imports\RX\Units\rxToolEdit.pas" />
+    <DCCReference Include="..\imports\RX\Units\rxVclutils.pas" />
+    <DCCReference Include="..\imports\VirtualTree\VirtualDBTree.pas" />
+    <DCCReference Include="..\imports\VirtualTree\VirtualTrees.pas" />
+    <DCCReference Include="dbrtl.dcp" />
+    <DCCReference Include="rtl.dcp" />
+    <DCCReference Include="tee.dcp" />
+    <DCCReference Include="teedb.dcp" />
+    <DCCReference Include="teeui.dcp" />
+    <DCCReference Include="vcl.dcp" />
+    <DCCReference Include="vcldb.dcp" />
+    <DCCReference Include="vcljpg.dcp" />
+    <DCCReference Include="VclSmp.dcp" />
+    <DCCReference Include="vclx.dcp" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,29 @@
+/* Создание процедуры добавления плана-графика на год */
+
+CREATE OR REPLACE PROCEDURE I_PLAN_GRAPH
+( 
+  YEAR IN INTEGER   
+)   
+AS 
+BEGIN 
+ DECLARE 
+    CURSOR MT_CURSOR IS 
+   SELECT MEASURE_TYPE_ID 
+   FROM MEASURE_TYPES;    
+ BEGIN 
+   FOR REC IN MT_CURSOR 
+   LOOP         
+    INSERT INTO MEASURE_TYPE_GRAPHS(YEAR, MEASURE_TYPE_ID,JANUARY, FEBRUARY, MARCH, APRIL, MAY, JUNE, JULY, AUGUST, SEPTEMBER, OKTOBER, NOVEMBER, DECEMBER) 
+        VALUES (YEAR, REC.MEASURE_TYPE_ID, 0,0,0,0,0,0,0,0,0,0,0,0); 
+         
+    END LOOP;    
+   END; 
+    
+  COMMIT; 
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT

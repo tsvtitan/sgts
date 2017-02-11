@@ -1,0 +1,94 @@
+unit SgtsGraphAdjustFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs,
+  SgtsFm, SgtsPropertyInspector,
+  SgtsCoreIntf, ComCtrls;
+
+type
+  TSgtsGraphAdjustForm = class(TSgtsForm)
+    StatusBar: TStatusBar;
+  private
+    FInspector: TSgtsPropertyInspector;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+
+    property Inspector: TSgtsPropertyInspector read FInspector;
+  end;
+
+  TSgtsGraphAdjustIface=class(TSgtsFormIface)
+  private
+    FPersistent: TPersistent;
+    FCaption: String;
+    function GetForm: TSgtsGraphAdjustForm;
+  public
+    procedure Init; override;
+    procedure AfterCreateForm(AForm: TSgtsForm); override;
+    procedure UpdateContents; override;
+
+    property Persistent: TPersistent read FPersistent write FPersistent;
+    property Caption: String read FCaption write FCaption;
+    property Form: TSgtsGraphAdjustForm read GetForm;
+  end;
+
+var
+  SgtsGraphAdjustForm: TSgtsGraphAdjustForm;
+
+implementation
+
+uses SgtsConsts;
+
+{$R *.dfm}
+
+{ TSgtsGraphAdjustIface }
+
+function TSgtsGraphAdjustIface.GetForm: TSgtsGraphAdjustForm;
+begin
+  Result:=TSgtsGraphAdjustForm(inherited Form);
+end;
+
+procedure TSgtsGraphAdjustIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsGraphAdjustForm;
+end;
+
+procedure TSgtsGraphAdjustIface.AfterCreateForm(AForm: TSgtsForm);
+begin
+  inherited AfterCreateForm(AForm);
+  UpdateContents;
+end;
+
+procedure TSgtsGraphAdjustIface.UpdateContents;
+begin
+  inherited UpdateContents;
+  if Assigned(Form) then begin
+    with Form do begin
+      Caption:=Format(SGraphAdjustCaption,[FCaption]);
+      Inspector.Clear;
+      Inspector.Add(FComponent);
+      Inspector.Modified;
+    end;  
+  end;  
+end;
+
+{ TSgtsGraphAdjustForm }
+
+constructor TSgtsGraphAdjustForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FInspector:=TSgtsPropertyInspector.Create(Self);
+  FInspector.Parent:=Self;
+  FInspector.Align:=alClient;
+end;
+
+destructor TSgtsGraphAdjustForm.Destroy;
+begin
+  inherited Destroy;
+end;
+
+end.

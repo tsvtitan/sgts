@@ -1,0 +1,31 @@
+inherited SgtsRbkObjectDrawingsForm: TSgtsRbkObjectDrawingsForm
+  Left = 391
+  Top = 158
+  Width = 465
+  Caption = #1063#1077#1088#1090#1077#1078#1080' '#1086#1073#1098#1077#1082#1090#1086#1074
+  Constraints.MinHeight = 375
+  Constraints.MinWidth = 465
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited BevelStatus: TBevel
+    Width = 457
+  end
+  inherited StatusBar: TStatusBar
+    Width = 457
+  end
+  inherited PanelView: TPanel
+    Width = 422
+    inherited GridPattern: TDBGrid
+      Width = 416
+    end
+  end
+  inherited PanelButton: TPanel
+    Width = 457
+    inherited ButtonCancel: TButton
+      Left = 376
+    end
+    inherited ButtonOk: TButton
+      Left = 294
+    end
+  end
+end

@@ -1,0 +1,21 @@
+/* Создание процедуры удаления документа объекта */
+
+CREATE OR REPLACE PROCEDURE D_OBJECT_DOCUMENT
+( 
+  OLD_OBJECT_ID IN INTEGER, 
+  OLD_DOCUMENT_ID IN INTEGER 
+) 
+AS 
+BEGIN 
+  DELETE FROM OBJECT_DOCUMENTS 
+        WHERE OBJECT_ID=OLD_OBJECT_ID 
+          AND DOCUMENT_ID=OLD_DOCUMENT_ID; 
+  COMMIT;         
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+

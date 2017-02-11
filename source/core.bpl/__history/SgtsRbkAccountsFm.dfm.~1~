@@ -1,0 +1,15 @@
+inherited SgtsRbkAccountsForm: TSgtsRbkAccountsForm
+  Left = 354
+  Top = 168
+  Caption = #1059#1095#1077#1090#1085#1099#1077' '#1079#1072#1087#1080#1089#1080
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited PanelButton: TPanel
+    inherited ButtonCancel: TButton
+      Left = 412
+    end
+    inherited ButtonOk: TButton
+      Left = 330
+    end
+  end
+end

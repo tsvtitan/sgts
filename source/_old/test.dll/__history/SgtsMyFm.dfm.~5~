@@ -1,0 +1,36 @@
+object SgtsMyForm: TSgtsMyForm
+  Left = 0
+  Top = 0
+  Caption = 'SgtsMyForm'
+  ClientHeight = 351
+  ClientWidth = 482
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  DesignSize = (
+    482
+    351)
+  PixelsPerInch = 96
+  TextHeight = 13
+  object TreeViewMeasureType: TTreeView
+    Left = 8
+    Top = 66
+    Width = 185
+    Height = 199
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    BevelEdges = [beLeft, beTop]
+    Indent = 19
+    TabOrder = 0
+    Items.NodeData = {
+      01020000001F0000000000000000000000FFFFFFFFFFFFFFFF00000000020000
+      0003310031003100210000000000000000000000FFFFFFFFFFFFFFFF00000000
+      000000000432003200320032001F0000000000000000000000FFFFFFFFFFFFFF
+      FF0000000000000000033300330033001F0000000000000000000000FFFFFFFF
+      FFFFFFFF0000000001000000033400340034001B0000000000000000000000FF
+      FFFFFFFFFFFFFF0000000000000000013200}
+  end
+end

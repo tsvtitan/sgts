@@ -1,0 +1,19 @@
+/* Создание процедуры удаления отчета у интерфейса */
+
+CREATE OR REPLACE PROCEDURE D_INTERFACE_REPORT
+( 
+  OLD_INTERFACE_REPORT_ID IN INTEGER 
+) 
+AS 
+BEGIN 
+  DELETE FROM INTERFACE_REPORTS 
+        WHERE INTERFACE_REPORT_ID=OLD_INTERFACE_REPORT_ID; 
+  COMMIT;         
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+

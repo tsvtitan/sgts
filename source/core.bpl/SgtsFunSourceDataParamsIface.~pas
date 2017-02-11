@@ -1,0 +1,72 @@
+unit SgtsFunSourceDataParamsIface;
+
+interface
+
+uses
+  SgtsCoreIntf,
+  SgtsRbkParamsFm,
+  SgtsRbkParamEditFm;
+
+type
+  TSgtsFunSourceDataParamsIface=class(TSgtsRbkParamsIface)
+  private
+    FParamId: Variant;
+  public
+    constructor CreateByParamId(ACoreIntf: ISgtsCore; AParamId: Variant);
+    procedure Init; override;
+    function CanRefresh: Boolean; override;
+    function CanDetail: Boolean; override;
+  end;
+
+  TSgtsFunSourceDataParamDetailIface=class(TSgtsRbkParamUpdateIface)
+  public
+    procedure Init; override;
+  end;
+
+implementation
+
+uses SgtsFm, SgtsDataFm, SgtsConsts, SgtsGetRecordsConfig;
+
+{ TSgtsFunSourceDataParamIface }
+
+constructor TSgtsFunSourceDataParamsIface.CreateByParamId(ACoreIntf: ISgtsCore; AParamId: Variant);
+begin
+  inherited Create(ACoreIntf);
+  FParamId:=AParamId;
+  DetailClass:=TSgtsFunSourceDataParamDetailIface;
+end;
+
+procedure TSgtsFunSourceDataParamsIface.Init;
+begin
+  inherited Init;
+  with DataSet do begin
+    FilterGroups.Clear;
+    FilterGroups.Add.Filters.Add('Param_ID',fcEqual,FParamId);
+  end;
+end;
+
+function TSgtsFunSourceDataParamsIface.CanRefresh: Boolean;
+begin
+  Result:=CanShow;
+  if Result then begin
+    if Assigned(Database) then
+      Result:=Result and Database.ProviderExists(DataSet.ProviderName);
+  end;
+end;
+
+function TSgtsFunSourceDataParamsIface.CanDetail: Boolean;
+begin
+  Result:=DataSet.Active and
+          not DataSet.IsEmpty and
+          PermissionExists(SPermissionNameDetail);
+end;
+
+{ TSgtsFunSourceDataParamDetailIface }
+
+procedure TSgtsFunSourceDataParamDetailIface.Init; 
+begin
+  inherited Init;
+  InterfaceName:=SInterfaceParamDetail;
+end;
+
+end.

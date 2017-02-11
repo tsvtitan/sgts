@@ -1,0 +1,382 @@
+unit SgtsDataTreeFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, Menus, ImgList, ExtCtrls, ComCtrls, ToolWin, StdCtrls, ActiveX,
+  VirtualTrees,
+  SgtsDataFm, SgtsFm, SgtsDbTree,
+  SgtsDataTreeFmIntf, SgtsCoreIntf, SgtsDataTreeIfaceIntf, SgtsGetRecordsConfig;
+
+type
+
+  TSgtsDataTreeForm = class(TSgtsDataForm)
+    ImageListTree: TImageList;
+    TreePattern: TTreeView;
+  private
+    FTree: TSgtsDbTree;
+    procedure GridDblClick(Sender: TObject);
+  protected
+    procedure TreeReadNodeFromDB(Node: PSgtsTreeDBNode); virtual;
+    procedure TreeDragDrop(Sender: TBaseVirtualTree; Source: TObject; DataObject: IDataObject;
+                           Formats: TFormatArray; Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode); virtual;
+    procedure TreeDragAllowed(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: Integer; var Allowed: Boolean); virtual;
+    function TreeCanWriteToDataSet(Node: PSgtsTreeDBNode): Boolean; virtual;
+    function TreeGetAttachMode(Node: PSgtsTreeDBNode): TVTNodeAttachMode; virtual;
+    procedure TreeWritingDataSet(Node: PSgtsTreeDBNode; var Allow: Boolean); virtual;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    procedure InitByIface(AIface: TSgtsFormIface); override;
+
+    property Tree: TSgtsDbTree read FTree;
+  end;
+
+  TSgtsDataTreeIface=class(TSgtsDataIface,ISgtsDataTreeForm,ISgtsDataTreeIface)
+  private
+    FOnlyLastNode: Boolean;
+    function GetForm: TSgtsDataTreeForm;
+  protected
+    function GetFormClass: TSgtsFormClass; override;
+    procedure AfterCreateForm(AForm: TSgtsForm); override;
+
+  public
+    function CanFirst: Boolean; override;
+    procedure First; override;
+    procedure Prior; override;
+    procedure Next; override;
+    function CanLast: Boolean; override;
+    procedure Last; override;
+    procedure OpenData; override;
+    procedure Delete; override;
+    function CanSelect: Boolean; override;
+    procedure InsertByDefs(ExecuteDefs: Pointer); override;
+    procedure BeforeShowForm(AForm: TSgtsForm); override;
+    function CreateSelectedData(SelectedType: TSgtsCreateSelectedDataType): String; override;
+    function SelectVisible(Fields: String; Values: Variant; var Data: String;
+                           FilterGroups: TSgtsGetRecordsConfigFilterGroups=nil; MultiSelect: Boolean=false): Boolean; override;
+    function SelectOnlyLastNode(Fields: String; Values: Variant;  var Data: String): Boolean;
+
+    property Form: TSgtsDataTreeForm read GetForm;
+    property OnlyLastNode: Boolean read FOnlyLastNode write FOnlyLastNode;  
+  end;
+
+var
+  SgtsDataTreeForm: TSgtsDataTreeForm;
+
+implementation
+
+uses DBClient,
+     VirtualDBTree,
+     SgtsDatabaseCDS, SgtsDialogs, SgtsDataIfaceIntf, SgtsCDS;
+
+{$R *.dfm}
+
+{ TSgtsDataTreeIface }
+
+function TSgtsDataTreeIface.GetFormClass: TSgtsFormClass;
+begin
+  Result:=TSgtsDataTreeForm;
+end;
+
+procedure TSgtsDataTreeIface.AfterCreateForm(AForm: TSgtsForm);
+begin
+  inherited AfterCreateForm(AForm);
+  if Assigned(Form) then begin
+    with Form.Tree do begin
+      if Mode=imMultiSelect then
+        TreeOptions.SelectionOptions:=TreeOptions.SelectionOptions+[toMultiSelect]
+      else
+        TreeOptions.SelectionOptions:=TreeOptions.SelectionOptions-[toMultiSelect];
+    end;
+  end;
+end;
+
+function TSgtsDataTreeIface.GetForm: TSgtsDataTreeForm;
+begin
+  Result:=TSgtsDataTreeForm(inherited Form);
+end;
+
+function TSgtsDataTreeIface.CanFirst: Boolean;
+begin
+  Result:=Assigned(Form) and
+          DataSet.Active and
+          not DataSet.IsEmpty;
+  if Result then begin
+    with Form.Tree do begin
+      Result:=Result and
+              (GetFirst<>FocusedNode);
+    end;
+  end;
+end;
+
+procedure TSgtsDataTreeIface.First;
+begin
+  if CanFirst then begin
+    with Form.Tree do begin
+      FocusedNode:=GetFirst;
+      if Assigned(FocusedNode) then
+        Selected[FocusedNode]:=true;
+    end;  
+  end;
+end;
+
+procedure TSgtsDataTreeIface.Prior;
+begin
+  if CanPrior then begin
+    with Form.Tree do begin
+      FocusedNode:=GetPrevious(FocusedNode);
+      if Assigned(FocusedNode) then
+        Selected[FocusedNode]:=true;
+    end;
+  end;
+end;
+
+procedure TSgtsDataTreeIface.Next;
+begin
+  if CanNext then begin
+    with Form.Tree do begin
+      FocusedNode:=GetNext(FocusedNode);
+      if Assigned(FocusedNode) then
+        Selected[FocusedNode]:=true;
+    end;
+  end;
+end;
+
+function TSgtsDataTreeIface.CanLast: Boolean;
+begin
+  Result:=Assigned(Form) and
+          DataSet.Active and
+          not DataSet.IsEmpty;
+  if Result then begin
+    with Form.Tree do begin
+      Result:=Result and
+              (GetLast<>FocusedNode);
+    end;
+  end;
+end;
+
+procedure TSgtsDataTreeIface.Last;
+begin
+  if CanLast then begin
+    with Form.Tree do begin
+      FocusedNode:=GetLast;
+      if Assigned(FocusedNode) then
+        Selected[FocusedNode]:=true;
+    end;
+  end;
+end;
+
+procedure TSgtsDataTreeIface.OpenData;
+begin
+  inherited OpenData;
+  if DataSet.Active then begin
+    First;
+    Form.Tree.CollapseAll;
+  end;
+end;
+
+procedure TSgtsDataTreeIface.InsertByDefs(ExecuteDefs: Pointer);
+var
+  Node: PVirtualNode;
+begin
+  inherited InsertByDefs(ExecuteDefs);
+  if Assigned(Form) then begin
+    Node:=Form.Tree.GetFirstSelected;
+    if Assigned(Node) then begin
+      Form.Tree.ScrollIntoView(Node,true);
+      Form.Tree.Expanded[Node]:=true;
+    end;
+  end;
+end;
+
+procedure TSgtsDataTreeIface.Delete;
+var
+  Node: PVirtualNode;
+begin
+  Node:=nil;
+  if CanDelete then begin
+    Node:=Form.Tree.GetPrevious(Form.Tree.FocusedNode);
+  end;
+
+  inherited Delete;
+  if Assigned(Form) and
+     DataSet.Active and
+     not DataSet.IsEmpty and
+     ExecuteSuccess then begin
+    with Form.Tree do begin
+      FocusedNode:=Node;
+      if Assigned(FocusedNode) then
+        Selected[FocusedNode]:=true;
+    end;
+  end;
+end;
+
+function TSgtsDataTreeIface.CanSelect: Boolean;
+var
+  Node: PVirtualNode;
+begin
+  Result:=inherited CanSelect;
+  if Assigned(Form) and FOnlyLastNode then begin
+    Node:=Form.Tree.FocusedNode;
+    if Assigned(Node) then
+      Result:=Result and (Node.ChildCount=0);
+  end;
+end;
+
+function TSgtsDataTreeIface.CreateSelectedData(SelectedType: TSgtsCreateSelectedDataType): String;
+var
+  DSOut: TSgtsCDS;
+  Node: PVirtualNode;
+  NodeDB: PSgtsTreeDBNode;
+begin
+  Result:=inherited CreateSelectedData(SelectedType);
+  if Assigned(Form) then begin
+    DataSet.BeginUpdate(true);
+    DSOut:=TSgtsCDS.Create(nil);
+    try
+      with Form do begin
+        if DataSet.Active and
+           (SelectedType=sdtBookmark) then begin
+          DSOut.CreateDataSetBySource(DataSet);
+          Node:=Tree.GetFirst;
+          while Assigned(Node) do begin
+            NodeDB:=Tree.GetDBNodeData(Node);
+            if Tree.Selected[Node] and
+               Assigned(NodeDB) then begin
+              if DataSet.Locate(DataSet.KeyFieldName,NodeDB.Value) then
+                DSOut.FieldValuesBySource(DataSet);
+            end;
+            Node:=Tree.GetNext(Node);
+          end;
+          DSOut.MergeChangeLog;
+          Result:=DSOut.XMLData;
+        end;
+      end;
+    finally
+      DSOut.Free;
+      DataSet.EndUpdate(false);
+    end;
+  end;
+end;
+
+function TSgtsDataTreeIface.SelectVisible(Fields: String; Values: Variant; var Data: String;
+                                          FilterGroups: TSgtsGetRecordsConfigFilterGroups=nil;
+                                          MultiSelect: Boolean=false): Boolean;
+begin
+  Result:=inherited SelectVisible(Fields,Values,Data,FilterGroups,MultiSelect);
+end;
+
+function TSgtsDataTreeIface.SelectOnlyLastNode(Fields: String; Values: Variant; var Data: String): Boolean;
+begin
+  FOnlyLastNode:=true;
+  Result:=SelectVisible(Fields,Values,Data);
+end;
+
+procedure TSgtsDataTreeIface.BeforeShowForm(AForm: TSgtsForm);
+var
+  Node: PVirtualNode;
+begin
+  inherited BeforeShowForm(AForm);
+  if Mode in [imSelect,imMultiSelect] then begin
+    Node:=Form.Tree.GetFirstSelected;
+    if Assigned(Node) then begin
+      Form.Tree.ScrollIntoView(Node,true);
+      Form.Tree.Expanded[Node]:=true;
+    end;
+  end;
+end;
+
+{ TSgtsDataTreeForm }
+
+constructor TSgtsDataTreeForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FTree:=TSgtsDbTree.Create(Self);
+  with FTree do begin
+    Parent:=TreePattern.Parent;
+    Align:=TreePattern.Align;
+    SetBounds(TreePattern.Left,TreePattern.Top,TreePattern.Width,TreePattern.Height);
+    Constraints.Assign(TreePattern.Constraints);
+    Font.Assign(TreePattern.Font);
+    Images:=ImageListTree;
+    Margin:=2;
+    DefaultNodeHeight:=16;
+    OnDblClick:=GridDblClick;
+    OnReadNodeFromDB:=TreeReadNodeFromDB;
+    TabOrder:=0;
+    PopupMenu:=TreePattern.PopupMenu;
+    FTree.DBOptions:=FTree.DBOptions+[dboReadOnly];
+    Header.Options:=Header.Options+[hoAutoResize,hoVisible];
+    Header.Height:=18;
+    TreeOptions.SelectionOptions:=TreeOptions.SelectionOptions+[toRightClickSelect];
+    TreeOptions.MiscOptions:=TreeOptions.MiscOptions-[toToggleOnDblClick];
+  end;
+  FTree.DataSource:=DataSource;
+  FTree.DragMode:=TreePattern.DragMode;
+  FTree.OnCanWriteToDataSet:=TreeCanWriteToDataSet;
+  FTree.OnDragDrop:=TreeDragDrop;
+  FTree.OnDragAllowed:=TreeDragAllowed;
+  FTree.OnGetAttachMode:=TreeGetAttachMode;
+  FTree.OnWritingDataSet:=TreeWritingDataSet;
+
+  TreePattern.Free;
+  TreePattern:=nil;
+end;
+
+procedure TSgtsDataTreeForm.InitByIface(AIface: TSgtsFormIface);
+begin
+  inherited InitByIface(AIface);
+  CreateTreeColumnsBySelectDefs(FTree,TSgtsDataTreeIface(AIface).DataSet.SelectDefs);
+  with FTree, Iface do begin
+    KeyFieldName:=DataSet.KeyFieldName;
+    ViewFieldName:=DataSet.ViewFieldName;
+    ParentFieldName:=DataSet.ParentFieldName;
+  end;
+end;
+
+procedure TSgtsDataTreeForm.GridDblClick(Sender: TObject);
+begin
+  DblClickAction;
+end;
+
+procedure TSgtsDataTreeForm.TreeReadNodeFromDB(Node: PSgtsTreeDBNode);
+var
+  Field: TField;
+begin
+  if Assigned(Node) then begin
+    if Assigned(Node.Node) then begin
+      Node.NormalIndex:=0;
+      Node.LastIndex:=2;
+      Node.OpenIndex:=1;
+      Field:=Iface.DataSet.FindField(Iface.DataSet.KeyFieldName);
+      if Assigned(Field) then
+        Node.Value:=Field.Value;
+    end;
+  end;
+end;
+
+procedure TSgtsDataTreeForm.TreeDragDrop(Sender: TBaseVirtualTree; Source: TObject; DataObject: IDataObject;
+                                         Formats: TFormatArray; Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
+begin
+end;                           
+
+procedure TSgtsDataTreeForm.TreeDragAllowed(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: Integer; var Allowed: Boolean);
+begin
+end;
+
+function TSgtsDataTreeForm.TreeCanWriteToDataSet(Node: PSgtsTreeDBNode): Boolean; 
+begin
+  Result:=false;
+end;
+
+function TSgtsDataTreeForm.TreeGetAttachMode(Node: PSgtsTreeDBNode): TVTNodeAttachMode; 
+begin
+  Result:=amAddChildFirst;
+end;
+
+procedure TSgtsDataTreeForm.TreeWritingDataSet(Node: PSgtsTreeDBNode; var Allow: Boolean); 
+begin
+end;
+
+end.

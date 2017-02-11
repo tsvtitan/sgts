@@ -1,0 +1,21 @@
+/* Создание процедуры удаления прибора параметра */
+
+CREATE OR REPLACE PROCEDURE D_PARAM_INSTRUMENT
+( 
+  OLD_PARAM_ID IN INTEGER, 
+  OLD_INSTRUMENT_ID IN INTEGER 
+) 
+AS 
+BEGIN 
+  DELETE FROM PARAM_INSTRUMENTS 
+        WHERE PARAM_ID=OLD_PARAM_ID 
+          AND INSTRUMENT_ID=OLD_INSTRUMENT_ID; 
+  COMMIT;         
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+

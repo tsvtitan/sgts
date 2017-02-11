@@ -1,0 +1,146 @@
+unit SgtsMTScheduleFrm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, ToolWin, ImgList, ExtCtrls, Grids, DBGrids, DB, Menus,
+  SgtsDbGrid, SgtsDatabaseCDS, SgtsCoreIntf, SgtsCDS,
+  SgtsDataInsertFm, SgtsDataUpdateFm, SgtsDataDelete, SgtsDataFmIntf,
+  SgtsDataFm, SgtsDataIfaceIntf, SgtsExecuteDefs, SgtsGetRecordsConfig, SgtsMenus,
+  SgtsConfigIntf, StdCtrls, CheckLst;
+
+type
+  TSgtsMTScheduleFrame = class(TFrame)
+    PanelSchedule: TPanel;
+    Splitter1: TSplitter;
+    PanelMonth: TPanel;
+    Splitter2: TSplitter;
+    Panel3: TPanel;
+    CheckListBoxMonth: TCheckListBox;
+    Edit1: TEdit;
+    DBGrid1: TDBGrid;
+    DataSource1: TDataSource;
+  private
+    { Private declarations }
+    FCoreIntf: ISgtsCore;
+    FDataSet: TSgtsDatabaseCDS;
+    FDataSetPlan: TSgtsDatabaseCDS;
+    FYear: Integer;
+    FMeasureTypeId: Integer;
+
+    procedure OpenPlanData;
+  public
+    { Public declarations }
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+
+    procedure InitByCore(ACoreIntf: ISgtsCore);
+
+    procedure CloseData; virtual;
+    procedure OpenData;
+
+    property DataSet: TSgtsDatabaseCDS read FDataSet;
+    property Year: Integer write FYear;
+    property MeasureTypeId: Integer write FMeasureTypeId;
+  end;
+
+implementation
+
+{$R *.dfm}
+
+
+constructor TSgtsMTScheduleFrame.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  FDataSet:=TSgtsDatabaseCDS.Create(nil);
+  FDataSetPlan:=TSgtsDatabaseCDS.Create(nil);
+end;
+
+destructor TSgtsMTScheduleFrame.Destroy;
+begin
+  FDataSet.Free;
+  FDataSetPlan.Free;
+  inherited Destroy;
+end;
+
+procedure TSgtsMTScheduleFrame.InitByCore(ACoreIntf: ISgtsCore);
+begin
+  FCoreIntf:=ACoreIntf;
+  FDataSet.InitByCore(ACoreIntf);
+
+  with FDataSetPlan do begin
+      ProviderName:='S_PLAN_YEAR_MEASURE_TYPES';
+      with SelectDefs do begin
+        AddInvisible('MEASURE_TYPE_ID');
+        AddInvisible('YEAR');
+        AddInvisible('JANUARY');
+        AddInvisible('FEBRUARY');
+        AddInvisible('MARCH');
+        AddInvisible('APRIL');
+        AddInvisible('MAY');
+        AddInvisible('JUNE');
+        AddInvisible('JULY');
+        AddInvisible('AUGUST');
+        AddInvisible('SEPTEMBER');
+        AddInvisible('OKTOBER');
+        AddInvisible('NOVEMBER');
+        AddInvisible('DECEMBER');
+      end;
+    end;
+  FDataSetPlan.CheckProvider:=false;
+  DataSource1.DataSet:=FDataSet;
+
+  FDataSetPlan.InitByCore(ACoreIntf);
+end;
+
+
+procedure TSgtsMTScheduleFrame.OpenPlanData;
+begin
+
+  if FDataSetPLan.Active then begin
+        FDataSetPLan.Close;
+      end;
+
+
+  FDataSetPlan.FilterGroups.Clear;
+  FDataSetPlan.FilterGroups.Add.Filters.Add('MEASURE_TYPE_ID',fcEqual,FMeasureTypeId);
+  FDataSetPlan.FilterGroups.Add.Filters.Add('YEAR', fcEqual, FYear);
+  FDataSetPlan.Open;
+
+  CheckListBoxMonth.Checked[0]:=StrToBool(IntToStr(FDataSetPlan.FieldByName('JANUARY').AsInteger));
+  CheckListBoxMonth.Checked[1]:=StrToBool(IntToStr(FDataSetPlan.FieldByName('FEBRUARY').AsInteger));
+  CheckListBoxMonth.Checked[2]:=StrToBool(IntToStr(FDataSetPlan.FieldByName('MARCH').AsInteger));
+  CheckListBoxMonth.Checked[3]:=StrToBool(IntToStr(FDataSetPlan.FieldByName('APRIL').AsInteger));
+  CheckListBoxMonth.Checked[4]:=StrToBool(IntToStr(FDataSetPlan.FieldByName('MAY').AsInteger));
+  CheckListBoxMonth.Checked[5]:=StrToBool(IntToStr(FDataSetPlan.FieldByName('JUNE').AsInteger));
+  CheckListBoxMonth.Checked[6]:=StrToBool(IntToStr(FDataSetPlan.FieldByName('JULY').AsInteger));
+  CheckListBoxMonth.Checked[7]:=StrToBool(IntToStr(FDataSetPlan.FieldByName('AUGUST').AsInteger));
+  CheckListBoxMonth.Checked[8]:=StrToBool(IntToStr(FDataSetPlan.FieldByName('SEPTEMBER').AsInteger));
+  CheckListBoxMonth.Checked[9]:=StrToBool(IntToStr(FDataSetPlan.FieldByName('OKTOBER').AsInteger));
+  CheckListBoxMonth.Checked[10]:=StrToBool(IntToStr(FDataSetPlan.FieldByName('NOVEMBER').AsInteger));
+  CheckListBoxMonth.Checked[11]:=StrToBool(IntToStr(FDataSetPlan.FieldByName('DECEMBER').AsInteger));
+
+end;
+
+procedure TSgtsMTScheduleFrame.CloseData;
+begin
+  if FDataSet.Active then
+    FDataSet.Close;
+end;
+
+procedure TSgtsMTScheduleFrame.OpenData;
+begin
+  if not FDataSet.Active then begin
+    try
+      FDataSet.Open;
+      OpenPlanData;
+    except
+      on E: Exception do
+        //ShowError(E.Message);
+    end;
+  end;
+  //Edit1.Text:=FDataSet.FieldByName('MEASURE_TYPE_ID').AsString;
+end;
+
+end.

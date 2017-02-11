@@ -1,0 +1,451 @@
+unit SgtsRefreshCutsFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ExtCtrls, DB, StdCtrls, DBGrids, DBClient, Menus,
+  SgtsChildFm, SgtsCDS, SgtsSelectDefs, SgtsDatabaseIntf,
+  SgtsCoreIntf, SgtsControls, SgtsDBGrid, SgtsDatabaseCDS, Buttons;
+
+type
+  TSgtsRefreshCutsForm = class(TSgtsChildForm)
+    PanelGrid: TPanel;
+    PanelBottom: TPanel;
+    ButtonRefresh: TButton;
+    ButtonClose: TButton;
+    GroupBoxOption: TGroupBox;
+    PanelOption: TPanel;
+    DataSource: TDataSource;
+    btUpColumns: TBitBtn;
+    btDownColumns: TBitBtn;
+    PopupMenu: TPopupMenu;
+    MenuItemCheckAll: TMenuItem;
+    MenuItemUncheckAll: TMenuItem;
+    procedure ButtonCloseClick(Sender: TObject);
+    procedure ButtonRefreshClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure PopupMenuPopup(Sender: TObject);
+    procedure MenuItemRefreshCurrentClick(Sender: TObject);
+    procedure btUpColumnsClick(Sender: TObject);
+    procedure btDownColumnsClick(Sender: TObject);
+    procedure MenuItemCheckAllClick(Sender: TObject);
+    procedure MenuItemUncheckAllClick(Sender: TObject);
+  private
+    FDataSet: TSgtsCDS;
+    FGrid: TSgtsDBGrid;
+    FSelectDefs: TSgtsSelectDefs;
+    FCheckDef: TSgtsSelectDef;
+    FSuccessDef: TSgtsSelectDef;
+    FBreaked: Boolean;
+    FInProcess: Boolean;
+    procedure ButtonBreakClick(Sender: TObject);
+    procedure LoadData;
+    function Refresh: Boolean;
+    function RefreshCurrent: Boolean;
+    procedure CheckAll(FlagCheck: Boolean; FieldName: String);
+    procedure GridCellClick(Column: TColumn);
+    procedure GridDblClick(Sender: TObject);
+    procedure GridKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    function CheckCount: Integer;
+    procedure CMDialogKey(var Message: TCMDialogKey); message CM_DIALOGKEY; 
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+  end;
+
+  TSgtsRefreshCutsIface=class(TSgtsChildIface)
+  public
+    procedure Init; override;
+    function CanShow: Boolean; override;
+  end;
+
+var
+  SgtsRefreshCutsForm: TSgtsRefreshCutsForm;
+
+implementation
+
+uses SgtsFm, SgtsIface, SgtsConsts, SgtsUtils, SgtsDialogs,
+     SgtsDatabaseModulesIntf, SgtsProviderConsts, SgtsGetRecordsConfig,
+     SgtsProviders;
+
+{$R *.dfm}
+
+{ TSgtsRefreshCutsIface }
+
+procedure TSgtsRefreshCutsIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRefreshCutsForm;
+  InterfaceName:=SInterfaceRefreshCuts;
+  with Permissions do begin
+    AddDefault(SPermissionNameShow);
+  end;
+end;
+
+function TSgtsRefreshCutsIface.CanShow: Boolean;
+begin
+  Result:=PermissionExists(SPermissionNameShow)
+end;
+
+{ TSgtsRefreshCutsForm }
+
+constructor TSgtsRefreshCutsForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FDataSet:=TSgtsCDS.Create(Self);
+  with FDataSet do begin
+    FieldDefs.Clear;
+    FieldDefs.Add('CUT_ID',ftInteger);
+    FieldDefs.Add('DESCRIPTION',ftString,250);
+    FieldDefs.Add('MEASURE_TYPE_PATH',ftString,250);
+    FieldDefs.Add('PROC_NAME',ftString,100);
+    FieldDefs.Add('CHECK',ftInteger);
+    FieldDefs.Add('SUCCESS',ftInteger);
+    CreateDataSet;
+  end;
+  DataSource.DataSet:=FDataSet;
+
+  FSelectDefs:=TSgtsSelectDefs.Create;
+  with FSelectDefs do begin
+    FCheckDef:=AddDrawCheck('CHECK_EX','Включен','CHECK',30);
+    Find(FCheckDef.CalcName).Field:=FDataSet.FieldByName('CHECK');
+    Add('DESCRIPTION','Описание',150);
+    Add('MEASURE_TYPE_PATH','Вид измерения',150);
+    FSuccessDef:=AddDrawCheck('SUCCESS_EX','Обновлен','SUCCESS',30);
+    Find(FSuccessDef.CalcName).Field:=FDataSet.FieldByName('SUCCESS');
+  end;
+
+  FGrid:=TSgtsDBGrid.Create(Self);
+  with FGrid do begin
+    Align:=alClient;
+    Parent:=PanelOption;
+    ColumnSortEnabled:=false;
+    VisibleRowNumber:=true;
+    DataSource:=Self.DataSource;
+    Options:=Options-[dgEditing,dgTabs];
+    OnDblClick:=nil;
+    OnCellClick:=GridCellClick;
+    OnKeyDown:=GridKeyDown;
+    LocateEnabled:=true;
+    ColMoving:=false;
+    AutoFit:=true;
+  end;
+  FGrid.PopupMenu:=PopupMenu;
+
+  CreateGridColumnsBySelectDefs(FGrid,FSelectDefs);
+
+  LoadData;
+end;
+
+procedure TSgtsRefreshCutsForm.LoadData;
+var
+  DS: TSgtsDatabaseCDS;
+begin
+  DS:=TSgtsDatabaseCDS.Create(CoreIntf);
+  try
+    DS.ProviderName:=SProviderSelectCuts;
+    with DS.SelectDefs do begin
+      AddInvisible('CUT_ID');
+      AddInvisible('NAME');
+      AddInvisible('PROC_NAME');
+      AddInvisible('MEASURE_TYPE_PATH');
+    end;
+    DS.FilterGroups.Add.Filters.Add('PROC_NAME',fcIsNotNull,Null);
+    DS.Orders.Add('PRIORITY',otAsc);
+    DS.Open;
+    if DS.Active and
+       not DS.IsEmpty then begin
+      DS.First;
+      while not DS.Eof do begin
+        FDataSet.Append;
+        FDataSet.FieldByName('CUT_ID').Value:=DS.FieldByName('CUT_ID').Value;
+        FDataSet.FieldByName('DESCRIPTION').Value:=DS.FieldByName('NAME').Value;
+        FDataSet.FieldByName('MEASURE_TYPE_PATH').Value:=DS.FieldByName('MEASURE_TYPE_PATH').Value;
+        FDataSet.FieldByName('PROC_NAME').Value:=DS.FieldByName('PROC_NAME').Value;
+        FDataSet.FieldByName('CHECK').Value:=Integer(False);
+        FDataSet.FieldByName('SUCCESS').Value:=Integer(False);
+        FDataSet.Post;
+        DS.Next;
+      end;
+      FDataSet.First;
+    end;   
+  finally
+    DS.Free;
+  end;
+end;
+
+procedure TSgtsRefreshCutsForm.ButtonCloseClick(Sender: TObject);
+begin
+  Close;
+end;
+
+procedure TSgtsRefreshCutsForm.ButtonRefreshClick(Sender: TObject);
+var
+  OldCaption: String;
+begin
+  ButtonRefresh.OnClick:=ButtonBreakClick;
+  OldCaption:=ButtonRefresh.Caption;
+  FGrid.Enabled:=false;
+  btUpColumns.Enabled:=false;
+  btDownColumns.Enabled:=false;
+  try
+    ButtonRefresh.Caption:=SButtonCaptionAbort;
+    if Refresh then
+      ShowInfo(SRefreshCutsSuccess);
+  finally
+    btUpColumns.Enabled:=true;
+    btDownColumns.Enabled:=true;
+    FGrid.Enabled:=true;
+    ButtonRefresh.Caption:=OldCaption;
+    ButtonRefresh.OnClick:=ButtonRefreshClick;
+  end;
+end;
+
+function TSgtsRefreshCutsForm.Refresh: Boolean;
+var
+  i: Integer;
+  OldCursor: TCursor;
+  Checked: Boolean;
+  NCount: Integer;
+begin
+  Result:=false;
+  FBreaked:=false;
+  OldCursor:=Screen.Cursor;
+  NCount:=CheckCount;
+  CoreIntf.MainForm.Progress(0,NCount,0);
+  FInProcess:=false;
+  try
+    FInProcess:=true;
+    Screen.Cursor:=crHourGlass;
+
+    CheckAll(false,'SUCCESS');
+
+    i:=1;
+    FDataSet.First;
+    while not FDataSet.Eof do begin
+      Application.ProcessMessages;
+      if FBreaked then break;
+
+      FGrid.UpdateRowNumber;
+
+      Checked:=Boolean(FDataSet.FieldByName('CHECK').AsInteger);
+      if Checked then begin
+        Result:=RefreshCurrent;
+        Update;
+      end;
+
+      CoreIntf.MainForm.Progress(0,NCount,i);
+      inc(i);
+      FDataSet.Next;
+    end;
+    if not FBreaked then
+      FDataSet.First;
+
+    Result:=Result and not FBreaked;
+  finally
+    FInProcess:=false;
+    FGrid.UpdateRowNumber;
+    Screen.Cursor:=OldCursor;
+    CoreIntf.MainForm.Progress(0,0,0);
+  end;
+end;
+
+procedure TSgtsRefreshCutsForm.btDownColumnsClick(Sender: TObject);
+begin
+  FDataSet.MoveData(false);
+end;
+
+procedure TSgtsRefreshCutsForm.btUpColumnsClick(Sender: TObject);
+begin
+  FDataSet.MoveData(True);
+end;
+
+procedure TSgtsRefreshCutsForm.ButtonBreakClick(Sender: TObject);
+begin
+  FBreaked:=true;
+end;
+
+procedure TSgtsRefreshCutsForm.FormCloseQuery(Sender: TObject;
+  var CanClose: Boolean);
+begin
+  CanClose:=not FInProcess;
+end;
+
+function TSgtsRefreshCutsForm.RefreshCurrent: Boolean;
+
+  function Found(CutId: Variant; ProcName: String; var Checked: Boolean): Boolean;
+  begin
+    FDataSet.BeginUpdate(true);
+    try
+      Result:=false;
+      FDataSet.First;
+      while not FDataSet.Eof do begin
+        if (CutId=FDataSet.FieldByName('CUT_ID').Value) then begin
+          exit;
+        end;
+        if AnsiSameText(FDataSet.FieldByName('PROC_NAME').AsString,ProcName) then begin
+          Result:=true;
+          Checked:=Boolean(FDataSet.FieldByName('CHECK').AsInteger);
+          exit;
+        end;
+        FDataSet.Next;
+      end;
+    finally
+      FDataSet.EndUpdate(false);
+    end;
+  end;
+
+var
+  Database: ISgtsDatabase;
+  ProcName: String;
+  IsFound: Boolean;
+  Flag: Boolean;
+  Provider: TSgtsExecuteProvider;
+  DS: TSgtsDatabaseCDS;
+  OldCursor: TCursor;
+begin
+  Result:=false;
+  Database:=nil;
+  OldCursor:=Screen.Cursor;
+  Screen.Cursor:=crHourGlass;
+  try
+    if Assigned(CoreIntf.DatabaseModules.Current) then
+      Database:=CoreIntf.DatabaseModules.Current.Database;
+    if Assigned(Database) then begin
+      if FDataSet.Active and not FDataSet.IsEmpty then begin
+        ProcName:=FDataSet.FieldByName('PROC_NAME').Value;
+        if Trim(ProcName)<>'' then begin
+          IsFound:=Found(FDataSet.FieldByName('CUT_ID').Value,ProcName,Flag);
+          if not IsFound then begin
+            Provider:=Database.ExecuteProviders.AddDefault(ProcName);
+            DS:=TSgtsDatabaseCDS.Create(CoreIntf);
+            try
+              DS.ProviderName:=ProcName;
+              DS.StopException:=false;
+
+              FDataSet.Edit;
+              FDataSet.FieldByName('SUCCESS').AsInteger:=Integer(False);
+              FDataSet.Post;
+
+              try
+                DS.Execute;
+                Flag:=true;
+              except
+                Flag:=false;
+              end;
+              FDataSet.Edit;
+              FDataSet.FieldByName('SUCCESS').Value:=Integer(Flag);
+              FDataSet.Post;
+              Result:=Flag;
+            finally
+              DS.Free;
+              Database.GetRecordsProviders.Remove(Provider);
+            end;
+          end else begin
+            FDataSet.Edit;
+            FDataSet.FieldByName('SUCCESS').Value:=Integer(Flag);
+            FDataSet.Post;
+          end;
+        end;
+      end;
+    end;
+  finally
+    Screen.Cursor:=OldCursor;
+  end;  
+end;
+
+procedure TSgtsRefreshCutsForm.PopupMenuPopup(Sender: TObject);
+begin
+  MenuItemCheckAll.Enabled:=FDataSet.Active and not FDataSet.IsEmpty;
+  MenuItemUncheckAll.Enabled:=FDataSet.Active and not FDataSet.IsEmpty;
+end;
+
+procedure TSgtsRefreshCutsForm.MenuItemCheckAllClick(Sender: TObject);
+begin
+  CheckAll(true,'CHECK');
+end;
+
+procedure TSgtsRefreshCutsForm.MenuItemRefreshCurrentClick(
+  Sender: TObject);
+begin
+  RefreshCurrent;
+end;
+
+procedure TSgtsRefreshCutsForm.MenuItemUncheckAllClick(Sender: TObject);
+begin
+  CheckAll(False,'CHECK');
+end;
+
+procedure TSgtsRefreshCutsForm.CheckAll(FlagCheck: Boolean; FieldName: String);
+begin
+  if FDataSet.Active and
+     not FDataSet.IsEmpty then begin
+    FDataSet.BeginUpdate(true);
+    try
+      FDataSet.First;
+      while not FDataSet.Eof do begin
+        FDataSet.Edit;
+        FDataSet.FieldByName(FieldName).Value:=Integer(FlagCheck);
+        FDataSet.Post;
+        FDataSet.Next;
+      end;
+    finally
+      FDataSet.EndUpdate(true);
+    end;
+  end;
+end;
+
+procedure TSgtsRefreshCutsForm.GridKeyDown(Sender: TObject;
+  var Key: Word; Shift: TShiftState);
+begin
+  if Key=VK_SPACE then
+    GridDblClick(nil);
+end;
+
+procedure TSgtsRefreshCutsForm.GridCellClick(Column: TColumn);
+begin
+  GridDblClick(nil);
+end;
+
+procedure TSgtsRefreshCutsForm.GridDblClick(Sender: TObject);
+var
+  Flag: Boolean;
+begin
+  if FDataSet.Active and
+     not FDataSet.IsEmpty and
+     (FGrid.SelectedIndex in [0]) then begin
+    Flag:=Boolean(FDataSet.FieldByName('CHECK').AsInteger);
+    FDataSet.Edit;
+    FDataSet.FieldByName('CHECK').AsInteger:=Integer(not Flag);
+    FDataSet.Post;
+  end;
+end;
+
+function TSgtsRefreshCutsForm.CheckCount: Integer;
+begin
+  Result:=0;
+  FDataSet.BeginUpdate(true);
+  try
+    FDataSet.First;
+    while not FDataSet.Eof do begin
+      if Boolean(FDataSet.FieldByName('CHECK').AsInteger) then
+        Inc(Result);      
+      FDataSet.Next;
+    end;
+  finally
+    FDataSet.EndUpdate;
+  end;
+end;
+
+procedure TSgtsRefreshCutsForm.CMDialogKey(var Message: TCMDialogKey);
+begin
+  with Message do
+    if  (CharCode = VK_ESCAPE) and
+        (KeyDataToShiftState(Message.KeyData) = []) then begin
+      if FInProcess then
+        FBreaked:=true;
+    end else
+      inherited;
+end;
+
+end.

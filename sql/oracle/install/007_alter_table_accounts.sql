@@ -1,0 +1,20 @@
+/* Изменение процедуры удаления учетной записи */
+
+CREATE OR REPLACE PROCEDURE D_ACCOUNT
+(
+  OLD_ACCOUNT_ID IN INTEGER
+)
+AS
+BEGIN
+  DELETE FROM ACCOUNTS_ROLES
+        WHERE ACCOUNT_ID=OLD_ACCOUNT_ID;
+  DELETE FROM ACCOUNTS
+        WHERE ACCOUNT_ID=OLD_ACCOUNT_ID;
+  COMMIT;        
+END;
+
+--
+
+/* Фиксация изменений БД */
+
+COMMIT

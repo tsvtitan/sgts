@@ -1,0 +1,24 @@
+/* Создание просмотра документов измерительных точек */
+
+CREATE OR REPLACE VIEW S_POINT_DOCUMENTS
+AS 
+SELECT PD.POINT_ID,
+       PD.DOCUMENT_ID,
+       PD.PRIORITY,
+       P.NAME AS POINT_NAME,
+       D.NAME AS DOCUMENT_NAME,
+       D.DESCRIPTION AS DOCUMENT_DESCRIPTION,
+       D.FILE_NAME AS FILE_NAME
+  FROM POINT_DOCUMENTS PD,
+       POINTS P,
+       DOCUMENTS D
+ WHERE P.POINT_ID = PD.POINT_ID
+   AND D.DOCUMENT_ID = PD.DOCUMENT_ID
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

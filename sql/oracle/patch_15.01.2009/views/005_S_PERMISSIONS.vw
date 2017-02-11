@@ -1,0 +1,21 @@
+/* Создание просмотра прав доступа */
+
+CREATE OR REPLACE VIEW S_PERMISSIONS
+AS 
+SELECT P.PERMISSION_ID,
+       P.ACCOUNT_ID,
+       P.INTERFACE,
+       P.PERMISSION,
+       P.PERMISSION_VALUE,
+       A.NAME AS ACCOUNT_NAME
+  FROM PERMISSIONS P,
+       ACCOUNTS A
+ WHERE A.ACCOUNT_ID = P.ACCOUNT_ID
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

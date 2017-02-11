@@ -1,0 +1,84 @@
+/* Создание процедуры обновления срезов Через бетон НГ плотины */
+
+CREATE OR REPLACE PROCEDURE R_FLT_JOURNALS_1
+AS
+BEGIN
+  DBMS_REFRESH.REFRESH('S_FLT_JOURNAL_FIELDS_O1');
+  DBMS_REFRESH.REFRESH('S_FLT_JOURNAL_OBSERVATIONS_O1');
+END;
+
+--
+
+/* Создание процедуры обновления срезов Через швы НГ плотины */
+
+CREATE OR REPLACE PROCEDURE R_FLT_JOURNALS_2
+AS
+BEGIN
+  DBMS_REFRESH.REFRESH('S_FLT_JOURNAL_FIELDS_O2');
+  DBMS_REFRESH.REFRESH('S_FLT_JOURNAL_OBSERVATIONS_O2');
+END;
+
+--
+
+/* Создание процедуры обновления срезов Дренажа осн. плотины 1 ряда */
+
+CREATE OR REPLACE PROCEDURE R_FLT_JOURNALS_3
+AS
+BEGIN
+  DBMS_REFRESH.REFRESH('S_FLT_JOURNAL_FIELDS_O3');
+  DBMS_REFRESH.REFRESH('S_FLT_JOURNAL_OBSERVATIONS_O3');
+END;
+
+--
+
+/* Создание процедуры обновления срезов Через агрегатные швы */
+
+CREATE OR REPLACE PROCEDURE R_FLT_JOURNALS_4
+AS
+BEGIN
+  DBMS_REFRESH.REFRESH('S_FLT_JOURNAL_FIELDS_O4');
+  DBMS_REFRESH.REFRESH('S_FLT_JOURNAL_OBSERVATIONS_O4');
+END;
+
+--
+
+/* Создание процедуры обновления срезов Автоном. источн. и водосливы */
+
+CREATE OR REPLACE PROCEDURE R_FLT_JOURNALS_5
+AS
+BEGIN
+  DBMS_REFRESH.REFRESH('S_FLT_JOURNAL_FIELDS_O5');
+  DBMS_REFRESH.REFRESH('S_FLT_JOURNAL_OBSERVATIONS_O5');
+END;
+
+--
+
+/* Создание процедуры обновления срезов Дренажа осн. плотины 2 ряда */
+
+CREATE OR REPLACE PROCEDURE R_FLT_JOURNALS_6
+AS
+BEGIN
+  DBMS_REFRESH.REFRESH('S_FLT_JOURNAL_FIELDS_O6');
+  DBMS_REFRESH.REFRESH('S_FLT_JOURNAL_OBSERVATIONS_O6');
+END;
+
+--
+
+/* Создание процедуры обновления срезов по Фильтрации */
+
+CREATE OR REPLACE PROCEDURE R_FLT_JOURNALS
+AS
+BEGIN
+  R_FLT_JOURNALS_1;
+  R_FLT_JOURNALS_2;
+  R_FLT_JOURNALS_3;
+  R_FLT_JOURNALS_4;
+  R_FLT_JOURNALS_5;
+  R_FLT_JOURNALS_6;
+END;
+
+--
+
+/* Фиксация изменений БД */
+
+COMMIT

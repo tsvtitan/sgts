@@ -1,0 +1,30 @@
+unit SgtsFmIntf;
+
+interface
+
+uses SgtsIfaceIntf;
+
+type
+
+  ISgtsForm=interface(ISgtsIface)
+  ['{EBB008F3-372A-4971-8587-509125CE6866}']
+  { methods }
+    function CanShow: Boolean;
+    procedure Show;
+    procedure Hide;
+    procedure Repaint;
+
+  { properties }
+    function _GetAsModal: Boolean;
+    function _GetCaption: String;
+    function _GetStopUpdateContetnts: Boolean;
+    procedure _SetStopUpdateContetnts(Value: Boolean);
+
+    property AsModal: Boolean read _GetAsModal;
+    property Caption: String read _GetCaption;
+    property StopUpdateContetnts: Boolean read _GetStopUpdateContetnts write _SetStopUpdateContetnts;
+  end;
+
+implementation
+
+end.

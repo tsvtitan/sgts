@@ -1,0 +1,19 @@
+/* Создание просмотра ролей учетных записей */
+
+CREATE OR REPLACE VIEW S_ACCOUNTS_ROLES
+AS 
+SELECT AR.ACCOUNT_ID,
+       AR.ROLE_ID,
+       A1.NAME AS ACCOUNT_NAME,
+       A2.NAME AS ROLE_NAME
+  FROM ACCOUNTS_ROLES AR,
+       ACCOUNTS A1,
+       ACCOUNTS A2
+ WHERE A1.ACCOUNT_ID = AR.ACCOUNT_ID
+   AND A2.ACCOUNT_ID = AR.ROLE_ID
+
+--
+
+/* Фиксация изменений */
+
+COMMIT

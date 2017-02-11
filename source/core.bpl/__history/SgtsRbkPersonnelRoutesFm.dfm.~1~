@@ -1,0 +1,31 @@
+inherited SgtsRbkPersonnelRoutesForm: TSgtsRbkPersonnelRoutesForm
+  Left = 391
+  Top = 158
+  Width = 480
+  Caption = #1052#1072#1088#1096#1088#1091#1090#1099' '#1087#1077#1088#1089#1086#1085#1072#1083#1072
+  Constraints.MinHeight = 375
+  Constraints.MinWidth = 480
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited BevelStatus: TBevel
+    Width = 472
+  end
+  inherited StatusBar: TStatusBar
+    Width = 472
+  end
+  inherited PanelView: TPanel
+    Width = 437
+    inherited GridPattern: TDBGrid
+      Width = 431
+    end
+  end
+  inherited PanelButton: TPanel
+    Width = 472
+    inherited ButtonCancel: TButton
+      Left = 392
+    end
+    inherited ButtonOk: TButton
+      Left = 310
+    end
+  end
+end

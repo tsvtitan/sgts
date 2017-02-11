@@ -1,0 +1,439 @@
+unit SgtsCheckingFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, DB, DBGrids,
+
+  SgtsDialogFm, SgtsControls, SgtsCoreIntf, SgtsDbGrid, SgtsDatabaseCDS,
+  SgtsSelectDefs, SgtsCDS, SgtsFm;
+
+type
+  TSgtsCheckingIface=class;
+   
+  TSgtsCheckingForm = class(TSgtsDialogForm)
+    LabelDateObservation: TLabel;
+    DateTimePickerObservation: TDateTimePicker;
+    LabelCycle: TLabel;
+    EditCycle: TEdit;
+    ButtonCycle: TButton;
+    LabelMeasureType: TLabel;
+    EditMeasureType: TEdit;
+    ButtonMeasureType: TButton;
+    LabelPoint: TLabel;
+    EditPoint: TEdit;
+    ButtonPoint: TButton;
+    LabelParam: TLabel;
+    EditParam: TEdit;
+    ButtonParam: TButton;
+    LabelValue: TLabel;
+    EditValue: TEdit;
+    PanelChecking: TPanel;
+    GroupBoxChecking: TGroupBox;
+    PanelGrid: TPanel;
+    DataSource: TDataSource;
+    ButtonCheck: TButton;
+    procedure ButtonMeasureTypeClick(Sender: TObject);
+    procedure ButtonParamClick(Sender: TObject);
+    procedure ButtonCycleClick(Sender: TObject);
+    procedure ButtonPointClick(Sender: TObject);
+    procedure ButtonCheckClick(Sender: TObject);
+    procedure ButtonCancelClick(Sender: TObject);
+    procedure ButtonOkClick(Sender: TObject);
+  private
+    FGrid: TSgtsDbGrid;
+    FSelectDefs: TSgtsSelectDefs;
+    FCheckDef: TSgtsSelectDef;
+    function GetIface: TSgtsCheckingIface;
+  protected  
+    function GetValue: Variant;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+    procedure InitByIface(AIface: TSgtsFormIface); override;
+
+    property Iface: TSgtsCheckingIface read GetIface;
+  end;
+
+  TSgtsCheckingIface=class(TSgtsDialogIface)
+  private
+    FDataSet: TSgtsCDS;
+
+    FDateObservation: Variant;
+    FCycleId: Variant;
+    FCycleNum: String;
+    FMeasureTypeId: Variant;
+    FMeasureTypeName: String;
+    FObjectId: Variant;
+    FObjectName: String;
+    FPointId: Variant;
+    FPointName: String;
+    FParamId: Variant;
+    FParamName: String;
+    FValue: Variant;
+    FChecked: Boolean;
+    FMeasureTypePath: String;
+
+    function GetForm: TSgtsCheckingForm;
+    function CheckInBase: Boolean;
+  protected
+    property DataSet: TSgtsCDS read FDataSet;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+
+    procedure Init; override;
+    procedure BeforeShowModal; override;
+    procedure AfterShowModal(ModalResult: TModalResult); override;
+    function Checking: Boolean;
+
+    property DateObservation: Variant read FDateObservation write FDateObservation;
+    property CycleId: Variant read FCycleId write FCycleId;
+    property CycleNum: String read FCycleNum write FCycleNum;
+    property MeasureTypeId: Variant read FMeasureTypeId write FMeasureTypeId;
+    property MeasureTypeName: String read FMeasureTypeName write FMeasureTypeName;
+    property MeasureTypePath: String read FMeasureTypePath write FMeasureTypePath;  
+    property ObjectId: Variant read FObjectId write FObjectId;
+    property ObjectName: String read FObjectName write FObjectName;
+    property PointId: Variant read FPointId write FPointId;
+    property PointName: String read FPointName write FPointName;
+    property ParamId: Variant read FParamId write FParamId;
+    property ParamName: String read FParamName write FParamName;
+    property Value: Variant read FValue write FValue;
+    property Checked: Boolean read FChecked write FChecked;
+
+    property Form: TSgtsCheckingForm read GetForm;
+  end;
+
+var
+  SgtsCheckingForm: TSgtsCheckingForm;
+
+implementation
+
+uses SgtsUtils, SgtsConsts, SgtsProviderConsts, SgtsGetRecordsConfig,
+     SgtsExecuteDefs, SgtsDatabaseIntf, SgtsCoreObj,
+     SgtsDatabaseModulesIntf, SgtsProviders, SgtsRbkMeasureTypesFm,
+     SgtsRbkParamsFm, SgtsRbkCyclesFm, SgtsRbkPointsFm,
+     SgtsFunPointManagementFm, SgtsRbkPointManagementFm;
+
+{$R *.dfm}
+
+{ TSgtsCheckingIface }
+
+constructor TSgtsCheckingIface.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FDataSet:=TSgtsCDS.Create(Self);
+  with FDataSet do begin
+    FieldDefs.Clear;
+    FieldDefs.Add('CHECKING_ID',ftInteger);
+    FieldDefs.Add(SDb_Name,ftString,100);
+    FieldDefs.Add(SDb_Description,ftString,250);
+    FieldDefs.Add(SDb_Flag,ftInteger);
+    CreateDataSet;
+  end;
+
+  FChecked:=true;
+end;
+
+destructor TSgtsCheckingIface.Destroy;
+begin
+  FDataSet.Free;
+  inherited Destroy;
+end;
+
+procedure TSgtsCheckingIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsCheckingForm;
+end;
+
+function TSgtsCheckingIface.GetForm: TSgtsCheckingForm;
+begin
+  Result:=TSgtsCheckingForm(inherited Form);
+end;
+
+procedure TSgtsCheckingIface.BeforeShowModal;
+begin
+  inherited BeforeShowModal;
+  Form.DateTimePickerObservation.Date:=VarToDateDef(DateObservation,Date);
+  Form.EditCycle.Text:=CycleNum;
+  Form.EditMeasureType.Text:=MeasureTypePath;
+  Form.EditPoint.Text:=PointName;
+  Form.EditParam.Text:=ParamName;
+  Form.EditValue.Text:=VarToStrDef(Value,'');
+end;
+
+procedure TSgtsCheckingIface.AfterShowModal(ModalResult: TModalResult);
+begin
+  inherited AfterShowModal(ModalResult);
+end;
+
+function TSgtsCheckingIface.CheckInBase: Boolean;
+
+  function CheckByProc(ProcName: String; var Info: String): Boolean;
+  var
+    DS: TSgtsDatabaseCDS;
+    Database: ISgtsDatabase;
+    Provider: TSgtsExecuteProvider;
+  begin
+    Result:=false;
+    Database:=nil;
+    if Assigned(CoreIntf.DatabaseModules.Current) then
+       Database:=CoreIntf.DatabaseModules.Current.Database;
+    if Assigned(Database) then begin
+      Provider:=Database.ExecuteProviders.AddDefault(ProcName);
+      DS:=TSgtsDatabaseCDS.Create(CoreIntf);
+      try
+        DS.ProviderName:=ProcName;
+        with DS.ExecuteDefs do begin
+          AddValue('DATE_OBSERVATION',FDateObservation);
+          AddValue('CYCLE_ID',FCycleId);
+          AddValue('MEASURE_TYPE_ID',FMeasureTypeId);
+          AddValue('OBJECT_ID',FObjectId);
+          AddValue('POINT_ID',FPointId);
+          AddValue('PARAM_ID',FParamId);
+          AddValue('VALUE',FValue);
+          AddInvisible('SUCCESS',ptOutput);
+          AddInvisible('INFO',ptOutput);
+        end;
+        try
+          DS.Execute;
+          Result:=VarToIntDef(DS.ExecuteDefs.Find('SUCCESS').Value,0)=1;
+          Info:=VarToStrDef(DS.ExecuteDefs.Find('INFO').Value,Info);
+        except
+          on E: Exception do begin
+            Result:=false;
+            Info:=E.Message;
+          end;  
+        end;
+      finally
+        DS.Free;
+        Database.ExecuteProviders.Remove(Provider);
+      end;
+    end;
+  end;
+
+var
+  DS: TSgtsDatabaseCDS;
+  ProcName: String;
+  Info: String;
+  Ret: Boolean;
+  B: TBookmark;
+  OldCursor: TCursor;
+begin
+  OldCursor:=Screen.Cursor;
+  Screen.Cursor:=crHourGlass;
+  DS:=TSgtsDatabaseCDS.Create(CoreIntf);
+  try
+    Result:=false;
+    DS.ProviderName:=SProviderSelectCheckings;
+    with DS.SelectDefs do begin
+      AddInvisible('CHECKING_ID');
+      AddInvisible('NAME');
+      AddInvisible('PROC_NAME');
+    end;
+    with DS.FilterGroups do begin
+      with Add do begin
+        Filters.Add('MEASURE_TYPE_ID',fcEqual,FMeasureTypeId);
+        Filters.Add('PARAM_ID',fcEqual,FParamId);
+        Filters.Add('POINT_ID',fcIsNull,Null);
+        Filters.Add('ENABLED',fcEqual,Integer(True));
+      end;
+      with Add(foOr) do begin
+        Filters.Add('MEASURE_TYPE_ID',fcEqual,FMeasureTypeId);
+        Filters.Add('PARAM_ID',fcEqual,FParamId);
+        Filters.Add('POINT_ID',fcEqual,FPointId);
+        Filters.Add('ENABLED',fcEqual,Integer(True));
+      end;
+    end;
+    DS.Orders.Add('PRIORITY',otAsc);
+    DS.Open;
+    if DS.Active and
+       not DS.IsEmpty then begin
+      B:=nil; 
+      FDataSet.DisableControls;
+      try
+        Ret:=true;
+        FDataSet.EmptyDataSet;
+        DS.First;
+        while not DS.Eof do begin
+          ProcName:=DS.FieldByName('PROC_NAME').AsString;
+          Info:=SCheckingWasNotYet;
+          if Ret then
+            Ret:=CheckByProc(ProcName,Info);
+          FDataSet.Append;
+          FDataSet.FieldByName('CHECKING_ID').Value:=DS.FieldByName('CHECKING_ID').Value;
+          FDataSet.FieldByName('NAME').Value:=DS.FieldByName('NAME').Value;
+          FDataSet.FieldByName('DESCRIPTION').Value:=Info;
+          FDataSet.FieldByName(SDb_Flag).AsInteger:=Integer(Ret);
+          FDataSet.Post;
+          if Info<>SCheckingWasNotYet then
+            B:=FDataSet.GetBookmark;
+          DS.Next;
+        end;
+        Result:=Ret;
+      finally
+        if Assigned(B) and
+           FDataSet.BookmarkValid(B) then
+          FDataSet.GotoBookmark(B);
+        FDataSet.EnableControls;
+      end;
+    end else
+      Result:=true;
+  finally
+    DS.Free;
+    Screen.Cursor:=OldCursor;
+  end;
+end;
+
+function TSgtsCheckingIface.Checking: Boolean;
+begin
+  Result:=CheckInBase;
+  if not Result then begin
+    Init;
+    Result:=ShowModal=mrOk;
+  end;
+end;
+
+{ TSgtsCheckingForm }
+
+constructor TSgtsCheckingForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+
+  FSelectDefs:=TSgtsSelectDefs.Create;
+  with FSelectDefs do begin
+    Add(SDb_Name,'Контроль',205);
+    Add(SDb_Description,'Описание',290);
+    FCheckDef:=AddDrawCheck(SDb_Flag_Ex,'Проверка',SDb_Flag,30);
+  end;
+
+  FGrid:=TSgtsDBGrid.Create(Self);
+  with FGrid do begin
+    Align:=alClient;
+    Parent:=PanelGrid;
+    ColumnSortEnabled:=false;
+    VisibleRowNumber:=true;
+    DataSource:=Self.DataSource;
+    Options:=Options-[dgEditing,dgTabs];
+    LocateEnabled:=false;
+    ColMoving:=false;
+    AutoFit:=true;
+  end;
+
+  CreateGridColumnsBySelectDefs(FGrid,FSelectDefs);
+end;
+
+destructor TSgtsCheckingForm.Destroy;
+begin
+  FSelectDefs.Free;
+  inherited Destroy;
+end;
+
+function TSgtsCheckingForm.GetIface: TSgtsCheckingIface;
+begin
+  Result:=TSgtsCheckingIface(inherited Iface);
+end;
+
+procedure TSgtsCheckingForm.InitByIface(AIface: TSgtsFormIface);
+begin
+  inherited InitByIface(AIface);
+  DataSource.DataSet:=Iface.DataSet;
+  FSelectDefs.Find(FCheckDef.CalcName).Field:=Iface.DataSet.FieldByName(SDb_Flag);
+end;
+
+procedure TSgtsCheckingForm.ButtonMeasureTypeClick(Sender: TObject);
+var
+  AIface: TSgtsRbkMeasureTypesIface;
+  Data: String;
+begin
+  AIface:=TSgtsRbkMeasureTypesIface.Create(CoreIntf);
+  try
+    AIface.IsCanSelect:=false;
+    AIface.SelectVisible('MEASURE_TYPE_ID',Iface.MeasureTypeId,Data);
+  finally
+    AIface.Free;
+  end;
+end;
+
+procedure TSgtsCheckingForm.ButtonParamClick(Sender: TObject);
+var
+  AIface: TSgtsRbkParamsIface;
+  Data: String;
+begin
+  AIface:=TSgtsRbkParamsIface.Create(CoreIntf);
+  try
+    AIface.IsCanSelect:=false;
+    AIface.SelectVisible('PARAM_ID',Iface.ParamId,Data);
+  finally
+    AIface.Free;
+  end;
+end;
+
+procedure TSgtsCheckingForm.ButtonCycleClick(Sender: TObject);
+var
+  AIface: TSgtsRbkCyclesIface;
+  Data: String;
+begin
+  AIface:=TSgtsRbkCyclesIface.Create(CoreIntf);
+  try
+    AIface.IsCanSelect:=false;
+    AIface.SelectVisible('CYCLE_ID',Iface.CycleId,Data);
+  finally
+    AIface.Free;
+  end;
+end;
+
+procedure TSgtsCheckingForm.ButtonPointClick(Sender: TObject);
+var
+  AIface: TSgtsFunPointManagementIface;
+  Data: String;
+  AFilterGroups: TSgtsGetRecordsConfigFilterGroups;
+begin
+  AIface:=TSgtsFunPointManagementIface.Create(CoreIntf);
+  AFilterGroups:=TSgtsGetRecordsConfigFilterGroups.Create;
+  try
+    AIface.IsCanSelect:=false;
+    AFilterGroups.Add.Filters.Add('MEASURE_TYPE_ID',fcEqual,Iface.MeasureTypeId);
+    AIface.SelectByUnionType('UNION_ID;UNION_TYPE',VarArrayOf([Iface.PointId,utPoint]),Data,utPoint,AFilterGroups,false);
+  finally
+    AFilterGroups.Free;
+    AIface.Free;
+  end;
+end;
+
+function TSgtsCheckingForm.GetValue: Variant;
+var
+  NewText: String;
+begin
+  if DecimalSeparator<>'.' then
+    NewText:=ChangeChar(EditValue.Text,'.',DecimalSeparator)
+  else NewText:=ChangeChar(EditValue.Text,',',DecimalSeparator);
+  NewText:=DeleteDuplicate(NewText,DecimalSeparator);
+  NewText:=DeleteToOne(NewText,DecimalSeparator);
+
+  Result:=StrToFloatDef(NewText,Iface.Value);
+end;
+
+procedure TSgtsCheckingForm.ButtonCheckClick(Sender: TObject);
+begin
+  Iface.Value:=GetValue;
+  Iface.CheckInBase;
+end;
+
+procedure TSgtsCheckingForm.ButtonCancelClick(Sender: TObject);
+begin
+  Iface.Checked:=false;
+  Close;
+end;
+
+procedure TSgtsCheckingForm.ButtonOkClick(Sender: TObject);
+begin
+  Iface.Value:=GetValue;
+  Iface.Checked:=Iface.CheckInBase;
+  ModalResult:=mrOk;
+end;
+
+end.

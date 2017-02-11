@@ -1,0 +1,20 @@
+/* Создание процедуры добавления объекта в группу */
+
+CREATE OR REPLACE PROCEDURE I_GROUP_OBJECT
+( 
+  GROUP_ID IN INTEGER, 
+  OBJECT_ID IN INTEGER, 
+  PRIORITY IN INTEGER 
+) 
+AS 
+BEGIN 
+  INSERT INTO GROUP_OBJECTS (GROUP_ID,OBJECT_ID,PRIORITY) 
+       VALUES (GROUP_ID,OBJECT_ID,PRIORITY); 
+  COMMIT; 
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT

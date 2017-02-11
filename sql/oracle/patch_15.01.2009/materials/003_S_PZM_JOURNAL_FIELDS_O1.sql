@@ -1,0 +1,38 @@
+/* Создание просмотра полевого журнала 1 старых данных пьезометров */
+
+CREATE MATERIALIZED VIEW S_PZM_JOURNAL_FIELDS_O1
+NOLOGGING
+NOCACHE
+NOPARALLEL
+BUILD DEFERRED
+REFRESH COMPLETE
+START WITH TO_DATE('01.01.2007','DD.MM.YYYY')
+DISABLE QUERY REWRITE AS
+SELECT * FROM TABLE(GET_PZM_JOURNAL_FIELDS(2561,1))
+
+--
+
+/* Создание индекса на цикл полевого журнала 1 старых данных пьезометров */
+
+CREATE INDEX IDX_PZM_JF_O1_1 ON S_PZM_JOURNAL_FIELDS_O1
+(CYCLE_ID)
+
+--
+
+/* Создание индекса на дату наблюдения полевого журнала 1 старых данных пьезометров */
+
+CREATE INDEX IDX_PZM_JF_O1_2 ON S_PZM_JOURNAL_FIELDS_O1
+(DATE_OBSERVATION)
+
+--
+
+/* Создание индекса на вид измерения полевого журнала 1 старых данных пьезометров */
+
+CREATE INDEX IDX_PZM_JF_O1_3 ON S_PZM_JOURNAL_FIELDS_O1
+(MEASURE_TYPE_ID)
+
+--
+
+/* Фиксация изменений */
+
+COMMIT

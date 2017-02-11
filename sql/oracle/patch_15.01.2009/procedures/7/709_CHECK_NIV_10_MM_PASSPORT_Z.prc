@@ -1,0 +1,40 @@
+/* Создание процедуры контроля CHECK_NIV_10_MM_PASSPORT_Z */
+
+CREATE OR REPLACE PROCEDURE CHECK_NIV_10_MM_PASSPORT_Z
+( 
+  DATE_OBSERVATION IN DATE, 
+  CYCLE_ID IN INTEGER, 
+  MEASURE_TYPE_ID IN INTEGER, 
+  OBJECT_ID IN INTEGER, 
+  POINT_ID IN INTEGER, 
+  PARAM_ID IN INTEGER, 
+  VALUE IN FLOAT, 
+  SUCCESS OUT INTEGER, 
+  INFO OUT VARCHAR2 
+) 
+AS 
+  AVALUE FLOAT; 
+BEGIN 
+  SELECT COORDINATE_Z INTO AVALUE 
+  FROM POINTS 
+  WHERE POINT_ID=CHECK_NIV_10_MM_PASSPORT_Z.POINT_ID; 
+   
+  IF (VALUE<AVALUE-0.01) THEN 
+    SUCCESS:=0;  
+   INFO:='Контроль не пройден. Значение < '||TO_CHAR(AVALUE-0.01); 
+  ELSE 
+    IF(VALUE>AVALUE+0.01) THEN 
+   SUCCESS:=0; 
+   INFO:='Контроль не пройден. Значение > '||TO_CHAR(AVALUE+0.01);  
+ ELSE 
+    SUCCESS:=1; 
+    INFO:='Контроль пройден. Значение не отличается на 10мм от паспортного '||TO_CHAR(AVALUE); 
+ END IF; 
+  END IF; 
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT

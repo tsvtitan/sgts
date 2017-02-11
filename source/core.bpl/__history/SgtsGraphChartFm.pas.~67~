@@ -1,0 +1,1212 @@
+unit SgtsGraphChartFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, ToolWin, Menus, ImgList, ExtCtrls, StdCtrls, ExtDlgs, DB,
+  TeeProcs, TeEngine, Chart, DbChart, Series, TeeFunci, TeCanvas,
+  SgtsGraphFm, SgtsFm, SgtsCoreIntf, SgtsGraphChartSeriesDefs;
+
+type
+
+  TDBChart=class(DbChart.TDBChart)
+  private
+    FPopupMenu: TPopupMenu;
+  public
+    property PopupMenu: TPopupMenu read FPopupMenu;
+  end;
+
+  TSgtsChartComponent=class(TComponent)
+  private
+    FChart: TDBChart;
+
+    function GetLeftAxis: TChartAxis;
+    procedure SetLeftAxis(Value: TChartAxis);
+    function GetBottomAxis: TChartAxis;
+    procedure SetBottomAxis(Value: TChartAxis);
+    function GetRightAxis: TChartAxis;
+    procedure SetRightAxis(Value: TChartAxis);
+    function GetTopAxis: TChartAxis;
+    procedure SetTopAxis(Value: TChartAxis);
+    function GetFoot: TChartTitle;
+    procedure SetFoot(Value: TChartTitle);
+    function GetTitle: TChartTitle;
+    procedure SetTitle(Value: TChartTitle);
+    function GetLegend: TChartLegend;
+    procedure SetLegend(Value: TChartLegend);
+
+    function GetAllowPanning: TPanningMode;
+    procedure SetAllowPanning(Value: TPanningMode);
+    function GetAllowZoom: Boolean;
+    procedure SetAllowZoom(Value: Boolean);
+    function GetAxisVisible: Boolean;
+    procedure SetAxisVisible(Value: Boolean);
+    function GetBackWall: TChartBackWall;
+    procedure SetBackWall(Value: TChartBackWall);
+    function GetBottomWall: TChartWall;
+    procedure SetBottomWall(Value: TChartWall);
+    function GetChart3DPercent: Integer;
+    procedure SetChart3DPercent(Value: Integer);
+    function GetDepthAxis: TChartDepthAxis;
+    procedure SetDepthAxis(Value: TChartDepthAxis);
+    function GetFrame: TChartPen;
+    procedure SetFrame(Value: TChartPen);
+    function GetGradient: TChartGradient;
+    procedure SetGradient(Value: TChartGradient);
+    function GetLeftWall: TChartWall;
+    procedure SetLeftWall(Value: TChartWall);
+    function GetMarginLeft: Integer;
+    procedure SetMarginLeft(Value: Integer);
+    function GetMarginRight: Integer;
+    procedure SetMarginRight(Value: Integer);
+    function GetMarginTop: Integer;
+    procedure SetMarginTop(Value: Integer);
+    function GetMarginBottom: Integer;
+    procedure SetMarginBottom(Value: Integer);
+    function GetView3D: Boolean;
+    procedure SetView3D(Value: Boolean);
+    function GetView3DOptions: TView3DOptions;
+    procedure SetView3DOptions(Value: TView3DOptions);
+    function GetView3DWalls: Boolean;
+    procedure SetView3DWalls(Value: Boolean);
+
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    procedure LoadFromStream(Stream: TStream);
+    procedure SaveToStream(Stream: TStream);
+    function GetStr: String;
+    procedure SetStr(Value: String);
+
+    property Chart: TDBChart read FChart write FChart;
+  published
+    property LeftAxis: TChartAxis read GetLeftAxis write SetLeftAxis;
+    property BottomAxis: TChartAxis read GetBottomAxis write SetBottomAxis;
+    property RightAxis: TChartAxis read GetRightAxis write SetRightAxis;
+    property TopAxis: TChartAxis read GetTopAxis write SetTopAxis;
+    property Foot: TChartTitle read GetFoot write SetFoot;
+    property Title: TChartTitle read GetTitle write SetTitle;
+    property Legend: TChartLegend read GetLegend write SetLegend;
+    property AllowPanning: TPanningMode read GetAllowPanning write SetAllowPanning;  
+    property AllowZoom: Boolean read GetAllowZoom write SetAllowZoom;
+    property AxisVisible: Boolean read GetAxisVisible write SetAxisVisible;
+    property BackWall: TChartBackWall read GetBackWall write SetBackWall;
+    property BottomWall: TChartWall read GetBottomWall write SetBottomWall;
+    property Chart3DPercent: Integer read GetChart3DPercent write SetChart3DPercent;
+    property DepthAxis: TChartDepthAxis read GetDepthAxis write SetDepthAxis;
+    property Frame: TChartPen read GetFrame write SetFrame;
+    property Gradient: TChartGradient read GetGradient write SetGradient;
+    property LeftWall: TChartWall read GetLeftWall write SetLeftWall;
+    property MarginLeft: Integer read GetMarginLeft write SetMarginLeft;
+    property MarginRight: Integer read GetMarginRight write SetMarginRight;
+    property MarginTop: Integer read GetMarginTop write SetMarginTop;
+    property MarginBottom: Integer read GetMarginBottom write SetMarginBottom;
+    property View3D: Boolean read GetView3D write SetView3D;
+    property View3DOptions: TView3DOptions read GetView3DOptions write SetView3DOptions;
+    property View3DWalls: Boolean read GetView3DWalls write SetView3DWalls;
+  end;
+
+  TSgtsGraphChartIface=class;
+
+  TSgtsGraphChartForm = class(TSgtsGraphForm)
+    SavePictureDialog: TSavePictureDialog;
+    ToolButtonFonts: TToolButton;
+    PopupMenuFonts: TPopupMenu;
+    MenuItemGraphCaptionFont: TMenuItem;
+    MenuItemLegendCaptionFont: TMenuItem;
+    MenuItemLeftCaptionFont: TMenuItem;
+    MenuItemLeftLabelFont: TMenuItem;
+    MenuItemRightCaptionFont: TMenuItem;
+    MenuItemRightLabelFont: TMenuItem;
+    MenuItemBottomCaptionFont: TMenuItem;
+    MenuItemBottomLabelFont: TMenuItem;
+    MenuItemFootCaptionFont: TMenuItem;
+    FontDialog: TFontDialog;
+    ToolButtonCaptions: TToolButton;
+    PopupMenuCaptions: TPopupMenu;
+    MenuItemGraphCaption: TMenuItem;
+    MenuItemLeftCaption: TMenuItem;
+    MenuItemRightCaption: TMenuItem;
+    MenuItemBottomCaption: TMenuItem;
+    MenuItemFootCaption: TMenuItem;
+    ColorDialog: TColorDialog;
+    PopupMenuSeries: TPopupMenu;
+    MenuItemSeriesColor: TMenuItem;
+    N2: TMenuItem;
+    MenuItemSeriesAdjust: TMenuItem;
+    MenuItemType: TMenuItem;
+    N3: TMenuItem;
+    MenuItemTypeLine: TMenuItem;
+    MenuItemTypePoint: TMenuItem;
+    MenuItemTypeBar: TMenuItem;
+    MenuItemTypeArea: TMenuItem;
+    MenuItemTypeLinePoint: TMenuItem;
+    ScrollBox: TScrollBox;
+    Chart: TDBChart;
+    procedure MenuItemFootCaptionFontClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure ChartMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure MenuItemFootCaptionClick(Sender: TObject);
+    procedure ChartClickSeries(Sender: TCustomChart; Series: TChartSeries;
+      ValueIndex: Integer; Button: TMouseButton; Shift: TShiftState; X,
+      Y: Integer);
+    procedure MenuItemSeriesColorClick(Sender: TObject);
+    procedure MenuItemSeriesAdjustClick(Sender: TObject);
+    procedure PopupMenuSeriesPopup(Sender: TObject);
+    procedure MenuItemTypeAreaClick(Sender: TObject);
+    procedure ChartMouseWheelDown(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
+    procedure ChartMouseWheelUp(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
+    procedure ChartClickAxis(Sender: TCustomChart; Axis: TChartAxis;
+      Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+  private
+    FLeftValue: String;
+    FBottomValue: String;
+    FRightValue: String;
+    FTempSeries: TChartSeries;
+    function GetIface: TSgtsGraphChartIface;
+    function GetFirstLeftSeries: TChartSeries;
+    function GetFirstRightSeries: TChartSeries;
+    function GetDataType(Series: TChartSeries; BottomAxis: Boolean=true): TFieldType;
+    function GetLabelValue(Series: TChartSeries; Axis: TChartAxis; Value: Double): String;
+    procedure UpdateBottomLabels;
+  protected
+    FChartComponent: TSgtsChartComponent;
+
+    function GetAdjustPersistent: TPersistent; override;
+    function GetAdjustControl: TControl; override;
+
+    property ChartComponent: TSgtsChartComponent read FChartComponent;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+    procedure UpdateStatusbar;
+    procedure ResetChartState;
+
+
+    property Iface: TSgtsGraphChartIface read GetIface;
+    property LeftValue: String read FLeftValue;
+    property BottomValue: String read FBottomValue;
+    property RightValue: String read FRightValue;
+  end;
+
+  TSgtsGraphChartIface=class(TSgtsGraphIface)
+  private
+    FSeriesDefs: TSgtsGraphChartSeriesDefs;
+    FChartTitle: TStringList;
+    FChartFootTitle: TStringList;
+    FChartLeftAxisTitle: TStringList;
+    FChartRightAxisTitle: TStringList;
+    FChartBottomAxisTitle: TStringList;
+    function GetForm: TSgtsGraphChartForm;
+  protected
+    function GetFormClass: TSgtsFormClass; override;
+    procedure AfterCreateForm(AForm: TSgtsForm); override;
+    procedure BeforeShowForm(AForm: TSgtsForm); override;
+
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+    procedure Init; override;
+
+    procedure UpdateButtons; override;
+    procedure UpdateStatusbar; override;
+    procedure Save; override;
+    function CanFonts: Boolean; virtual;
+    function CanCaptions: Boolean; virtual;
+
+    procedure CloseDataSets; override;
+    procedure OpenDataSets; override;
+
+    procedure RefreshTitles;
+
+    property Form: TSgtsGraphChartForm read GetForm;
+    property SeriesDefs: TSgtsGraphChartSeriesDefs read FSeriesDefs;
+    property ChartTitle: TStringList read FChartTitle;
+    property ChartFootTitle: TStringList read FChartFootTitle;
+    property ChartLeftAxisTitle: TStringList read FChartLeftAxisTitle;
+    property ChartRightAxisTitle: TStringList read FChartRightAxisTitle;
+    property ChartBottomAxisTitle: TStringList read FChartBottomAxisTitle;
+  end;
+
+var
+  SgtsGraphChartForm: TSgtsGraphChartForm;
+
+implementation
+
+uses StrUtils,
+     SgtsConsts, SgtsFieldEditFm, SgtsDialogs, SgtsUtils,
+     SgtsFieldEditFmIntf, SgtsGraphChartInfoFm;
+
+{$R *.dfm}
+
+{ TSgtsChartComponent }
+
+constructor TSgtsChartComponent.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+end;
+
+destructor TSgtsChartComponent.Destroy;
+begin
+  inherited Destroy;
+end;
+
+procedure TSgtsChartComponent.LoadFromStream(Stream: TStream);
+begin
+  Stream.ReadComponent(Self);
+end;
+
+procedure TSgtsChartComponent.SaveToStream(Stream: TStream);
+begin
+  Stream.WriteComponent(Self);
+end;
+
+function TSgtsChartComponent.GetStr: String;
+var
+  S: String;
+  Stream: TMemoryStream;
+begin
+  Stream:=TMemoryStream.Create;
+  try
+    Result:='';
+    SaveToStream(Stream);
+    SetLength(S,Stream.Size);
+    System.Move(Stream.Memory^,Pointer(S)^,Stream.Size);
+    Result:=S;
+  finally
+    Stream.Free;
+  end;
+end;
+
+procedure TSgtsChartComponent.SetStr(Value: String);
+var
+  Stream: TMemoryStream;
+  DefStream: TMemoryStream;
+begin
+  Stream:=TMemoryStream.Create;
+  DefStream:=TMemoryStream.Create;
+  try
+    SaveToStream(DefStream);
+    DefStream.Position:=0;
+    Stream.SetSize(Length(Value));
+    System.Move(Pointer(Value)^,Stream.Memory^,Length(Value));
+    try
+      LoadFromStream(Stream);
+    except
+      LoadFromStream(DefStream);
+    end;
+  finally
+    DefStream.Free;
+    Stream.Free;
+  end;
+end;
+
+function TSgtsChartComponent.GetLeftAxis: TChartAxis;
+begin
+  Result:=FChart.LeftAxis;
+end;
+
+procedure TSgtsChartComponent.SetLeftAxis(Value: TChartAxis);
+begin
+  FChart.LeftAxis:=Value;
+end;
+
+function TSgtsChartComponent.GetBottomAxis: TChartAxis;
+begin
+  Result:=FChart.BottomAxis;
+end;
+
+procedure TSgtsChartComponent.SetBottomAxis(Value: TChartAxis);
+begin
+  FChart.BottomAxis:=Value;
+end;
+
+function TSgtsChartComponent.GetRightAxis: TChartAxis;
+begin
+  Result:=FChart.RightAxis;
+end;
+
+procedure TSgtsChartComponent.SetRightAxis(Value: TChartAxis);
+begin
+  FChart.RightAxis:=Value;
+end;
+
+function TSgtsChartComponent.GetTopAxis: TChartAxis;
+begin
+  Result:=FChart.TopAxis;
+end;
+
+procedure TSgtsChartComponent.SetTopAxis(Value: TChartAxis);
+begin
+  FChart.TopAxis:=Value;
+end;
+
+function TSgtsChartComponent.GetFoot: TChartTitle;
+begin
+  Result:=FChart.Foot;
+end;
+
+procedure TSgtsChartComponent.SetFoot(Value: TChartTitle);
+begin
+  FChart.Foot:=Value;
+end;
+
+function TSgtsChartComponent.GetTitle: TChartTitle;
+begin
+  Result:=FChart.Title;
+end;
+
+procedure TSgtsChartComponent.SetTitle(Value: TChartTitle);
+begin
+  FChart.Title:=Value;
+end;
+
+function TSgtsChartComponent.GetLegend: TChartLegend;
+begin
+  Result:=FChart.Legend;
+end;
+
+procedure TSgtsChartComponent.SetLegend(Value: TChartLegend);
+begin
+  FChart.Legend:=Value;
+end;
+
+function TSgtsChartComponent.GetAllowPanning: TPanningMode;
+begin
+  Result:=FChart.AllowPanning;
+end;
+
+procedure TSgtsChartComponent.SetAllowPanning(Value: TPanningMode);
+begin
+  FChart.AllowPanning:=Value;
+end;
+
+function TSgtsChartComponent.GetAllowZoom: Boolean;
+begin
+  Result:=FChart.AllowZoom;
+end;
+
+procedure TSgtsChartComponent.SetAllowZoom(Value: Boolean);
+begin
+  FChart.AllowZoom:=Value;
+end;
+
+function TSgtsChartComponent.GetAxisVisible: Boolean;
+begin
+  Result:=FChart.AxisVisible;
+end;
+
+procedure TSgtsChartComponent.SetAxisVisible(Value: Boolean);
+begin
+  FChart.AxisVisible:=Value;
+end;
+
+function TSgtsChartComponent.GetBackWall: TChartBackWall;
+begin
+  Result:=FChart.BackWall;
+end;
+
+procedure TSgtsChartComponent.SetBackWall(Value: TChartBackWall);
+begin
+  FChart.BackWall:=Value;
+end;
+
+function TSgtsChartComponent.GetBottomWall: TChartWall;
+begin
+  Result:=FChart.BottomWall;
+end;
+
+procedure TSgtsChartComponent.SetBottomWall(Value: TChartWall);
+begin
+  FChart.BottomWall:=Value;
+end;
+
+function TSgtsChartComponent.GetChart3DPercent: Integer;
+begin
+  Result:=FChart.Chart3DPercent;
+end;
+
+procedure TSgtsChartComponent.SetChart3DPercent(Value: Integer);
+begin
+  FChart.Chart3DPercent:=Value;
+end;
+
+function TSgtsChartComponent.GetDepthAxis: TChartDepthAxis;
+begin
+  Result:=FChart.DepthAxis;
+end;
+
+procedure TSgtsChartComponent.SetDepthAxis(Value: TChartDepthAxis);
+begin
+  FChart.DepthAxis:=Value;
+end;
+
+function TSgtsChartComponent.GetFrame: TChartPen;
+begin
+  Result:=FChart.Frame;
+end;
+
+procedure TSgtsChartComponent.SetFrame(Value: TChartPen);
+begin
+  FChart.Frame:=Value;
+end;
+
+function TSgtsChartComponent.GetGradient: TChartGradient;
+begin
+  Result:=FChart.Gradient;
+end;
+
+procedure TSgtsChartComponent.SetGradient(Value: TChartGradient);
+begin
+  FChart.Gradient:=Value;
+end;
+
+function TSgtsChartComponent.GetLeftWall: TChartWall;
+begin
+  Result:=FChart.LeftWall;
+end;
+
+procedure TSgtsChartComponent.SetLeftWall(Value: TChartWall);
+begin
+  FChart.LeftWall:=Value;
+end;
+
+function TSgtsChartComponent.GetMarginLeft: Integer;
+begin
+  Result:=FChart.MarginLeft;
+end;
+
+procedure TSgtsChartComponent.SetMarginLeft(Value: Integer);
+begin
+  FChart.MarginLeft:=Value;
+end;
+
+function TSgtsChartComponent.GetMarginRight: Integer;
+begin
+  Result:=FChart.MarginRight;
+end;
+
+procedure TSgtsChartComponent.SetMarginRight(Value: Integer);
+begin
+  FChart.MarginRight:=Value;
+end;
+
+function TSgtsChartComponent.GetMarginTop: Integer;
+begin
+  Result:=FChart.MarginTop;
+end;
+
+procedure TSgtsChartComponent.SetMarginTop(Value: Integer);
+begin
+  FChart.MarginTop:=Value;
+end;
+
+function TSgtsChartComponent.GetMarginBottom: Integer;
+begin
+  Result:=FChart.MarginBottom;
+end;
+
+procedure TSgtsChartComponent.SetMarginBottom(Value: Integer);
+begin
+  FChart.MarginBottom:=Value;
+end;
+
+function TSgtsChartComponent.GetView3D: Boolean;
+begin
+  Result:=FChart.View3D;
+end;
+
+procedure TSgtsChartComponent.SetView3D(Value: Boolean);
+begin
+  FChart.View3D:=Value;
+end;
+
+function TSgtsChartComponent.GetView3DOptions: TView3DOptions;
+begin
+  Result:=FChart.View3DOptions;
+end;
+
+procedure TSgtsChartComponent.SetView3DOptions(Value: TView3DOptions);
+begin
+  FChart.View3DOptions:=Value;
+end;
+
+function TSgtsChartComponent.GetView3DWalls: Boolean;
+begin
+  Result:=FChart.View3DWalls;
+end;
+
+procedure TSgtsChartComponent.SetView3DWalls(Value: Boolean);
+begin
+  FChart.View3DWalls:=Value;
+end;
+
+
+{ TSgtsGraphChartIface }
+
+constructor TSgtsGraphChartIface.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FSeriesDefs:=TSgtsGraphChartSeriesDefs.Create;
+  FChartTitle:=TStringList.Create;
+  FChartFootTitle:=TStringList.Create;
+  FChartLeftAxisTitle:=TStringList.Create;
+  FChartRightAxisTitle:=TStringList.Create;
+  FChartBottomAxisTitle:=TStringList.Create;
+end;
+
+destructor TSgtsGraphChartIface.Destroy;
+begin
+  FChartBottomAxisTitle.Free;
+  FChartRightAxisTitle.Free;
+  FChartLeftAxisTitle.Free;
+  FChartFootTitle.Free;
+  FChartTitle.Free;
+  FreeAndNil(FSeriesDefs);
+  inherited Destroy;
+end;
+
+function TSgtsGraphChartIface.GetForm: TSgtsGraphChartForm;
+begin
+  Result:=TSgtsGraphChartForm(inherited Form);
+end;
+
+function TSgtsGraphChartIface.GetFormClass: TSgtsFormClass;
+begin
+  Result:=TSgtsGraphChartForm;
+end;
+
+procedure TSgtsGraphChartIface.Init;
+begin
+  inherited Init;
+end;
+
+procedure TSgtsGraphChartIface.RefreshTitles;
+begin
+  if Assigned(Form) then begin
+    with Form.Chart do begin
+      if Trim(FChartTitle.Text)<>'' then
+        Title.Text.Assign(FChartTitle);
+      if Trim(FChartFootTitle.Text)<>'' then
+        Foot.Text.Text:=ReverseStrings(FChartFootTitle.Text);
+      if Trim(FChartLeftAxisTitle.Text)<>'' then
+        LeftAxis.Title.Caption:=Trim(FChartLeftAxisTitle.Text);
+      if Trim(FChartRightAxisTitle.Text)<>'' then
+        RightAxis.Title.Caption:=Trim(FChartRightAxisTitle.Text);
+      if Trim(FChartBottomAxisTitle.Text)<>'' then
+        BottomAxis.Title.Caption:=Trim(FChartBottomAxisTitle.Text);
+    end;
+  end;
+end;
+
+procedure TSgtsGraphChartIface.AfterCreateForm(AForm: TSgtsForm);
+begin
+  inherited AfterCreateForm(AForm);
+  RefreshTitles;
+end;
+
+procedure TSgtsGraphChartIface.BeforeShowForm(AForm: TSgtsForm);
+begin
+  inherited BeforeShowForm(AForm);
+end;
+
+procedure TSgtsGraphChartIface.UpdateButtons;
+begin
+  inherited UpdateButtons;
+  if Assigned(Form) then begin
+    with Form do begin
+      ToolButtonFonts.Enabled:=CanFonts;
+      ToolButtonCaptions.Enabled:=CanCaptions;
+    end;
+  end;
+end;
+
+procedure TSgtsGraphChartIface.UpdateStatusbar;
+begin
+  inherited UpdateStatusbar;
+  if Assigned(Form) then begin
+    Form.UpdateStatusBar;
+  end;
+end;
+
+procedure TSgtsGraphChartIface.Save;
+begin
+  if CanSave then begin
+    with Form do begin
+      SavePictureDialog.FileName:=RemoveNotFileNameChars(Form.Caption);
+      if SavePictureDialog.Execute then begin
+        case SavePictureDialog.FilterIndex of
+          1: Chart.SaveToMetafileEnh(SavePictureDialog.FileName);
+          2: Chart.SaveToMetafile(SavePictureDialog.FileName);
+          3: Chart.SaveToBitmapFile(SavePictureDialog.FileName);
+        else
+          Chart.SaveToMetafileEnh(SavePictureDialog.FileName);
+        end;
+      end;
+    end;
+  end;
+end;
+
+function TSgtsGraphChartIface.CanFonts: Boolean;
+begin
+  Result:=Assigned(Form);
+end;
+
+function TSgtsGraphChartIface.CanCaptions: Boolean;
+begin
+  Result:=Assigned(Form);
+end;
+
+procedure TSgtsGraphChartIface.CloseDataSets;
+begin
+  FSeriesDefs.Active:=false;
+  inherited CloseDataSets;
+end;
+
+procedure TSgtsGraphChartIface.OpenDataSets;
+begin
+  if Assigned(Form) then
+    Form.ResetChartState;
+  if Assigned(Form) then begin
+    FSeriesDefs.CreateSeries(Form.Chart);
+  end;
+  inherited OpenDataSets;
+  FSeriesDefs.Active:=true;
+  if Assigned(Form) then
+    Form.UpdateBottomLabels;
+  RefreshTitles;
+end;
+
+{ TSgtsGraphChartForm }
+
+constructor TSgtsGraphChartForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FChartComponent:=TSgtsChartComponent.Create(nil);
+  FChartComponent.Chart:=Chart;
+  FChartComponent.Name:=Chart.Name;
+end;
+
+destructor TSgtsGraphChartForm.Destroy;
+begin
+  FChartComponent.Free;
+  if Assigned(Iface.SeriesDefs) then
+    Iface.SeriesDefs.ClearSeries;
+  inherited Destroy;
+end;
+
+function TSgtsGraphChartForm.GetAdjustPersistent: TPersistent; 
+begin
+  Result:=FChartComponent;
+end;
+
+function TSgtsGraphChartForm.GetAdjustControl: TControl; 
+begin
+  Result:=Chart;
+end;
+
+function TSgtsGraphChartForm.GetIface: TSgtsGraphChartIface;
+begin
+  Result:=TSgtsGraphChartIface(inherited Iface);
+end;
+
+procedure TSgtsGraphChartForm.MenuItemFootCaptionFontClick(Sender: TObject);
+var
+  MenuItem: TMenuItem;
+  AFont: TFont;
+begin
+  MenuItem:=TMenuItem(Sender);
+  AFont:=nil;
+  if MenuItem=MenuItemGraphCaptionFont then AFont:=Chart.Title.Font;
+  if MenuItem=MenuItemLegendCaptionFont then AFont:=Chart.Legend.Font;
+  if MenuItem=MenuItemLeftCaptionFont then AFont:=Chart.LeftAxis.Title.Font;
+  if MenuItem=MenuItemLeftLabelFont then AFont:=Chart.LeftAxis.LabelsFont;
+  if MenuItem=MenuItemRightCaptionFont then AFont:=Chart.RightAxis.Title.Font;
+  if MenuItem=MenuItemRightLabelFont then AFont:=Chart.RightAxis.LabelsFont;
+  if MenuItem=MenuItemBottomCaptionFont then AFont:=Chart.BottomAxis.Title.Font;
+  if MenuItem=MenuItemBottomLabelFont then AFont:=Chart.BottomAxis.LabelsFont;
+  if MenuItem=MenuItemFootCaptionFont then AFont:=Chart.Foot.Font;
+
+  if Assigned(AFont) then begin
+    FontDialog.Font.Assign(AFont);
+    if FontDialog.Execute then
+      AFont.Assign(FontDialog.Font);
+  end;
+end;
+
+procedure TSgtsGraphChartForm.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+  Pt: TPoint;
+  XDelta,YDelta,YRDelta: Double;
+  XRange,YRange,YRRange: Double;
+begin
+  inherited;
+  if ssShift in Shift then begin
+    case Key of
+      VK_F10: begin
+        Pt:=Chart.ClientToScreen(Point(Chart.Left,Chart.Top));
+        PopupMenuView.Popup(Pt.X,Pt.Y);
+      end;
+    end;
+  end;
+
+  XDelta:=0;
+  YDelta:=0;
+  YRDelta:=0;
+  
+  with Chart.BottomAxis do
+    XRange:=Maximum-Minimum;
+  with Chart.LeftAxis do
+    YRange:=Maximum-Minimum;
+  with Chart.RightAxis do
+    YRRange:=Maximum-Minimum;
+
+  if ssShift in Shift then begin
+    if Chart.AllowZoom then begin
+      case key of
+        VK_LEFT,VK_UP: Chart.ZoomPercent(105);
+        VK_RIGHT,VK_DOWN: Chart.ZoomPercent(95);
+      end;
+    end;
+    exit;
+  end else begin
+    case Key of
+      VK_LEFT: XDelta:=-XRange/100;
+      VK_RIGHT: XDelta:= XRange/100;
+      VK_UP: begin
+        YDelta:= YRange/100;
+        YRDelta:= YRRange/100;
+      end;
+      VK_DOWN: begin
+        YDelta:=-YRange/100;
+        YRDelta:=-YRRange/100;
+      end;
+      VK_NEXT: begin
+        YDelta:=-YRange/10;
+        YRDelta:=-YRRange/10;
+      end;
+      VK_PRIOR: begin
+        YDelta:= YRange/10;
+        YRDelta:= YRRange/10;
+      end;
+      VK_SPACE: Begin
+        ResetChartState;
+        Exit;
+      end;
+    end;
+  end;
+
+  XDelta:=-XDelta;
+  YDelta:=-YDelta;
+  YRDelta:=-YRDelta;
+
+  with Chart do begin
+    case Chart.AllowPanning of
+      pmHorizontal: begin
+        BottomAxis.Scroll(XDelta,false);
+        TopAxis.Scroll(XDelta,false);
+      end;
+      pmVertical: begin
+        LeftAxis.Scroll(YDelta,false);
+        RightAxis.Scroll(YRDelta,false);
+      end;
+      pmBoth: begin
+        LeftAxis.Scroll(YDelta,false);
+        RightAxis.Scroll(YRDelta,false);
+        BottomAxis.Scroll(XDelta,false);
+        TopAxis.Scroll(XDelta,false);
+      end;
+    end;
+    SetFocus;
+  end;
+end;
+
+function TSgtsGraphChartForm.GetFirstLeftSeries: TChartSeries;
+var
+  i: Integer;
+  Series: TChartSeries;
+begin
+  Result:=nil;
+  for i:=0 to Chart.SeriesList.Count-1 do begin
+    Series:=Chart.SeriesList[i];
+    if Series.Active and (Series.GetVertAxis=Chart.LeftAxis) then begin
+      Result:=Series;
+      break;
+    end;
+  end;
+end;
+
+function TSgtsGraphChartForm.GetFirstRightSeries: TChartSeries;
+var
+  i: Integer;
+  Series: TChartSeries;
+begin
+  Result:=nil;
+  for i:=0 to Chart.SeriesList.Count-1 do begin
+    Series:=Chart.SeriesList[i];
+    if Series.Active and (Series.GetVertAxis=Chart.RightAxis) then begin
+      Result:=Series;
+      break;
+    end;
+  end;
+end;
+
+function TSgtsGraphChartForm.GetDataType(Series: TChartSeries; BottomAxis: Boolean=true): TFieldType;
+var
+  Field: TField;
+  FieldName: String;
+begin
+  Result:=ftUnknown;
+  if Assigned(Series) and
+     Assigned(Series.DataSource) and
+     (Series.DataSource is TDataSet) then begin
+    if BottomAxis then begin
+      FieldName:=Series.XValues.ValueSource;
+      if Trim(FieldName)='' then
+        FieldName:=Series.XLabelsSource;
+    end else begin
+      FieldName:=Series.YValues.ValueSource;
+    end;
+    if Trim(FieldName)<>'' then begin
+      Field:=TDataSet(Series.DataSource).FindField(FieldName);
+      if Assigned(Field) then
+        Result:=Field.DataType;
+    end;
+  end;
+end;
+
+function TSgtsGraphChartForm.GetLabelValue(Series: TChartSeries; Axis: TChartAxis; Value: Double): String;
+var
+  Index: Integer;
+  DataType: TFieldType;
+begin
+  Result:='';
+  if Assigned(Series) and
+     Assigned(Axis) then begin
+    if Axis=Series.GetHorizAxis then begin
+      if (Axis.LabelStyle in [talValue,talText,talAuto]) then begin
+        Index:=Series.GetCursorValueIndex;
+        if (Index>-1) and (Index<Series.Labels.Count) then begin
+          Result:=Series.XLabel[Index];
+        end else begin
+          Index:=Series.XValues.Locate(Round(Value));
+          if (Index>-1) and (Index<Series.Labels.Count) then
+            Result:=Series.XLabel[Index];
+        end;
+      end else begin
+        DataType:=GetDataType(Series,true);
+        case DataType of
+          ftDate,ftDateTime: Result:=DateToStr(Value);
+          ftSmallint,ftInteger,ftWord: Result:=IntToStr(Round(Value));
+        else
+          Result:=Axis.LabelValue(Value);
+        end;
+      end;
+    end else
+      Result:=Axis.LabelValue(Value);
+  end;
+end;
+
+procedure TSgtsGraphChartForm.ChartMouseMove(Sender: TObject;
+                                             Shift: TShiftState; X, Y: Integer);
+var
+  LSeries: TChartSeries;
+  RSeries: TChartSeries;
+  tmpX,tmpY: Double;
+begin
+  LSeries:=GetFirstLeftSeries;
+  if Assigned(LSeries) then begin
+    LSeries.GetCursorValues(tmpX,tmpY);
+    FLeftValue:=GetLabelValue(LSeries,Chart.LeftAxis,tmpY);
+    FBottomValue:=GetLabelValue(LSeries,Chart.BottomAxis,tmpX);
+  end;
+  RSeries:=GetFirstRightSeries;
+  if Assigned(RSeries) then begin
+    RSeries.GetCursorValues(tmpX,tmpY);
+    FRightValue:=GetLabelValue(RSeries,Chart.RightAxis,tmpY);
+  //  FBottomValue:=GetLabelValue(RSeries,Chart.BottomAxis,tmpX);
+  end;
+  UpdateStatusbar;
+end;
+
+procedure TSgtsGraphChartForm.UpdateStatusbar;
+var
+  LSeries: TChartSeries;
+  RSeries: TChartSeries;
+  S1,S2,S3: String;
+begin
+  LSeries:=GetFirstLeftSeries;
+  RSeries:=GetFirstRightSeries;
+  S1:='';
+  S2:='';
+  S3:='';
+
+  if Assigned(LSeries) then
+    S1:=Format(SLeftAxisValue,[LeftValue]);
+  if Assigned(LSeries) or Assigned(RSeries) then
+    S2:=Format(SBottomAxisValue,[BottomValue]);
+  if Assigned(RSeries) then
+    S3:=Format(SRightAxisValue,[RightValue]);
+                                          
+  StatusBar.Panels[0].Text:=S1;
+  StatusBar.Panels[1].Text:=S2;
+  StatusBar.Panels[2].Text:=S3;
+end;
+
+
+procedure TSgtsGraphChartForm.MenuItemFootCaptionClick(Sender: TObject);
+var
+  MenuItem: TMenuItem;
+  S: String;
+  Value: Variant;
+  AIface: TSgtsFieldEditIface;
+begin
+  MenuItem:=TMenuItem(Sender);
+  S:='';
+
+  if MenuItem=MenuItemGraphCaption then S:=Chart.Title.Text.Text;
+  if MenuItem=MenuItemLeftCaption then S:=Chart.LeftAxis.Title.Caption;
+  if MenuItem=MenuItemRightCaption then S:=Chart.RightAxis.Title.Caption;
+  if MenuItem=MenuItemBottomCaption then S:=Chart.BottomAxis.Title.Caption;
+  if MenuItem=MenuItemFootCaption then S:=ReverseStrings(Chart.Foot.Text.Text);
+
+  AIface:=TSgtsFieldEditIface.Create(CoreIntf);
+  try
+    AIface.Init;
+    AIface.Caption:=MenuItem.Caption;
+    if AIface.Show(S,Value,etDefault) then begin
+      S:=Trim(VarToStrDef(Value,''));
+
+      if MenuItem=MenuItemGraphCaption then Chart.Title.Text.Text:=S;
+      if MenuItem=MenuItemLeftCaption then Chart.LeftAxis.Title.Caption:=S;
+      if MenuItem=MenuItemRightCaption then Chart.RightAxis.Title.Caption:=S;
+      if MenuItem=MenuItemBottomCaption then Chart.BottomAxis.Title.Caption:=S;
+      if MenuItem=MenuItemFootCaption then Chart.Foot.Text.Text:=ReverseStrings(S);
+
+    end;
+    AIface.Done;
+  finally
+    AIface.Free;
+  end;
+end;
+
+procedure TSgtsGraphChartForm.ChartClickSeries(Sender: TCustomChart;
+  Series: TChartSeries; ValueIndex: Integer; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+  AIface: TSgtsGraphChartInfoIface;
+  tmpX,tmpY: Double;
+  XValue, YValue: String;
+  XAverage, YAverage: String;
+  XMax, YMax: String;
+  XMin, YMin: String;
+  XRange, YRange: String;
+  Pt: TPoint;
+  Index: Integer;
+begin
+  if Button=mbRight then begin
+    FTempSeries:=Series;
+    Pt.X:=X;
+    Pt.Y:=Y;
+    Pt:=Chart.ClientToScreen(Pt);
+    PopupMenuSeries.Popup(Pt.X,Pt.Y);
+  end;
+  if Button=mbLeft then begin
+    AIface:=TSgtsGraphChartInfoIface.Create(CoreIntf);
+    try
+      Series.GetCursorValues(tmpX,tmpY);
+      XValue:=GetLabelValue(Series,Series.GetHorizAxis,tmpX);
+      YValue:=GetLabelValue(Series,Series.GetVertAxis,tmpY);
+      if Series.XValues.Count>0 then
+        XAverage:=GetLabelValue(Series,Series.GetHorizAxis,Series.XValues.Total/Series.XValues.Count)
+      else XAverage:='';
+      if Series.YValues.Count>0 then
+        YAverage:=GetLabelValue(Series,Series.GetVertAxis,Series.YValues.Total/Series.YValues.Count)
+      else YAverage:='';
+
+      XMax:='';
+      Index:=Series.YValues.Locate(Series.MaxYValue);
+      if Index<>-1 then
+        XMax:=GetLabelValue(Series,Series.GetHorizAxis,Series.XValue[Index]);
+
+      YMax:=GetLabelValue(Series,Series.GetVertAxis,Series.MaxYValue);
+
+      XMin:='';
+      Index:=Series.YValues.Locate(Series.MinYValue);
+      if Index<>-1 then
+        XMin:=GetLabelValue(Series,Series.GetHorizAxis,Series.XValue[Index]);
+
+      YMin:=GetLabelValue(Series,Series.GetVertAxis,Series.MinYValue);
+
+      XRange:='';
+      YRange:=GetLabelValue(Series,Series.GetVertAxis,Series.MaxYValue-Series.MinYValue);
+
+      AIface.Caption:=Format(SSeriesInfo,[Series.Title]);
+      AIface.YValue:=YValue;
+      AIface.YAverage:=YAverage;
+      AIface.YMax:=YMax;
+      AIface.YMin:=YMin;
+      AIface.YRange:=YRange;
+      AIface.XValue:=XValue;
+      AIface.XMax:=XMax;
+      AIface.XMin:=XMin;
+      AIface.Show;                                    
+    finally
+      AIface.Free;
+    end;                                   
+  end;
+end;
+
+procedure TSgtsGraphChartForm.MenuItemSeriesColorClick(Sender: TObject);
+begin
+  if Assigned(FTempSeries) then begin
+    ColorDialog.Color:=FTempSeries.SeriesColor;
+    if ColorDialog.Execute then
+      FTempSeries.SeriesColor:=ColorDialog.Color;
+  end;    
+end;
+
+procedure TSgtsGraphChartForm.MenuItemSeriesAdjustClick(Sender: TObject);
+begin
+  if Assigned(FTempSeries) then begin
+    with Iface do begin
+      AdjustIface.Persistent:=FTempSeries;
+      AdjustIface.Caption:=FTempSeries.Title;
+      AdjustIface.UpdateContents;
+      AdjustIface.Show;
+    end;
+  end;
+end;
+
+procedure TSgtsGraphChartForm.ResetChartState;
+begin
+  with Chart do begin
+    LeftAxis.Automatic:=true;
+    RightAxis.Automatic:=true;
+    BottomAxis.Automatic:=true;
+    TopAxis.Automatic:=true;
+    UndoZoom;
+  end;
+end;
+
+procedure TSgtsGraphChartForm.PopupMenuSeriesPopup(Sender: TObject);
+begin
+  if Assigned(FTempSeries) then begin
+    if FTempSeries is TLineSeries then begin
+      if not TLineSeries(FTempSeries).Pointer.Visible then
+        MenuItemTypeLine.Checked:=true
+      else MenuItemTypeLinePoint.Checked:=true;  
+    end;  
+    MenuItemTypePoint.Checked:=FTempSeries is TPointSeries;
+    MenuItemTypeBar.Checked:=FTempSeries is TBarSeries;
+    MenuItemTypeArea.Checked:=FTempSeries is TAreaSeries;
+  end;
+end;
+
+procedure TSgtsGraphChartForm.MenuItemTypeAreaClick(Sender: TObject);
+var
+  Menu: TMenuItem;
+  AClass: TChartSeriesClass;
+  Def: TSgtsGraphChartSeriesDef; 
+begin
+  Menu:=TMenuItem(Sender);
+  if Assigned(FTempSeries) and
+     not Menu.Checked then begin
+    MenuItemTypeLine.Checked:=false;
+    MenuItemTypePoint.Checked:=false;
+    MenuItemTypeBar.Checked:=false;
+    MenuItemTypeArea.Checked:=false;
+    Menu.Checked:=true;
+    AClass:=nil;
+    if Menu=MenuItemTypeLine then AClass:=TLineSeries;
+    if Menu=MenuItemTypePoint then AClass:=TPointSeries;
+    if Menu=MenuItemTypeBar then AClass:=TBarSeries;
+    if Menu=MenuItemTypeArea then AClass:=TAreaSeries;
+    if Menu=MenuItemTypeLinePoint then AClass:=TLineSeries;
+    Def:=Iface.SeriesDefs.FindBySeries(FTempSeries);
+    if Assigned(Def) then begin
+      FTempSeries:=Def.ChangeSeriesByClass(AClass,Menu=MenuItemTypeLinePoint);
+      Iface.AdjustIface.Hide;
+    end;
+  end;
+end;
+
+procedure TSgtsGraphChartForm.ChartMouseWheelDown(Sender: TObject;
+  Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
+begin
+  if Chart.AllowZoom then begin
+    Chart.ZoomPercent(95);
+    Handled:=true;
+  end;
+end;
+
+procedure TSgtsGraphChartForm.ChartMouseWheelUp(Sender: TObject;
+  Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
+begin
+  if Chart.AllowZoom then begin
+    Chart.ZoomPercent(105);
+    Handled:=true;
+  end;
+end;
+
+procedure TSgtsGraphChartForm.UpdateBottomLabels;
+var
+  i: Integer;
+  Def: TSgtsGraphChartSeriesDef;
+  Dt1, Dt2: TFieldType;
+  FlagDate: Boolean;
+  FlagXMerge: Boolean;
+  FlagLabelExists: Boolean;
+begin
+  FlagDate:=false;
+  FlagXMerge:=false;
+  FlagLabelExists:=false;
+  for i:=0 to Iface.SeriesDefs.Count-1 do begin
+    Def:=Iface.SeriesDefs.Items[i];
+    if Assigned(Def.Series) then begin
+      Dt1:=GetDataType(Def.Series,false);
+      Dt2:=GetDataType(Def.Series,true);
+      Def.Series.YValues.DateTime:=Dt1 in [ftDate,ftDateTime];
+      Def.Series.XValues.DateTime:=Dt2 in [ftDate,ftDateTime];
+      if i=0 then begin
+        FlagDate:=Def.Series.XValues.DateTime;
+        FlagXMerge:=Def.XMerging;
+        FlagLabelExists:=Trim(Def.XLabelFieldName)<>'';
+      end;
+    end;
+  end;
+  Chart.BottomAxis.LabelStyle:=talValue;
+  if FlagDate then begin
+    Chart.BottomAxis.LabelStyle:=talValue;
+  end else begin
+    if not FlagXMerge or FlagLabelExists then
+      Chart.BottomAxis.LabelStyle:=talAuto
+    else
+      Chart.BottomAxis.LabelStyle:=talValue;
+  end;  
+end;
+
+procedure TSgtsGraphChartForm.ChartClickAxis(Sender: TCustomChart;
+  Axis: TChartAxis; Button: TMouseButton; Shift: TShiftState; X,
+  Y: Integer);
+var
+  Step: Extended;
+  Value: String;
+begin
+  Step:=Axis.Increment;
+  Value:=FloatToStr(Step);
+  if InputQuery(SInputAxisStep,SAxisStep,Value) then begin
+    if TryStrToFloat(Value,Step) then begin
+      Axis.Increment:=Step;
+    end;
+  end;
+end;
+
+end.
+

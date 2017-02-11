@@ -1,0 +1,126 @@
+unit SgtsRbkMeasureTypeAlgorithmEditFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, ToolWin, ImgList, Menus, ExtCtrls, StdCtrls,
+  SgtsDataEditFm, SgtsDataInsertFm, SgtsDataUpdateFm, SgtsDataDelete,
+  SgtsFm, SgtsControls;
+
+type
+  TSgtsRbkMeasureTypeAlgorithmEditForm = class(TSgtsDataEditForm)
+    LabelMeasureType: TLabel;
+    EditMeasureType: TEdit;
+    ButtonMeasureType: TButton;
+    LabelAlgorithm: TLabel;
+    EditAlgorithm: TEdit;
+    ButtonAlgorithm: TButton;
+    LabelPriority: TLabel;
+    EditPriority: TEdit;
+    LabelDateBegin: TLabel;
+    LabelDateEnd: TLabel;
+    DateTimePickerBegin: TDateTimePicker;
+    DateTimePickerEnd: TDateTimePicker;
+  private
+    { Private declarations }
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+  end;
+
+  TSgtsRbkMeasureTypeAlgorithmInsertIface=class(TSgtsDataInsertIface)
+  public
+    procedure Init; override;
+  end;
+
+  TSgtsRbkMeasureTypeAlgorithmUpdateIface=class(TSgtsDataUpdateIface)
+  public
+    procedure Init; override;
+  end;
+
+  TSgtsRbkMeasureTypeAlgorithmDeleteIface=class(TSgtsDataDeleteIface)
+  public
+    procedure Init; override;
+  end;
+  
+var
+  SgtsRbkMeasureTypeAlgorithmRoleEditForm: TSgtsRbkMeasureTypeAlgorithmEditForm;
+
+implementation
+
+uses DBClient,
+     SgtsIface, SgtsConsts, SgtsProviderConsts,
+     SgtsDatabaseCDS, SgtsDialogs, SgtsExecuteDefs,
+     SgtsRbkAlgorithmsFm, SgtsRbkMeasureTypesFm;
+
+{$R *.dfm}
+
+{ TSgtsRbkMeasureTypeAlgorithmInsertIface }
+
+procedure TSgtsRbkMeasureTypeAlgorithmInsertIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkMeasureTypeAlgorithmEditForm;
+  InterfaceName:=SInterfaceMeasureTypeAlgorithmInsert;
+  with DataSet do begin
+    ProviderName:=SProviderInsertMeasureTypeAlgorithm;
+    with ExecuteDefs do begin
+      AddEditLink('MEASURE_TYPE_ID','EditMeasureType','LabelMeasureType','ButtonMeasureType',
+                  TSgtsRbkMeasureTypesIface,'MEASURE_TYPE_NAME','NAME','MEASURE_TYPE_ID',true);
+      AddEditLink('ALGORITHM_ID','EditAlgorithm','LabelAlgorithm','ButtonAlgorithm',
+                  TSgtsRbkAlgorithmsIface,'ALGORITHM_NAME','NAME','ALGORITHM_ID',true);
+      AddDate('DATE_BEGIN','DateTimePickerBegin','LabelDateBegin',true);
+      AddDate('DATE_END','DateTimePickerEnd','LabelDateEnd',false).DefaultValue:=NullDate;
+      AddEditInteger('PRIORITY','EditPriority','LabelPriority',true);
+    end;
+  end;
+end;
+
+{ TSgtsRbkMeasureTypeAlgorithmUpdateIface }
+
+procedure TSgtsRbkMeasureTypeAlgorithmUpdateIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkMeasureTypeAlgorithmEditForm;
+  InterfaceName:=SInterfaceMeasureTypeAlgorithmUpdate;
+  with DataSet do begin
+    ProviderName:=SProviderUpdateMeasureTypeAlgorithm;
+    with ExecuteDefs do begin
+      AddEditLink('MEASURE_TYPE_ID','EditMeasureType','LabelMeasureType','ButtonMeasureType',
+                  TSgtsRbkMeasureTypesIface,'MEASURE_TYPE_NAME','NAME','MEASURE_TYPE_ID',true,true);
+      AddEditLink('ALGORITHM_ID','EditAlgorithm','LabelAlgorithm','ButtonAlgorithm',
+                  TSgtsRbkAlgorithmsIface,'ALGORITHM_NAME','NAME','ALGORITHM_ID',true,true);
+      AddDate('DATE_BEGIN','DateTimePickerBegin','LabelDateBegin',true);
+      AddDate('DATE_END','DateTimePickerEnd','LabelDateEnd',false).DefaultValue:=NullDate;
+      AddEditInteger('PRIORITY','EditPriority','LabelPriority',true);
+    end;
+  end;
+end;
+
+{ TSgtsRbkMeasureTypeAlgorithmDeleteIface }
+
+procedure TSgtsRbkMeasureTypeAlgorithmDeleteIface.Init;
+begin
+  inherited Init;
+  InterfaceName:=SInterfaceMeasureTypeAlgorithmDelete;
+  DeleteQuestion:='Удалить алгоритм: %ALGORITHM_NAME у вида измерения %MEASURE_TYPE_NAME?';
+  with DataSet do begin
+    ProviderName:=SProviderDeleteMeasureTypeAlgorithm;
+    with ExecuteDefs do begin
+      AddKeyLink('MEASURE_TYPE_ID');
+      AddKeyLink('ALGORITHM_ID');
+      AddInvisible('MEASURE_TYPE_NAME');
+      AddInvisible('ALGORITHM_NAME');
+    end;
+  end;
+end;
+
+{ TSgtsRbkMeasureTypeAlgorithmEditForm }
+
+constructor TSgtsRbkMeasureTypeAlgorithmEditForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  DateTimePickerBegin.Date:=Date;
+end;
+
+end.

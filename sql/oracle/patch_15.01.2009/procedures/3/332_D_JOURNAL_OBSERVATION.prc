@@ -1,0 +1,19 @@
+/* Создание процедуры удаления записи в журнале наблюдений */
+
+CREATE OR REPLACE PROCEDURE D_JOURNAL_OBSERVATION
+( 
+  OLD_JOURNAL_OBSERVATION_ID IN INTEGER 
+) 
+AS 
+BEGIN 
+  DELETE FROM JOURNAL_OBSERVATIONS 
+        WHERE JOURNAL_OBSERVATION_ID=OLD_JOURNAL_OBSERVATION_ID; 
+  COMMIT;         
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+

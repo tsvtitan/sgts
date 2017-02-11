@@ -1,0 +1,103 @@
+inherited SgtsRbkDivisionsForm: TSgtsRbkDivisionsForm
+  Left = 551
+  Top = 165
+  Height = 431
+  Caption = #1054#1090#1076#1077#1083#1099
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited BevelStatus: TBevel
+    Top = 324
+  end
+  inherited StatusBar: TStatusBar
+    Top = 366
+  end
+  inherited ToolBar: TToolBar
+    Height = 324
+  end
+  inherited PanelView: TPanel
+    Height = 324
+    object Splitter: TSplitter [0]
+      Left = 3
+      Top = 253
+      Width = 376
+      Height = 3
+      Cursor = crVSplit
+      Align = alBottom
+    end
+    inherited TreePattern: TTreeView
+      Height = 250
+    end
+    object PanelInfo: TPanel
+      Left = 3
+      Top = 256
+      Width = 376
+      Height = 65
+      Align = alBottom
+      BevelOuter = bvNone
+      TabOrder = 1
+      object GroupBoxInfo: TGroupBox
+        Left = 0
+        Top = 0
+        Width = 376
+        Height = 65
+        Align = alClient
+        Caption = ' '#1054#1087#1080#1089#1072#1085#1080#1077' '
+        TabOrder = 0
+        object PanelNote: TPanel
+          Left = 2
+          Top = 15
+          Width = 372
+          Height = 48
+          Align = alClient
+          BevelOuter = bvNone
+          BorderWidth = 5
+          TabOrder = 0
+          object DBMemoDescription: TDBMemo
+            Left = 5
+            Top = 5
+            Width = 362
+            Height = 38
+            Align = alClient
+            Color = clBtnFace
+            DataField = 'DESCRIPTION'
+            DataSource = DataSource
+            ReadOnly = True
+            TabOrder = 0
+          end
+        end
+      end
+    end
+  end
+  inherited PanelButton: TPanel
+    Top = 327
+  end
+  inherited MainMenu: TMainMenu
+    Left = 64
+  end
+  inherited ImageList: TImageList
+    Left = 104
+    Top = 58
+  end
+  inherited PopupMenuView: TPopupMenu
+    Left = 184
+    Top = 98
+  end
+  inherited PopupMenuFilter: TPopupMenu
+    Top = 138
+  end
+  inherited PopupMenuReport: TPopupMenu
+    Left = 264
+    Top = 42
+  end
+  inherited ImageListTree: TImageList
+    Left = 104
+    Top = 170
+  end
+  inherited DataSource: TDataSource
+    Left = 328
+  end
+  inherited PopupMenuInsert: TPopupMenu
+    Left = 203
+    Top = 200
+  end
+end

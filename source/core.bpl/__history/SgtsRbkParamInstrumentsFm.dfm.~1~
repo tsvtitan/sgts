@@ -1,0 +1,39 @@
+inherited SgtsRbkParamInstrumentsForm: TSgtsRbkParamInstrumentsForm
+  Left = 391
+  Top = 158
+  Width = 500
+  Height = 470
+  Caption = #1055#1088#1080#1073#1086#1088#1099' '#1087#1072#1088#1072#1084#1077#1090#1088#1086#1074
+  Constraints.MinHeight = 470
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited BevelStatus: TBevel
+    Top = 363
+    Width = 492
+  end
+  inherited StatusBar: TStatusBar
+    Top = 405
+    Width = 492
+  end
+  inherited ToolBar: TToolBar
+    Height = 363
+  end
+  inherited PanelView: TPanel
+    Width = 457
+    Height = 363
+    inherited GridPattern: TDBGrid
+      Width = 451
+      Height = 357
+    end
+  end
+  inherited PanelButton: TPanel
+    Top = 366
+    Width = 492
+    inherited ButtonCancel: TButton
+      Left = 411
+    end
+    inherited ButtonOk: TButton
+      Left = 329
+    end
+  end
+end

@@ -1,0 +1,77 @@
+inherited SgtsRbkBaseReportsForm: TSgtsRbkBaseReportsForm
+  Width = 700
+  Caption = #1041#1072#1079#1086#1074#1099#1077' '#1086#1090#1095#1077#1090#1099
+  Constraints.MinWidth = 700
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited BevelStatus: TBevel
+    Width = 692
+  end
+  inherited StatusBar: TStatusBar
+    Width = 692
+  end
+  inherited PanelView: TPanel
+    Width = 657
+    object Splitter: TSplitter [0]
+      Left = 3
+      Top = 287
+      Width = 651
+      Height = 3
+      Cursor = crVSplit
+      Align = alBottom
+    end
+    inherited GridPattern: TDBGrid
+      Width = 651
+      Height = 284
+    end
+    object PanelInfo: TPanel
+      Left = 3
+      Top = 290
+      Width = 651
+      Height = 65
+      Align = alBottom
+      BevelOuter = bvNone
+      TabOrder = 1
+      object GroupBoxInfo: TGroupBox
+        Left = 0
+        Top = 0
+        Width = 651
+        Height = 65
+        Align = alClient
+        Caption = ' '#1054#1087#1080#1089#1072#1085#1080#1077' '
+        TabOrder = 0
+        object PanelNote: TPanel
+          Left = 2
+          Top = 15
+          Width = 647
+          Height = 48
+          Align = alClient
+          BevelOuter = bvNone
+          BorderWidth = 5
+          TabOrder = 0
+          object DBMemoNote: TDBMemo
+            Left = 5
+            Top = 5
+            Width = 637
+            Height = 38
+            Align = alClient
+            Color = clBtnFace
+            DataField = 'DESCRIPTION'
+            DataSource = DataSource
+            ReadOnly = True
+            TabOrder = 0
+          end
+        end
+      end
+    end
+  end
+  inherited PanelButton: TPanel
+    Width = 692
+    inherited ButtonCancel: TButton
+      Left = 611
+    end
+    inherited ButtonOk: TButton
+      Left = 529
+    end
+  end
+end

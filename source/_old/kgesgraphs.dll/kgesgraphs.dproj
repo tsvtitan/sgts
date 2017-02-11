@@ -1,0 +1,143 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{248316da-6869-45aa-9204-98c2e5af68fb}</ProjectGuid>
+    <MainSource>kgesgraphs.dpr</MainSource>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <DCC_EnabledPackages>true</DCC_EnabledPackages>
+    <DCC_UsePackage>vcl;rtl;core</DCC_UsePackage>
+    <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+    <DCC_DependencyCheckOutputName>U:\bin\kgesgraphs.dll</DCC_DependencyCheckOutputName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_DebugInformation>False</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+    <DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE</DCC_UnitAlias>
+    <DCC_ExeOutput>U:\bin</DCC_ExeOutput>
+    <DCC_UnitSearchPath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack;U:\source\imports\ExtLib</DCC_UnitSearchPath>
+    <DCC_ResourcePath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack;U:\source\imports\ExtLib</DCC_ResourcePath>
+    <DCC_ObjPath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack;U:\source\imports\ExtLib</DCC_ObjPath>
+    <DCC_IncludePath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack;U:\source\imports\ExtLib</DCC_IncludePath>
+    <DCC_Define>RELEASE</DCC_Define>
+    <DCC_SYMBOL_DEPRECATED>False</DCC_SYMBOL_DEPRECATED>
+    <DCC_SYMBOL_LIBRARY>False</DCC_SYMBOL_LIBRARY>
+    <DCC_SYMBOL_PLATFORM>False</DCC_SYMBOL_PLATFORM>
+    <DCC_UNIT_LIBRARY>False</DCC_UNIT_LIBRARY>
+    <DCC_UNIT_PLATFORM>False</DCC_UNIT_PLATFORM>
+    <DCC_UNIT_DEPRECATED>False</DCC_UNIT_DEPRECATED>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE</DCC_UnitAlias>
+    <DCC_ExeOutput>U:\bin</DCC_ExeOutput>
+    <DCC_UnitSearchPath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack;U:\source\imports\ExtLib</DCC_UnitSearchPath>
+    <DCC_ResourcePath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack;U:\source\imports\ExtLib</DCC_ResourcePath>
+    <DCC_ObjPath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack;U:\source\imports\ExtLib</DCC_ObjPath>
+    <DCC_IncludePath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack;U:\source\imports\ExtLib</DCC_IncludePath>
+    <DCC_Define>DEBUG</DCC_Define>
+    <DCC_SYMBOL_DEPRECATED>False</DCC_SYMBOL_DEPRECATED>
+    <DCC_SYMBOL_LIBRARY>False</DCC_SYMBOL_LIBRARY>
+    <DCC_SYMBOL_PLATFORM>False</DCC_SYMBOL_PLATFORM>
+    <DCC_UNIT_LIBRARY>False</DCC_UNIT_LIBRARY>
+    <DCC_UNIT_PLATFORM>False</DCC_UNIT_PLATFORM>
+    <DCC_UNIT_DEPRECATED>False</DCC_UNIT_DEPRECATED>
+  </PropertyGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Delphi.Personality</Borland.Personality>
+    <Borland.ProjectType>VCLApplication</Borland.ProjectType>
+    <BorlandProject>
+<BorlandProject xmlns=""> <Delphi.Personality>   <Parameters>
+      <Parameters Name="HostApplication">U:\bin\sgts.exe</Parameters>
+      <Parameters Name="UseLauncher">False</Parameters>
+      <Parameters Name="LoadAllSymbols">True</Parameters>
+      <Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+    </Parameters>
+    <VersionInfo>
+      <VersionInfo Name="IncludeVerInfo">True</VersionInfo>
+      <VersionInfo Name="AutoIncBuild">True</VersionInfo>
+      <VersionInfo Name="MajorVer">1</VersionInfo>
+      <VersionInfo Name="MinorVer">0</VersionInfo>
+      <VersionInfo Name="Release">0</VersionInfo>
+      <VersionInfo Name="Build">558</VersionInfo>
+      <VersionInfo Name="Debug">False</VersionInfo>
+      <VersionInfo Name="PreRelease">False</VersionInfo>
+      <VersionInfo Name="Special">False</VersionInfo>
+      <VersionInfo Name="Private">False</VersionInfo>
+      <VersionInfo Name="DLL">False</VersionInfo>
+      <VersionInfo Name="Locale">1049</VersionInfo>
+      <VersionInfo Name="CodePage">1251</VersionInfo>
+    </VersionInfo>
+    <VersionInfoKeys>
+      <VersionInfoKeys Name="CompanyName"></VersionInfoKeys>
+      <VersionInfoKeys Name="FileDescription"></VersionInfoKeys>
+      <VersionInfoKeys Name="FileVersion">1.0.0.558</VersionInfoKeys>
+      <VersionInfoKeys Name="InternalName"></VersionInfoKeys>
+      <VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys>
+      <VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys>
+      <VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys>
+      <VersionInfoKeys Name="ProductName"></VersionInfoKeys>
+      <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+      <VersionInfoKeys Name="Comments"></VersionInfoKeys>
+    </VersionInfoKeys>
+    <Source>
+      <Source Name="MainSource">kgesgraphs.dpr</Source>
+    </Source>
+  </Delphi.Personality> </BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <ItemGroup />
+  <ItemGroup>
+    <DelphiCompile Include="kgesgraphs.dpr">
+      <MainSource>MainSource</MainSource>
+    </DelphiCompile>
+    <DCCReference Include="..\core.bpl\SgtsGraphChartFm.pas">
+      <Form>SgtsGraphChartForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\core.bpl\SgtsGraphRefreshFm.pas">
+      <Form>SgtsGraphRefreshForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsKgesGraphFltGmoIface.pas" />
+    <DCCReference Include="SgtsKgesGraphFltGmoRefreshFm.pas">
+      <Form>SgtsKgesGraphFltGmoRefreshForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsKgesGraphFm.pas">
+      <Form>SgtsKgesGraphForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsKgesGraphGmoIface.pas" />
+    <DCCReference Include="SgtsKgesGraphGmoRefreshFm.pas">
+      <Form>SgtsKgesGraphGmoRefreshForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsKgesGraphHmzGmoIface.pas" />
+    <DCCReference Include="SgtsKgesGraphHmzGmoRefreshFm.pas">
+      <Form>SgtsKgesGraphHmzGmoRefreshForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsKgesGraphHmzIntensityIface.pas" />
+    <DCCReference Include="SgtsKgesGraphHmzIntensityRefreshFm.pas">
+      <Form>SgtsKgesGraphHmzIntensityRefreshForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsKgesGraphPeriodIface.pas" />
+    <DCCReference Include="SgtsKgesGraphPeriodPointsIface.pas" />
+    <DCCReference Include="SgtsKgesGraphPeriodPointsRefreshFm.pas">
+      <Form>SgtsKgesGraphPeriodPointsRefreshForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsKgesGraphPeriodRefreshFm.pas">
+      <Form>SgtsKgesGraphPeriodRefreshForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsKgesGraphPzmGmoIface.pas" />
+    <DCCReference Include="SgtsKgesGraphPzmGmoRefreshFm.pas">
+      <Form>SgtsKgesGraphPzmGmoRefreshForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsKgesGraphRefreshFm.pas">
+      <Form>SgtsKgesGraphRefreshForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsKgesGraphs.pas" />
+    <DCCReference Include="SgtsKgesGraphsConsts.pas" />
+    <DCCReference Include="SgtsKgesGraphsInterface.pas" />
+    <DCCReference Include="SgtsKgesGraphTvlGmoIface.pas" />
+    <DCCReference Include="SgtsKgesGraphTvlGmoRefreshFm.pas">
+      <Form>SgtsKgesGraphTvlGmoRefreshForm</Form>
+    </DCCReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
+</Project>

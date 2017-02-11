@@ -1,0 +1,151 @@
+unit SgtsSplashFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ExtCtrls, jpeg,
+  SgtsFm,
+  SgtsCoreIntf, SgtsSplashFmIntf;
+
+type
+  TSgtsSplashForm = class(TSgtsForm)
+    Shape: TShape;
+    LabelCaption: TLabel;
+    TimerClose: TTimer;
+    LabelStatus: TLabel;
+    ImageLogo: TImage;
+    LabelCorporation2: TLabel;
+    LabelCorporation1: TLabel;
+    Image: TImage;
+    procedure TimerCloseTimer(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+  end;
+
+  TSgtsSplashIface=class(TSgtsFormIface,ISgtsSplashForm)
+  private
+    function GetForm: TSgtsSplashForm;
+  protected
+    function GetFormClass: TSgtsFormClass; override;
+  public
+    procedure Init; override;
+    procedure AfterCreateForm(AForm: TSgtsForm); override;
+    procedure HideByTimer(Interval: Integer);
+    procedure Status(const S: String);
+    procedure StayOnTop;
+    procedure Normal;
+
+    property Form: TSgtsSplashForm read GetForm;
+  end;
+
+var
+  SgtsSplashForm: TSgtsSplashForm;
+
+implementation
+
+uses SgtsObj, SgtsCoreObj, SgtsIface, SgtsConsts, SgtsUtils;
+
+{$R *.dfm}
+
+{ TSgtsSplashIface }
+
+procedure TSgtsSplashIface.Init; 
+begin
+  inherited Init;
+  StoredInConfig:=false;
+end;
+
+function TSgtsSplashIface.GetForm: TSgtsSplashForm;
+begin
+  Result:=TSgtsSplashForm(inherited Form);
+end;
+
+function TSgtsSplashIface.GetFormClass: TSgtsFormClass;
+begin
+  Result:=TSgtsSplashForm;
+end;
+
+procedure TSgtsSplashIface.HideByTimer(Interval: Integer);
+begin
+  if Assigned(Form) then begin
+    with Form do begin
+      TimerClose.Interval:=Interval;
+      TimerClose.Enabled:=true;
+    end;
+  end;
+end;
+
+procedure TSgtsSplashIface.AfterCreateForm(AForm: TSgtsForm);
+begin
+  inherited AfterCreateForm(AForm);
+  if Assigned(AForm) then begin
+    TSgtsSplashForm(AForm).LabelCaption.Caption:=CoreIntf.Title;
+    TSgtsSplashForm(AForm).LabelStatus.Caption:='';
+  end;
+end;
+
+procedure TSgtsSplashIface.Status(const S: String);
+var
+  W: Integer;
+  NewS: String;
+begin
+  if Assigned(Form) then
+    with TSgtsSplashForm(Form) do begin
+      NewS:=S;
+      W:=LabelStatus.Canvas.TextWidth(NewS);
+      if W>LabelStatus.Width then begin
+        NewS:=Copy(NewS,1,Length(NewS)-5)+' ...';
+      end;
+      LabelStatus.Caption:=NewS;
+      LabelStatus.Update;
+    end;
+end;
+
+procedure TSgtsSplashIface.StayOnTop;
+begin
+  if Assigned(Form) then begin
+    Form.FormStyle:=fsStayOnTop;
+    Form.Update;
+  end;
+end;
+
+procedure TSgtsSplashIface.Normal;
+begin
+  if Assigned(Form) then begin
+    Form.FormStyle:=fsNormal;
+    Form.Update;
+  end;  
+end;
+
+{ TSgtsSplashForm }
+
+constructor TSgtsSplashForm.Create(ACoreIntf: ISgtsCore);
+var
+  FileLogo: String;
+  ImageLoaded: Boolean;
+begin
+  inherited Create(ACoreIntf);
+  if Assigned(ACoreIntf) then begin
+    FileLogo:=ACoreIntf.Config.Read(ACoreIntf.Name,SConfigParamLogo,'');
+    if not FileExists(FileLogo) then
+      FileLogo:=ExtractFilePath(ACoreIntf.CmdLine.FileName)+ExtractFileName(FileLogo);
+    ImageLoaded:=false;
+    if FileExists(FileLogo) then begin
+
+
+    end;
+    LabelCaption.Visible:=ImageLoaded;
+  end;
+end;
+
+procedure TSgtsSplashForm.TimerCloseTimer(Sender: TObject);
+begin
+  TimerClose.Enabled:=false;
+  Iface.Hide;
+end;
+
+
+end.

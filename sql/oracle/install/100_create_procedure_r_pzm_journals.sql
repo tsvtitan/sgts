@@ -1,0 +1,48 @@
+/* Создание процедуры обновления срезов по Веерным пьезометрам */
+
+CREATE OR REPLACE PROCEDURE R_PZM_JOURNALS_1
+AS
+BEGIN
+  DBMS_REFRESH.REFRESH('S_PZM_JOURNAL_FIELDS_O1');
+  DBMS_REFRESH.REFRESH('S_PZM_JOURNAL_OBSERVATIONS_O1');
+END;
+
+--
+
+/* Создание процедуры обновления срезов по Створным пьезометрам */
+
+CREATE OR REPLACE PROCEDURE R_PZM_JOURNALS_2
+AS
+BEGIN
+  DBMS_REFRESH.REFRESH('S_PZM_JOURNAL_FIELDS_O2');
+  DBMS_REFRESH.REFRESH('S_PZM_JOURNAL_OBSERVATIONS_O2');
+END;
+
+--
+
+/* Создание процедуры обновления срезов по Береговым пьезометрам */
+
+CREATE OR REPLACE PROCEDURE R_PZM_JOURNALS_3
+AS
+BEGIN
+  DBMS_REFRESH.REFRESH('S_PZM_JOURNAL_FIELDS_O3');
+  DBMS_REFRESH.REFRESH('S_PZM_JOURNAL_OBSERVATIONS_O3');
+END;
+
+--
+
+/* Создание процедуры обновления срезов по Всем пьезометрам */
+
+CREATE OR REPLACE PROCEDURE R_PZM_JOURNALS
+AS
+BEGIN
+  R_PZM_JOURNALS_1;
+  R_PZM_JOURNALS_2;
+  R_PZM_JOURNALS_3;
+END;
+
+--
+
+/* Фиксация изменений БД */
+
+COMMIT

@@ -1,0 +1,14 @@
+inherited SgtsMTPlanTreeGridForm: TSgtsMTPlanTreeGridForm
+  Caption = 'SgtsMTPlanTreeGridForm'
+  ExplicitHeight = 492
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited PanelView: TPanel
+    inherited PanelTree: TPanel
+      ExplicitHeight = 369
+    end
+    inherited PanelGrid: TPanel
+      ExplicitHeight = 369
+    end
+  end
+end

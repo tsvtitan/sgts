@@ -1,0 +1,14 @@
+/* Создание просмотра типов приборов */
+
+CREATE OR REPLACE VIEW S_INSTRUMENT_TYPES
+AS 
+SELECT IT.INSTRUMENT_TYPE_ID,IT.NAME,IT.DESCRIPTION 
+  FROM INSTRUMENT_TYPES IT
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

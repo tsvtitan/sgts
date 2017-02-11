@@ -1,0 +1,8 @@
+/* Очистка таблицы компонент Береговых пьезометров */
+
+BEGIN
+  DELETE FROM COMPONENTS
+   WHERE CONVERTER_ID IN (SELECT POINT_ID FROM ROUTE_POINTS WHERE ROUTE_ID=2582);
+  COMMIT;
+END;
+

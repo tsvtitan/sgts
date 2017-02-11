@@ -1,0 +1,19 @@
+/* Создание процедуры удаления паспорта объекта  */
+
+CREATE OR REPLACE PROCEDURE D_OBJECT_PASSPORT
+( 
+  OLD_OBJECT_PASSPORT_ID IN INTEGER 
+) 
+AS 
+BEGIN 
+  DELETE FROM OBJECT_PASSPORTS 
+        WHERE OBJECT_PASSPORT_ID=OLD_OBJECT_PASSPORT_ID; 
+  COMMIT;         
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+

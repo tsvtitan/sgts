@@ -1,0 +1,12 @@
+object SgtsForm: TSgtsForm
+  Left = 613
+  Top = 463
+  Width = 413
+  Height = 272
+  Caption = 'SgtsForm'
+  Color = clBtnFace
+  ParentFont = True
+  OldCreateOrder = False
+  PixelsPerInch = 96
+  TextHeight = 13
+end

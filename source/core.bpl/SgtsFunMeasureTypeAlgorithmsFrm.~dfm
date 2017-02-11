@@ -1,0 +1,2 @@
+inherited SgtsFunMeasureTypeAlgorithmsFrame: TSgtsFunMeasureTypeAlgorithmsFrame
+end

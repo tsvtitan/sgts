@@ -1,0 +1,36 @@
+unit SgtsGraphChartDefs;
+
+interface
+
+uses Classes, ConCtrsd
+
+type
+
+  TSgtsGraphChartSeriesDef=class(TObject)
+
+  end;
+
+  TSgtsGraphChartSeriesDefs=class(TObjectList)
+  private
+    function GetItems(Index: Integer): TSgtsExecuteDef;
+    procedure SetItems(Index: Integer; Value: TSgtsExecuteDef);
+  public
+    property Items[Index: Integer]: TSgtsExecuteDef read GetItems write SetItems;   
+  end;
+
+
+implementation
+
+{ TSgtsGraphChartSeriesDefs }
+
+function TSgtsGraphChartSeriesDefs.GetItems(Index: Integer): TSgtsGraphChartSeriesDef;
+begin
+  Result:=TSgtsGraphChartSeriesDef(inherited Items[Index]);
+end;
+
+procedure TSgtsGraphChartSeriesDefs.SetItems(Index: Integer; Value: TSgtsGraphChartSeriesDef);
+begin
+  inherited Items[Index]:=TSgtsGraphChartSeriesDef;
+end;
+
+end.

@@ -1,0 +1,177 @@
+unit SgtsChildFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, SgtsFm,
+  SgtsChildFmIntf, SgtsCoreIntf, SgtsOptionsFmIntf;
+
+type
+  TSgtsChildForm = class(TSgtsForm)
+  private
+    procedure CMShowingChanged(var Message: TMessage); message CM_SHOWINGCHANGED;
+  protected
+    procedure DoClose(var Action: TCloseAction); override;
+    procedure ShowingChanged; virtual;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    property Iface;
+  end;
+
+  TSgtsChildIface=class(TSgtsFormIface,ISgtsChildForm)
+  private
+    FFormStyle: TFormStyle;
+  protected
+    function GetFormClass: TSgtsFormClass; override;
+    procedure AfterCreateForm(AForm: TSgtsForm); override;
+    procedure BeforeShowForm(AForm: TSgtsForm); override;
+    procedure SetDefaultFormStyle(AFormStyle: TFormStyle);
+  public
+    procedure Init; override;
+    procedure Show; override;
+    procedure Hide; override;
+  end;
+
+var
+  SgtsChildForm: TSgtsChildForm;
+
+implementation
+
+uses Types,
+     SgtsCoreObj, SgtsUtils, SgtsIface, SgtsConsts;
+
+{$R *.dfm}
+
+{ TSgtsChildIface }
+
+procedure TSgtsChildIface.Init;
+begin
+  inherited Init;
+  FFormStyle:=fsMDIChild;
+end;
+
+function TSgtsChildIface.GetFormClass: TSgtsFormClass;
+begin
+  Result:=TSgtsChildForm;
+end;
+
+procedure TSgtsChildIface.SetDefaultFormStyle(AFormStyle: TFormStyle);
+begin
+  FFormStyle:=iff(NeedShow,AFormStyle,fsNormal);
+end;
+
+procedure TSgtsChildIface.AfterCreateForm(AForm: TSgtsForm);
+begin
+  inherited AfterCreateForm(AForm);
+end;
+
+procedure TSgtsChildIface.BeforeShowForm(AForm: TSgtsForm);
+var
+  Rect: TRect;
+  MaxWidth, MaxHeight: Integer;
+begin
+  inherited BeforeShowForm(AForm);
+  MaxWidth:=AForm.Width;
+  MaxHeight:=AForm.Height;
+  if Assigned(CoreIntf) and
+     Assigned(CoreIntf.MainForm) then
+    if GetWindowRect(CoreIntf.MainForm.ClientHandle,Rect) then begin
+      MaxWidth:=Rect.Right-Rect.Left;
+      MaxHeight:=Rect.Bottom-Rect.Top;
+    end;
+  case CoreIntf.OptionsForm.WindowOpen of
+    woMaximized: begin
+      if not AsModal then begin
+        AForm.Position:=poDefaultSizeOnly;
+        AForm.WindowState:=wsMaximized;
+      end else begin
+        AForm.Position:=poScreenCenter;
+        AForm.WindowState:=wsNormal;
+      end;
+    end;
+    woTopLeft: begin
+      if not AsModal then begin
+        AForm.Position:=poDefaultSizeOnly;
+        AForm.WindowState:=wsMaximized;
+      end else begin
+        if AForm.Left<0 then
+          AForm.Left:=0;
+        if AForm.Top<0 then
+          AForm.Top:=0;
+        if AForm.Width>MaxWidth then
+          AForm.Width:=MaxWidth;
+        if AForm.Height>MaxHeight then
+          AForm.Height:=MaxHeight;
+
+        AForm.Position:=poScreenCenter;
+        AForm.WindowState:=wsNormal;
+      end;
+    end;
+    woCascade: begin
+      AForm.Position:=poDefaultPosOnly;
+      AForm.WindowState:=wsNormal;
+    end;
+  end;
+  AForm.FormStyle:=FFormStyle;
+end;
+
+procedure TSgtsChildIface.Show; 
+begin
+  inherited Show;
+end;
+
+procedure TSgtsChildIface.Hide;
+begin
+  if Assigned(Form) then begin
+    Form.Free;
+    ClearPointerOnForm;
+  end;
+end;
+
+{ TSgtsChildForm }
+
+constructor TSgtsChildForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+end;
+
+procedure TSgtsChildForm.DoClose(var Action: TCloseAction);
+begin
+  Action:=caFree;
+  inherited DoClose(Action);
+  if Assigned(Iface) then
+    Iface.ClearPointerOnForm;
+end;
+
+procedure TSgtsChildForm.CMShowingChanged(var Message: TMessage);
+const
+  ShowFlags: array[Boolean] of Word = (
+    SWP_NOSIZE + SWP_NOMOVE + SWP_NOZORDER + SWP_NOACTIVATE + SWP_HIDEWINDOW,
+    SWP_NOSIZE + SWP_NOMOVE + SWP_NOZORDER + SWP_NOACTIVATE + SWP_SHOWWINDOW);
+const
+  ShowCommands: array[TWindowState] of Integer =
+    (SW_SHOWNORMAL, SW_SHOWMINNOACTIVE, SW_SHOWMAXIMIZED);
+begin
+  if FormState=[fsCreatedMDIChild] then begin
+   if WindowState = wsMaximized then begin
+     SendMessage(Application.MainForm.ClientHandle, WM_MDIRESTORE, Handle, 0);
+     ShowWindow(Handle, SW_SHOWMAXIMIZED);
+   end else begin
+     ShowWindow(Handle, ShowCommands[WindowState]);
+     CallWindowProc(@DefMDIChildProc,Handle,WM_SIZE,SIZE_RESTORED,Width or (Height shl 16));
+     BringToFront;
+   end;
+   SetWindowPos(Handle, 0, Left,Top,Width,Height, ShowFlags[true]);
+   SendMessage(Application.MainForm.ClientHandle,WM_MDIREFRESHMENU, 0, 0);
+  end else
+    inherited;
+  ShowingChanged;
+end;
+
+procedure TSgtsChildForm.ShowingChanged;
+begin
+end;
+
+
+end.

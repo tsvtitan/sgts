@@ -1,0 +1,14 @@
+unit SgtsMenuIface;
+
+interface
+
+uses SgtsIface;
+
+type
+
+  TSgtsMenuIface=class(TSgtsIface)
+  end;
+
+implementation
+
+end.

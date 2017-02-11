@@ -1,0 +1,29 @@
+/* Создание процедуры по умолчанию для количества осадков в день */
+
+CREATE OR REPLACE PROCEDURE DEFAULT_RAIN_DAY
+( 
+  POINT_ID IN INTEGER, 
+  PARAM_ID_4 IN INTEGER, 
+  INSTRUMENT_ID_4 IN INTEGER, 
+  MEASHURE_UNIT_ID_4 IN INTEGER, 
+  VALUE_4 IN OUT FLOAT, 
+  PARAM_ID_5 IN INTEGER, 
+  INSTRUMENT_ID_5 IN INTEGER, 
+  MEASHURE_UNIT_ID_5 IN INTEGER, 
+  VALUE_5 IN OUT FLOAT 
+) 
+AS 
+BEGIN 
+  IF (VALUE_4 IS NULL) THEN 
+ VALUE_4:=0.0; 
+  END IF;  
+  IF (VALUE_4=0.0) THEN 
+    VALUE_5:=4; 
+  END IF;   
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT

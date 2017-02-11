@@ -1,0 +1,654 @@
+unit SgtsCDS;
+
+interface
+
+uses DB, DbClient, Classes, Controls, Contnrs;
+
+type
+
+  TSgtsTypeSort=(tsNone,tsAsc,tsDesc);
+
+  TSgtsCDS=class(TClientDataSet)
+  private
+    FDefaultIndexName: string;
+    FOnCreateFields: TNotifyEvent;
+    FTempBookmark: TBookmark;
+    FOldAfterScroll: TDataSetNotifyEvent;
+    FOldBeforeScroll: TDataSetNotifyEvent;
+    FOldBeforePost: TDataSetNotifyEvent;
+    FOldFilter: String;
+    FOldFiltered: Boolean;
+    FOldReadOnly: Boolean;
+    FTableName: String;
+    FSaveCursor: TCursor;
+    FWaitCursorEnabled: Boolean;
+    function GetTypeSortStr(TypeSort: TSgtsTypeSort): string;
+    function GetMasterFields: String;
+    procedure SetMasterFileds(Value: string);
+    procedure SaveOptParams;
+    procedure LoadOptParams;
+    function GetXMLData: String;
+    procedure SetXMLData(Value: String);
+    function GetData: OleVariant;
+    procedure SetData(Value: OleVariant);
+    procedure SetWaitCursor;
+    procedure RestoreCursor;
+  protected
+    procedure CreateFields; override;
+    procedure DoAfterOpen; override;
+  public
+    constructor Create(AOwner: TComponent); override;
+    procedure CreateDataSetBySource(Source: TDataSet; IsClear: Boolean=true; IsCopyData: Boolean=false);
+    procedure FieldValuesBySource(Source: TDataSet; IsNew: Boolean=true; ChangeMode: Boolean=true);
+    function CreateFieldBySource(const FieldName: string; Source: TDataSet;
+                                 Required: Boolean=false; ByFieldName: String=''): TField;
+    function CreateField(const FieldName: string; DataType: TFieldType; Size: Integer=0; Required: Boolean=false): TField;
+    procedure SetIndexBySort(FieldName: string; TypeSort: TSgtsTypeSort);
+    procedure InitDefaultIndexDefs;
+    function AddIndexDef(const FieldName: string; TypeSort: TSgtsTypeSort): TIndexDef;
+    procedure LoadFromFile(const FileName: string = '');
+    procedure LoadFromStream(Stream: TStream);
+    procedure SaveToFile(const FileName: string = ''; Format: TDataPacketFormat = dfBinary);
+    procedure SaveToStream(Stream: TStream; Format: TDataPacketFormat = dfBinary);
+
+    procedure BeginUpdate(WithBookmark: Boolean=true; WithFilter: Boolean=false); virtual;
+    procedure EndUpdate(WithScroll: Boolean=false); virtual;
+    procedure ThrowBookmark;
+    procedure UpdatePosInControls;
+    function FindFieldDef(FieldName: String): TFieldDef;
+
+    procedure DataEvent(Event: TDataEvent; Info: Longint); override;
+
+    function GetInfo: String;
+
+    procedure MoveData(Up: Boolean);
+    procedure MoveDataUp;
+    procedure MoveDataDown;
+
+    procedure CreateQueDataSet;
+
+    property DefaultIndexName: string read FDefaultIndexName;
+    property MasterFields: string read GetMasterFields write SetMasterFileds;
+    property OnCreateFields: TNotifyEvent read FOnCreateFields write FOnCreateFields;
+    property TableName: String read FTableName write FTableName;
+    property XMLData: string read GetXMLData write SetXMLData;
+    property Data: OleVariant read GetData write SetData;
+    property WaitCursorEnabled: Boolean read FWaitCursorEnabled write FWaitCursorEnabled;
+  end;
+
+  TSgtsCDSs=class(TObjectList)
+  private
+    function GetItems(Index: Integer): TSgtsCDS;
+    procedure SetItems(Index: Integer; Value: TSgtsCDS);
+  public
+    property Items[Index: Integer]: TSgtsCDS read GetItems write SetItems;
+  end;
+
+implementation
+
+uses SysUtils, Variants, Forms, FMTBcd,
+     SgtsUtils, SgtsConsts;
+
+const
+  SSortIndexName='SORT_%s_%s';
+  SMasterIndexName='MASTER_';
+  SLabelOptParam='L_%s';
+  SWidthOptParam='W_%s';
+  STableNameParam='TN';
+
+{ TSgtsCDSs }
+
+function TSgtsCDSs.GetItems(Index: Integer): TSgtsCDS;
+begin
+  Result:=TSgtsCDS(inherited Items[Index]);
+end;
+
+procedure TSgtsCDSs.SetItems(Index: Integer; Value: TSgtsCDS);
+begin
+  inherited Items[Index]:=Value;
+end;
+
+
+{ TSgtsCDS }
+
+constructor TSgtsCDS.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  FWaitCursorEnabled:=true;
+end;
+
+{procedure TSgtsCDS.CreateDataSetBySource(Source: TDataSet; IsClear: Boolean=true; IsCopyData: Boolean=false);
+var
+  i: Integer;
+  FieldDef: TFieldDef;
+  ASize: Integer;
+  ADataType: TFieldType;
+  APrecision: Integer;
+  Field: TField;
+  Digits: Integer;
+begin
+  Close;
+  if IsClear then
+    FieldDefs.Clear;
+  if Assigned(Source) then begin
+    for i:=0 to Source.Fields.Count-1 do begin
+      FieldDef:=FieldDefs.AddFieldDef;
+      Field:=Source.Fields[i];
+      FieldDef.Name:=Field.FieldName;
+      ASize:=Field.Size;
+      ADataType:=Field.DataType;
+      APrecision:=0;
+      if (ADataType in [ftBCD]) and
+         (ASize in [0,4]) then begin
+        FieldDef.DataType:=ftInteger;
+        ASize:=0;
+      end else
+        FieldDef.DataType:=ADataType;
+      FieldDef.Size:=ASize;
+      FieldDef.Precision:=APrecision;
+    end;
+    CreateDataSet;
+    if IsCopyData then begin
+      if Source.Active then begin
+        Source.First;
+        while not Source.Eof do begin
+          FieldValuesBySource(Source);
+          Source.Next;
+        end;
+      end;
+    end;
+  end;
+end;}
+
+procedure TSgtsCDS.CreateDataSetBySource(Source: TDataSet; IsClear: Boolean=true; IsCopyData: Boolean=false);
+var
+  i: Integer;
+  FieldDef: TFieldDef;
+  ASize: Integer;
+  ADataType: TFieldType;
+  APrecision: Integer;
+  Field: TField;
+  Digits: Integer;
+begin
+  Close;
+  if IsClear then
+    FieldDefs.Clear;
+  if Assigned(Source) then begin
+    for i:=0 to Source.Fields.Count-1 do begin
+      FieldDef:=FieldDefs.AddFieldDef;
+      Field:=Source.Fields[i];
+      FieldDef.Name:=Field.FieldName;
+      ASize:=Field.Size;
+      ADataType:=Field.DataType;
+      
+      FieldDef.DataType:=ADataType;
+      FieldDef.Size:=ASize;
+      FieldDef.Precision:=APrecision;
+    end;
+    CreateDataSet;
+    if IsCopyData then begin
+      if Source.Active then begin
+        Source.First;
+        while not Source.Eof do begin
+          FieldValuesBySource(Source);
+          Source.Next;
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsCDS.FieldValuesBySource(Source: TDataSet; IsNew: Boolean=true; ChangeMode: Boolean=true);
+var
+  i: Integer;
+  F: TField;
+  Field: TField;
+  AValue: Variant;
+begin
+  if ChangeMode then begin
+    CheckBrowseMode;
+    if IsNew then
+      Append
+    else
+      Edit;
+  end;
+
+  try
+    for i:=0 to Source.Fields.Count-1 do begin
+      F:=Source.Fields[i];
+      Field:=Fields.FindField(F.FieldName);
+      if Assigned(Field) then begin
+        if not VarIsNull(F.Value) then begin
+          Field.Clear;
+          AValue:=F.Value;
+          if F.DataType=ftBCD then begin
+            case Field.DataType of
+              ftInteger: AValue:=BcdToInteger(F.AsBCD,true);
+              ftFloat: AValue:=BcdToDouble(F.AsBCD);
+            end;
+          end;
+          Field.Value:=AValue;
+        end else begin
+          Field.Value:=Null;
+        end;
+      end;
+    end;
+  finally
+    if ChangeMode then
+      Post;
+  end;
+end;
+
+function TSgtsCDS.CreateFieldBySource(const FieldName: string; Source: TDataSet;
+                                      Required: Boolean; ByFieldName: String): TField;
+var
+  FieldDef: TFieldDef;
+begin
+  if Trim(ByFieldName)='' then
+    ByFieldName:=FieldName;
+  FieldDef:=FieldDefs.AddFieldDef;
+  FieldDef.Name:=FieldName;
+  FieldDef.DataType:=Source.FieldByName(ByFieldName).DataType;
+  FieldDef.Size:=Source.FieldByName(ByFieldName).Size;
+  FieldDef.Required:=Required;
+  Result:=FieldDef.CreateField(nil);
+end;
+
+function TSgtsCDS.CreateField(const FieldName: string; DataType: TFieldType; Size: Integer=0; Required: Boolean=false): TField;
+var
+  FieldDef: TFieldDef;
+begin
+  FieldDef:=FieldDefs.AddFieldDef;
+  FieldDef.Name:=FieldName;
+  FieldDef.DataType:=DataType;
+  FieldDef.Size:=Size;
+  FieldDef.Required:=Required;
+  Result:=FieldDef.CreateField(nil);
+end;
+
+procedure TSgtsCDS.SetIndexBySort(FieldName: string; TypeSort: TSgtsTypeSort);
+begin
+  CheckActive;
+  if TypeSort<>tsNone then
+    IndexName:=Format(SSortIndexName,[FieldName,GetTypeSortStr(TypeSort)])
+  else IndexName:=DefaultIndexName;
+end;
+
+function TSgtsCDS.GetTypeSortStr(TypeSort: TSgtsTypeSort): string;
+var
+  S: string;
+begin
+  S:='';
+  case TypeSort of
+    tsNone: S:='';
+    tsAsc: S:='ASC';
+    tsDesc: S:='DESC';
+  end;
+  Result:=S;
+end;
+
+procedure TSgtsCDS.InitDefaultIndexDefs;
+var
+  val: Integer;
+begin
+  if Trim(MasterFields)<>'' then begin
+    val:=IndexDefs.IndexOf(FDefaultIndexName);
+    if val<>-1 then
+      IndexDefs.Delete(val);
+    with IndexDefs.AddIndexDef do begin
+      Fields:=MasterFields;
+      Name:=SMasterIndexName;
+      FDefaultIndexName:=Name;
+    end;
+    if not Active then
+      IndexName:=FDefaultIndexName;
+  end;
+end;
+
+function TSgtsCDS.AddIndexDef(const FieldName: string; TypeSort: TSgtsTypeSort): TIndexDef;
+var
+  S: string;
+begin
+  Result:=nil;
+  if TypeSort<>tsNone then begin
+    S:=Format(SSortIndexName,[FieldName,GetTypeSortStr(TypeSort)]);
+    if IndexDefs.IndexOf(S)=-1 then begin
+      Result:=IndexDefs.AddIndexDef;
+      Result.Name:=S;
+      Result.Fields:=iff(Trim(MasterFields)<>'',MasterFields+';','')+FieldName;
+      if TypeSort=tsDesc then
+        Result.Options:=Result.Options+[ixDescending];
+    end;    
+  end;
+end;
+
+function TSgtsCDS.GetMasterFields: String;
+begin
+  Result:=inherited MasterFields;
+end;
+
+procedure TSgtsCDS.SetMasterFileds(Value: string);
+begin
+  inherited MasterFields:=Value;
+  InitDefaultIndexDefs;
+end;
+
+procedure TSgtsCDS.LoadFromFile(const FileName: string = '');
+begin
+  SetWaitCursor;
+  try
+    inherited LoadFromFile(FileName);
+    LoadOptParams;
+  finally
+    RestoreCursor;
+  end;
+end;
+
+procedure TSgtsCDS.LoadFromStream(Stream: TStream);
+begin
+  SetWaitCursor;
+  try
+    inherited LoadFromStream(Stream);
+    LoadOptParams;
+  finally
+    RestoreCursor;
+  end;  
+end;
+
+procedure TSgtsCDS.SaveToFile(const FileName: string = ''; Format: TDataPacketFormat = dfBinary);
+begin
+  SetWaitCursor;
+  try
+    SaveOptParams;
+    inherited SaveToFile(FileName,Format);
+  finally
+    RestoreCursor;
+  end;
+end;
+
+procedure TSgtsCDS.SaveToStream(Stream: TStream; Format: TDataPacketFormat = dfBinary);
+begin
+  SetWaitCursor;
+  try
+    SaveOptParams;
+    inherited SaveToStream(Stream,Format);
+  finally
+    RestoreCursor;
+  end;  
+end;
+
+procedure TSgtsCDS.SaveOptParams;
+var
+  i: Integer;
+begin
+  if Active then begin
+    if Trim(FTableName)<>'' then
+      SetOptionalParam(STableNameParam,FTableName);
+    for i:=0 to FieldCount-1 do begin
+      if not AnsiSameText(Fields[i].DisplayLabel,Fields[i].FieldName) then
+        SetOptionalParam(Format(SLabelOptParam,[Fields[i].FieldName]),Fields[i].DisplayLabel);
+
+      if Fields[i].DisplayWidth<>Fields[i].Size then
+        SetOptionalParam(Format(SWidthOptParam,[Fields[i].FieldName]),Fields[i].DisplayWidth);
+    end;
+  end;
+end;
+
+procedure TSgtsCDS.LoadOptParams;
+var
+  i: Integer;
+  S: String;
+begin
+  if Active then begin
+    for i:=0 to FieldCount-1 do begin
+      S:=GetOptionalParam(Format(SLabelOptParam,[Fields[i].FieldName]));
+      if Trim(S)<>'' then
+        Fields[i].DisplayLabel:=S;
+      S:=GetOptionalParam(Format(SWidthOptParam,[Fields[i].FieldName]));
+      if Trim(S)<>'' then
+        Fields[i].DisplayWidth:=StrToIntDef(S,Fields[i].Size);
+    end;
+    S:=GetOptionalParam(STableNameParam);
+    if Trim(S)<>'' then
+      FTableName:=S;
+  end;
+end;
+
+procedure TSgtsCDS.CreateFields;
+begin
+  inherited CreateFields;
+  if Assigned(FOnCreateFields) then
+    FOnCreateFields(Self);
+end;
+
+procedure TSgtsCDS.DoAfterOpen;
+begin
+  inherited DoAfterOpen;
+  {if Active then
+    LogChanges:=false;}
+
+end;
+
+procedure TSgtsCDS.BeginUpdate(WithBookmark: Boolean=true; WithFilter: Boolean=false);
+begin
+  DisableControls;
+  FTempBookmark:=nil;
+  if WithBookmark then
+    FTempBookmark:=GetBookmark;
+  FOldAfterScroll:=AfterScroll;
+  AfterScroll:=nil;
+  FOldBeforeScroll:=BeforeScroll;
+  BeforeScroll:=nil;
+  FOldBeforePost:=BeforePost;
+  BeforePost:=nil;
+  FOldFilter:=Filter;
+  if not WithFilter then
+    Filter:='';
+  FOldFiltered:=Filtered;
+  if FOldFiltered<>Filtered then
+    Filtered:=false;
+  FOldReadOnly:=ReadOnly;
+  ReadOnly:=false;
+end;
+
+procedure TSgtsCDS.EndUpdate(WithScroll: Boolean=false);
+begin
+  ReadOnly:=FOldReadOnly;
+  Filter:=FOldFilter;
+  if FOldFiltered<>Filtered then
+    Filtered:=FOldFiltered;
+  if Active and
+     Assigned(FTempBookmark) and
+     BookmarkValid(FTempBookmark) then begin
+    GotoBookmark(FTempBookmark);
+    FTempBookmark:=nil;
+  end;
+  BeforePost:=FOldBeforePost;
+  BeforeScroll:=FOldBeforeScroll;
+  AfterScroll:=FOldAfterScroll;
+  if WithScroll and Assigned(AfterScroll) then
+    AfterScroll(Self);
+  EnableControls;
+end;
+
+procedure TSgtsCDS.ThrowBookmark;
+begin
+  FTempBookmark:=nil;
+end;
+
+procedure TSgtsCDS.UpdatePosInControls;
+begin
+  EnableControls;
+  try
+    UpdateCursorPos;
+  finally
+    DisableControls;
+  end;
+end;
+
+function TSgtsCDS.GetXMLData: String;
+var
+  FOldState: TDataSetState;
+begin
+  SetWaitCursor;
+  FOldState:=Self.State;
+  try
+    SaveOptParams;
+    Result:=inherited XMLData;
+  finally
+    if FOldState in [dsInsert,dsEdit] then
+      Edit;
+    RestoreCursor;
+  end;
+end;
+
+procedure TSgtsCDS.SetXMLData(Value: String);
+begin
+  SetWaitCursor;
+  try
+    inherited XMLData:=Value;
+    LoadOptParams;
+  finally
+    RestoreCursor;
+  end;
+end;
+
+function TSgtsCDS.GetData: OleVariant;
+var
+  FOldState: TDataSetState;
+begin
+  SetWaitCursor;
+  FOldState:=Self.State;
+  try
+    SaveOptParams;
+    Result:=inherited Data;
+  finally
+    if FOldState in [dsInsert,dsEdit] then
+      Edit;
+    RestoreCursor;
+  end;  
+end;
+
+procedure TSgtsCDS.SetData(Value: OleVariant);
+begin
+  SetWaitCursor;
+  try
+    inherited Data:=Value;
+    LoadOptParams;
+  finally
+    RestoreCursor;
+  end;  
+end;
+
+procedure TSgtsCDS.MoveData(Up: Boolean);
+var
+  isLast: Boolean;
+  TempDataSet: TSgtsCDS;
+begin
+  if Active and not IsEmpty then begin
+    isLast:=RecNo=RecordCount;
+    BeginUpdate(false);
+    TempDataSet:=TSgtsCDS.Create(nil);
+    try
+      TempDataSet.CreateDataSetBySource(Self);
+      TempDataSet.FieldValuesBySource(Self);
+      with Self do begin
+        Delete;
+        if Up then begin
+          if not isLast then
+            Prior;
+          Insert;
+        end else begin
+          Next;
+          if not Eof then
+            Insert
+          else Append;
+        end;
+        try
+          Self.FieldValuesBySource(TempDataSet,true,false);
+        finally
+          Post;
+        end;
+      end;
+    finally
+      TempDataSet.Free;
+      EndUpdate(false);
+    end;
+  end;
+end;
+
+procedure TSgtsCDS.MoveDataUp;
+begin
+  MoveData(true);
+end;
+
+procedure TSgtsCDS.MoveDataDown;
+begin
+  MoveData(false);
+end;
+
+procedure TSgtsCDS.SetWaitCursor;
+begin
+  if FWaitCursorEnabled then begin
+    FSaveCursor:=Screen.Cursor;
+    Screen.Cursor:=crHourGlass;
+  end;  
+end;
+
+procedure TSgtsCDS.RestoreCursor;
+begin
+  if FWaitCursorEnabled then 
+    Screen.Cursor:=FSaveCursor;
+end;
+
+function TSgtsCDS.GetInfo: String;
+var
+  i: Integer;
+  S: String;
+begin
+  Result:='';
+  for i:=0 to Fields.Count-1 do begin
+    if not VarIsNull(Fields[i].Value) then
+      S:=VarToStrDef(Fields[i].Value,'')
+    else S:='NULL';  
+    if Length(S)>100 then
+      S:=Copy(S,1,100)+'...';
+    if i=0 then
+      Result:=Format('%s=[%s]',[Fields[i].FieldName,S])
+    else
+      Result:=Result+', '+Format('%s=[%s]',[Fields[i].FieldName,S]);
+  end;
+  Result:=Trim(Result);
+end;
+
+procedure TSgtsCDS.DataEvent(Event: TDataEvent; Info: Longint);
+begin
+  inherited DataEvent(Event,Info);
+end;
+
+procedure TSgtsCDS.CreateQueDataSet;
+begin
+  if not Active then begin
+    FieldDefs.Add(SDb_Type,ftInteger);
+    FieldDefs.Add(SDb_Description,ftString,250);
+    FieldDefs.Add(SDb_Value,ftBlob);
+    CreateDataSet;
+  end;  
+end;
+
+function TSgtsCDS.FindFieldDef(FieldName: String): TFieldDef;
+var
+  i: Integer;
+  Def: TFieldDef;
+begin
+  Result:=nil;
+  for i:=0 to FieldDefs.Count-1 do begin
+    Def:=FieldDefs.Items[i];
+    if AnsiSameText(Def.Name,FieldName) then begin
+      Result:=Def;
+      exit;
+    end;
+  end;
+end;
+
+end.

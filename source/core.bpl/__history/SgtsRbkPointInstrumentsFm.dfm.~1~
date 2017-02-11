@@ -1,0 +1,39 @@
+inherited SgtsRbkPointInstrumentsForm: TSgtsRbkPointInstrumentsForm
+  Left = 391
+  Top = 158
+  Width = 500
+  Height = 470
+  Caption = #1055#1088#1080#1073#1086#1088#1099' '#1090#1086#1095#1077#1082
+  Constraints.MinHeight = 470
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited BevelStatus: TBevel
+    Top = 361
+    Width = 492
+  end
+  inherited StatusBar: TStatusBar
+    Top = 403
+    Width = 492
+  end
+  inherited ToolBar: TToolBar
+    Height = 361
+  end
+  inherited PanelView: TPanel
+    Width = 457
+    Height = 361
+    inherited GridPattern: TDBGrid
+      Width = 451
+      Height = 355
+    end
+  end
+  inherited PanelButton: TPanel
+    Top = 364
+    Width = 492
+    inherited ButtonCancel: TButton
+      Left = 411
+    end
+    inherited ButtonOk: TButton
+      Left = 329
+    end
+  end
+end

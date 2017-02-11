@@ -1,0 +1,14 @@
+/* Создание просмотра видов дефектов */
+
+CREATE OR REPLACE VIEW S_DEFECT_VIEWS
+AS 
+SELECT DV.DEFECT_VIEW_ID,DV.NAME,DV.DESCRIPTION,DV.PRIORITY
+  FROM DEFECT_VIEWS DV
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

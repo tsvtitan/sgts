@@ -1,0 +1,107 @@
+inherited SgtsRbkDefectViewEditForm: TSgtsRbkDefectViewEditForm
+  Left = 561
+  Top = 407
+  BorderIcons = [biSystemMenu, biMaximize]
+  BorderStyle = bsSizeable
+  Caption = #1056#1077#1076#1072#1082#1090#1080#1088#1086#1074#1072#1085#1080#1077' '#1074#1080#1076#1072' '#1076#1077#1092#1077#1082#1090#1072
+  ClientHeight = 232
+  ClientWidth = 383
+  Constraints.MinHeight = 240
+  Constraints.MinWidth = 320
+  ExplicitLeft = 561
+  ExplicitTop = 407
+  ExplicitWidth = 391
+  ExplicitHeight = 278
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited StatusBar: TStatusBar
+    Top = 213
+    Width = 383
+    ExplicitTop = 175
+    ExplicitWidth = 317
+  end
+  inherited ToolBar: TToolBar
+    Height = 174
+    ExplicitHeight = 136
+  end
+  inherited PanelEdit: TPanel
+    Width = 348
+    Height = 174
+    ExplicitWidth = 282
+    ExplicitHeight = 136
+    object LabelName: TLabel
+      Left = 7
+      Top = 16
+      Width = 77
+      Height = 13
+      Alignment = taRightJustify
+      Caption = #1053#1072#1080#1084#1077#1085#1086#1074#1072#1085#1080#1077':'
+      FocusControl = EditName
+    end
+    object LabelNote: TLabel
+      Left = 31
+      Top = 43
+      Width = 53
+      Height = 13
+      Alignment = taRightJustify
+      Caption = #1054#1087#1080#1089#1072#1085#1080#1077':'
+      FocusControl = MemoNote
+    end
+    object LabelPriority: TLabel
+      Left = 208
+      Top = 146
+      Width = 48
+      Height = 13
+      Alignment = taRightJustify
+      Anchors = [akRight, akBottom]
+      Caption = #1055#1086#1088#1103#1076#1086#1082':'
+      FocusControl = EditPriority
+    end
+    object EditName: TEdit
+      Left = 90
+      Top = 12
+      Width = 250
+      Height = 21
+      Anchors = [akLeft, akTop, akRight]
+      Constraints.MaxWidth = 300
+      TabOrder = 0
+    end
+    object MemoNote: TMemo
+      Left = 90
+      Top = 40
+      Width = 250
+      Height = 97
+      Anchors = [akLeft, akTop, akRight, akBottom]
+      TabOrder = 1
+    end
+    object EditPriority: TEdit
+      Left = 262
+      Top = 143
+      Width = 78
+      Height = 21
+      Anchors = [akRight, akBottom]
+      TabOrder = 2
+    end
+  end
+  inherited PanelButton: TPanel
+    Top = 174
+    Width = 383
+    ExplicitTop = 136
+    ExplicitWidth = 317
+    inherited ButtonCancel: TButton
+      Left = 302
+      ExplicitLeft = 236
+    end
+    inherited ButtonOk: TButton
+      Left = 220
+      ExplicitLeft = 154
+    end
+  end
+  inherited MainMenu: TMainMenu
+    Left = 176
+    Top = 40
+  end
+  inherited ImageList: TImageList
+    Left = 208
+  end
+end

@@ -1,0 +1,147 @@
+unit SgtsExecuteConfig;
+
+interface
+
+uses Classes, DB, Contnrs;
+
+type
+
+  TSgtsExecuteConfigParam=class(TObject)
+  private
+    FFieldName: string;
+    FValue: Variant;
+    FDataType: TFieldType;
+    FIsNull: Boolean;
+    FIsKey: Boolean;
+    FParamType: TParamType;
+    FSize: Integer;
+  public
+    property FieldName: string read FFieldName write FFieldName;
+    property DataType: TFieldType read FDataType write FDataType;
+    property Value: Variant read FValue write FValue;
+    property IsNull: Boolean read FIsNull write FIsNull;
+    property IsKey: Boolean read FIsKey write FIsKey;
+    property ParamType: TParamType read FParamType write FParamType;
+    property Size: Integer read FSize write FSize;
+  end;
+
+  TSgtsExecuteConfigParamClass=class of TSgtsExecuteConfigParam;
+
+  TSgtsExecuteConfigParams=class(TObjectList)
+  private
+    function GetItems(Index: Integer): TSgtsExecuteConfigParam;
+    procedure SetItems(Index: Integer; Value: TSgtsExecuteConfigParam);
+  protected
+    function GetParamClass: TSgtsExecuteConfigParamClass; virtual;
+  public
+    function Find(const FieldName: string): TSgtsExecuteConfigParam;
+    function FindKey(const FieldName: string): TSgtsExecuteConfigParam;
+    function Add(const FieldName: string; Value: Variant; IsNull: Boolean; Unique: Boolean): TSgtsExecuteConfigParam;
+    procedure CopyFrom(Source: TSgtsExecuteConfigParams; IsClear: Boolean=true);
+
+    property Items[Index: Integer]: TSgtsExecuteConfigParam read GetItems write SetItems;
+  end;
+
+  TSgtsExecuteConfig=class(TObject)
+  private
+    FParams: TSgtsExecuteConfigParams;
+    FCheckProvider: Boolean;
+  public
+    constructor Create;
+    destructor Destroy; override;
+
+    property Params: TSgtsExecuteConfigParams read FParams;
+    property CheckProvider: Boolean read FCheckProvider write FCheckProvider; 
+  end;
+
+implementation
+
+uses SysUtils;
+
+{ TSgtsExecuteConfigParams }
+
+function TSgtsExecuteConfigParams.GetItems(Index: Integer): TSgtsExecuteConfigParam;
+begin
+  Result:=TSgtsExecuteConfigParam(inherited Items[Index]);
+end;
+
+function TSgtsExecuteConfigParams.GetParamClass: TSgtsExecuteConfigParamClass;
+begin
+  Result:=TSgtsExecuteConfigParam;
+end;
+
+procedure TSgtsExecuteConfigParams.SetItems(Index: Integer; Value: TSgtsExecuteConfigParam);
+begin
+  inherited Items[Index]:=Value;
+end;
+
+procedure TSgtsExecuteConfigParams.CopyFrom(Source: TSgtsExecuteConfigParams;
+  IsClear: Boolean);
+begin
+  ..
+end;
+
+function TSgtsExecuteConfigParams.Find(const FieldName: string): TSgtsExecuteConfigParam;
+var
+  i: Integer;
+begin
+  Result:=nil;
+  for i:=0 to Count-1 do
+    if AnsiSameText(Items[i].FieldName,FieldName) then begin
+      Result:=Items[i];
+      exit;
+    end;
+end;
+
+function TSgtsExecuteConfigParams.FindKey(const FieldName: string): TSgtsExecuteConfigParam;
+var
+  i: Integer;
+  Param: TSgtsExecuteConfigParam;
+begin
+  Result:=nil;
+  for i:=0 to Count-1 do begin
+    Param:=Items[i];
+    if AnsiSameText(Param.FieldName,FieldName) and Param.IsKey then begin
+      Result:=Param;
+      exit;
+    end;
+  end;  
+end;
+
+function TSgtsExecuteConfigParams.Add(const FieldName: string; Value: Variant;
+                                      IsNull: Boolean; Unique: Boolean): TSgtsExecuteConfigParam;
+var
+  FlagAdd: Boolean;                                      
+begin
+  Result:=nil;
+  FlagAdd:=false;
+  if Unique then begin
+    if not Assigned(Find(FieldName)) then
+      FlagAdd:=true;
+  end else
+    FlagAdd:=true;    
+
+  if FlagAdd then begin
+    Result:=GetParamClass.Create;
+    Result.FieldName:=FieldName;
+    Result.Value:=Value;
+    Result.IsNull:=IsNull;
+    inherited Add(Result);
+  end;
+end;
+
+{ TSgtsExecuteConfig }
+
+constructor TSgtsExecuteConfig.Create;
+begin
+  inherited Create;
+  FParams:=TSgtsExecuteConfigParams.Create;
+end;
+
+destructor TSgtsExecuteConfig.Destroy;
+begin
+  FParams.Free;
+  inherited Destroy;
+end;
+
+end.

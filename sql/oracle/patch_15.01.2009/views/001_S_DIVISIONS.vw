@@ -1,0 +1,26 @@
+/* Создание просмотра отделов */
+
+CREATE OR REPLACE VIEW S_DIVISIONS
+AS
+SELECT     D1.DIVISION_ID,
+           D1.PARENT_ID,
+           D1.NAME,
+           D1.DESCRIPTION,
+           D1.PRIORITY,
+           D2.NAME AS PARENT_NAME,
+           LEVEL AS "LEVEL"
+      FROM DIVISIONS D1,
+           DIVISIONS D2
+     WHERE D1.PARENT_ID = D2.DIVISION_ID(+)
+START WITH D1.PARENT_ID IS NULL
+CONNECT BY D1.PARENT_ID = PRIOR D1.DIVISION_ID
+  ORDER BY LEVEL,
+           D1.PRIORITY
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

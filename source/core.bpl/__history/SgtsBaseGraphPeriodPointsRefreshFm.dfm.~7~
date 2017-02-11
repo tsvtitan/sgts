@@ -1,0 +1,149 @@
+inherited SgtsBaseGraphPeriodPointsRefreshForm: TSgtsBaseGraphPeriodPointsRefreshForm
+  Left = 678
+  Top = 193
+  Caption = #1059#1089#1083#1086#1074#1080#1103' '#1075#1088#1072#1092#1080#1082#1072' '#1090#1086#1095#1077#1082' '#1079#1072' '#1087#1077#1088#1080#1086#1076
+  ClientHeight = 463
+  Constraints.MinHeight = 490
+  ExplicitLeft = 678
+  ExplicitTop = 193
+  ExplicitHeight = 490
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited PanelDialog: TPanel
+    Height = 425
+    ExplicitHeight = 425
+    inherited PanelAxis: TPanel
+      Top = 310
+      Height = 115
+      TabOrder = 4
+      ExplicitTop = 310
+      ExplicitHeight = 115
+      inherited GroupBoxAxis: TGroupBox
+        Height = 109
+        ExplicitHeight = 109
+        inherited PanelAxis2: TPanel
+          Height = 92
+          ExplicitHeight = 92
+          inherited TabControlAxis: TTabControl
+            Height = 88
+            ExplicitHeight = 88
+            inherited CheckListBoxParams: TCheckListBox
+              Height = 57
+              ExplicitHeight = 57
+            end
+          end
+        end
+      end
+    end
+    object PanelPoints: TPanel [3]
+      Left = 0
+      Top = 229
+      Width = 372
+      Height = 81
+      Align = alTop
+      BevelOuter = bvNone
+      BorderWidth = 3
+      TabOrder = 3
+      object GroupBoxPoints: TGroupBox
+        Left = 3
+        Top = 3
+        Width = 366
+        Height = 75
+        Align = alClient
+        Caption = ' '#1048#1079#1084#1077#1088#1080#1090#1077#1083#1100#1085#1099#1077' '#1090#1086#1095#1082#1080' '
+        TabOrder = 0
+        object PanelListPoints: TPanel
+          Left = 2
+          Top = 15
+          Width = 362
+          Height = 58
+          Align = alClient
+          BevelOuter = bvNone
+          BorderWidth = 5
+          TabOrder = 0
+          object PanelButtonsPoints: TPanel
+            Left = 327
+            Top = 5
+            Width = 30
+            Height = 48
+            Align = alRight
+            BevelOuter = bvNone
+            TabOrder = 1
+            object ButtonPointsAdd: TButton
+              Left = 5
+              Top = 0
+              Width = 21
+              Height = 21
+              Hint = #1044#1086#1073#1072#1074#1080#1090#1100' '#1090#1086#1095#1082#1080
+              Caption = '<'
+              ParentShowHint = False
+              ShowHint = True
+              TabOrder = 0
+              OnClick = ButtonPointsAddClick
+            end
+            object ButtonPointsDelete: TButton
+              Left = 5
+              Top = 26
+              Width = 21
+              Height = 21
+              Hint = #1059#1076#1072#1083#1080#1090#1100' '#1074#1099#1076#1077#1083#1077#1085#1085#1099#1077' '#1090#1086#1095#1082#1080
+              Caption = '>'
+              ParentShowHint = False
+              ShowHint = True
+              TabOrder = 1
+              OnClick = ButtonPointsDeleteClick
+            end
+          end
+          object ListBoxPoints: TListBox
+            Left = 5
+            Top = 5
+            Width = 322
+            Height = 48
+            Align = alClient
+            ItemHeight = 13
+            MultiSelect = True
+            TabOrder = 0
+            OnDblClick = ListBoxPointsDblClick
+            OnKeyDown = ListBoxPointsKeyDown
+          end
+        end
+      end
+    end
+  end
+  inherited PanelButton: TPanel
+    Top = 425
+    ExplicitTop = 425
+  end
+  inherited PopupMenuParams: TPopupMenu
+    Left = 71
+    Top = 354
+  end
+  inherited PopupMenuHistory: TPopupMenu
+    Left = 179
+  end
+  object PopupMenuPoints: TPopupMenu
+    OnPopup = PopupMenuPointsPopup
+    Left = 131
+    Top = 248
+    object MenuItemPointsAdd: TMenuItem
+      Caption = #1044#1086#1073#1072#1074#1080#1090#1100
+      Default = True
+      Hint = #1044#1086#1073#1072#1074#1080#1090#1100' '#1090#1086#1095#1082#1080
+    end
+    object MenuItemPointsChange: TMenuItem
+      Caption = #1047#1072#1084#1077#1085#1080#1090#1100
+      Hint = #1047#1072#1084#1077#1085#1080#1090#1100' '#1090#1086#1095#1082#1091
+    end
+    object N2: TMenuItem
+      Caption = '-'
+    end
+    object MenuItemPointsDelete: TMenuItem
+      Caption = #1059#1076#1072#1083#1080#1090#1100
+      Hint = #1059#1076#1072#1083#1080#1090#1100' '#1074#1099#1076#1077#1083#1077#1085#1085#1099#1077' '#1090#1086#1095#1082#1080
+    end
+    object MenuItemPointsClear: TMenuItem
+      Caption = #1054#1095#1080#1089#1090#1080#1090#1100
+      Hint = #1054#1095#1080#1089#1090#1080#1090#1100' '#1080#1079#1084#1077#1088#1080#1090#1077#1083#1100#1085#1099#1077' '#1090#1086#1095#1082#1080
+    end
+  end
+end

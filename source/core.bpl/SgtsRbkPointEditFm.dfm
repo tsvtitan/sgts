@@ -1,0 +1,217 @@
+inherited SgtsRbkPointEditForm: TSgtsRbkPointEditForm
+  Left = 450
+  Top = 209
+  Caption = #1056#1077#1076#1072#1082#1090#1080#1088#1086#1074#1072#1085#1080#1077' '#1090#1086#1095#1082#1080
+  ClientHeight = 334
+  ClientWidth = 427
+  Constraints.MinHeight = 380
+  Constraints.MinWidth = 435
+  ExplicitLeft = 450
+  ExplicitTop = 209
+  ExplicitWidth = 435
+  ExplicitHeight = 380
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited StatusBar: TStatusBar
+    Top = 315
+    Width = 427
+    ExplicitTop = 315
+    ExplicitWidth = 427
+  end
+  inherited ToolBar: TToolBar
+    Height = 276
+    ExplicitHeight = 276
+  end
+  inherited PanelEdit: TPanel
+    Width = 392
+    Height = 276
+    ExplicitWidth = 392
+    ExplicitHeight = 276
+    object LabelName: TLabel
+      Left = 59
+      Top = 16
+      Width = 35
+      Height = 13
+      Alignment = taRightJustify
+      Caption = #1053#1086#1084#1077#1088':'
+      FocusControl = EditName
+    end
+    object LabelObject: TLabel
+      Left = 18
+      Top = 114
+      Width = 76
+      Height = 26
+      Alignment = taRightJustify
+      Caption = #1056#1072#1089#1087#1086#1083#1086#1078#1077#1085#1080#1077' '#1086#1073#1098#1077#1082#1090#1072':'
+      FocusControl = MemoObject
+      WordWrap = True
+    end
+    object LabelDescription: TLabel
+      Left = 41
+      Top = 40
+      Width = 53
+      Height = 13
+      Alignment = taRightJustify
+      Caption = #1054#1087#1080#1089#1072#1085#1080#1077':'
+      FocusControl = MemoDescription
+    end
+    object LabelTypePoint: TLabel
+      Left = 39
+      Top = 93
+      Width = 55
+      Height = 13
+      Alignment = taRightJustify
+      Caption = #1058#1080#1087' '#1090#1086#1095#1082#1080':'
+      FocusControl = ComboBoxTypePoint
+    end
+    object LabelCoordinateX: TLabel
+      Left = 19
+      Top = 179
+      Width = 75
+      Height = 13
+      Alignment = taRightJustify
+      Caption = #1050#1086#1086#1088#1076#1080#1085#1072#1090#1072' X:'
+      FocusControl = EditCoordinateX
+    end
+    object LabelCoordinateY: TLabel
+      Left = 84
+      Top = 205
+      Width = 10
+      Height = 13
+      Alignment = taRightJustify
+      Caption = 'Y:'
+      FocusControl = EditCoordinateY
+    end
+    object LabelCoordinateZ: TLabel
+      Left = 30
+      Top = 231
+      Width = 64
+      Height = 13
+      Alignment = taRightJustify
+      Caption = #1054#1090#1084#1077#1090#1082#1072' '#1048#1058':'
+      FocusControl = EditCoordinateZ
+    end
+    object LabelDateEnter: TLabel
+      Left = 29
+      Top = 255
+      Width = 64
+      Height = 13
+      Alignment = taRightJustify
+      Caption = #1044#1072#1090#1072' '#1074#1074#1086#1076#1072':'
+      FocusControl = DateTimePickerEnter
+    end
+    object EditName: TEdit
+      Left = 102
+      Top = 12
+      Width = 80
+      Height = 21
+      TabOrder = 0
+    end
+    object ButtonObject: TButton
+      Left = 363
+      Top = 115
+      Width = 21
+      Height = 21
+      Hint = #1042#1099#1073#1088#1072#1090#1100' '#1086#1073#1098#1077#1082#1090
+      Anchors = [akTop, akRight]
+      Caption = '...'
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 5
+    end
+    object MemoDescription: TMemo
+      Left = 102
+      Top = 37
+      Width = 282
+      Height = 48
+      TabOrder = 1
+    end
+    object ComboBoxTypePoint: TComboBox
+      Left = 102
+      Top = 89
+      Width = 255
+      Height = 21
+      Style = csDropDownList
+      ItemHeight = 13
+      TabOrder = 2
+    end
+    object ButtonTypePoint: TButton
+      Left = 363
+      Top = 89
+      Width = 21
+      Height = 21
+      Hint = #1042#1099#1073#1088#1072#1090#1100' '#1090#1080#1087' '#1090#1086#1095#1082#1080
+      Caption = '...'
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 3
+    end
+    object EditCoordinateX: TEdit
+      Left = 102
+      Top = 175
+      Width = 80
+      Height = 21
+      TabOrder = 6
+    end
+    object EditCoordinateY: TEdit
+      Left = 102
+      Top = 201
+      Width = 80
+      Height = 21
+      TabOrder = 7
+    end
+    object EditCoordinateZ: TEdit
+      Left = 102
+      Top = 227
+      Width = 80
+      Height = 21
+      TabOrder = 8
+    end
+    object DateTimePickerEnter: TDateTimePicker
+      Left = 102
+      Top = 252
+      Width = 100
+      Height = 21
+      Date = 38987.504579895830000000
+      Time = 38987.504579895830000000
+      TabOrder = 9
+    end
+    object MemoObject: TMemo
+      Left = 102
+      Top = 115
+      Width = 255
+      Height = 54
+      Anchors = [akLeft, akTop, akRight]
+      Color = clBtnFace
+      ReadOnly = True
+      ScrollBars = ssVertical
+      TabOrder = 4
+      WordWrap = False
+    end
+  end
+  inherited PanelButton: TPanel
+    Top = 276
+    Width = 427
+    ExplicitTop = 276
+    ExplicitWidth = 427
+    DesignSize = (
+      427
+      39)
+    inherited ButtonCancel: TButton
+      Left = 346
+      ExplicitLeft = 346
+    end
+    inherited ButtonOk: TButton
+      Left = 264
+      ExplicitLeft = 264
+    end
+  end
+  inherited MainMenu: TMainMenu
+    Left = 176
+    Top = 48
+  end
+  inherited ImageList: TImageList
+    Left = 216
+    Top = 50
+  end
+end

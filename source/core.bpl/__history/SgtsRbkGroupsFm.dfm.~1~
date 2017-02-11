@@ -1,0 +1,91 @@
+inherited SgtsRbkGroupsForm: TSgtsRbkGroupsForm
+  Left = 561
+  Top = 167
+  Width = 490
+  Height = 450
+  Caption = #1043#1088#1091#1087#1087#1099' '#1086#1073#1098#1077#1082#1090#1086#1074
+  Constraints.MinHeight = 450
+  Constraints.MinWidth = 490
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited BevelStatus: TBevel
+    Top = 358
+    Width = 482
+  end
+  inherited StatusBar: TStatusBar
+    Top = 400
+    Width = 482
+    Height = 23
+  end
+  inherited ToolBar: TToolBar
+    Height = 358
+  end
+  inherited PanelView: TPanel
+    Width = 447
+    Height = 358
+    object Splitter: TSplitter [0]
+      Left = 3
+      Top = 252
+      Width = 441
+      Height = 3
+      Cursor = crVSplit
+      Align = alBottom
+      MinSize = 100
+    end
+    inherited GridPattern: TDBGrid
+      Width = 441
+      Height = 249
+    end
+    object PanelInfo: TPanel
+      Left = 3
+      Top = 255
+      Width = 441
+      Height = 100
+      Align = alBottom
+      BevelOuter = bvNone
+      Constraints.MinHeight = 100
+      TabOrder = 1
+      object GroupBoxInfo: TGroupBox
+        Left = 0
+        Top = 0
+        Width = 441
+        Height = 100
+        Align = alClient
+        Caption = ' '#1054#1087#1080#1089#1072#1085#1080#1077' '
+        TabOrder = 0
+        object PanelNote: TPanel
+          Left = 2
+          Top = 15
+          Width = 437
+          Height = 83
+          Align = alClient
+          BevelOuter = bvNone
+          BorderWidth = 5
+          TabOrder = 0
+          object DBMemoDescription: TDBMemo
+            Left = 5
+            Top = 5
+            Width = 427
+            Height = 73
+            Align = alClient
+            Color = clBtnFace
+            DataField = 'DESCRIPTION'
+            DataSource = DataSource
+            ReadOnly = True
+            TabOrder = 0
+          end
+        end
+      end
+    end
+  end
+  inherited PanelButton: TPanel
+    Top = 361
+    Width = 482
+    inherited ButtonCancel: TButton
+      Left = 401
+    end
+    inherited ButtonOk: TButton
+      Left = 319
+    end
+  end
+end

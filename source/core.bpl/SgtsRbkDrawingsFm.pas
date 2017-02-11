@@ -1,0 +1,69 @@
+unit SgtsRbkDrawingsFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, Menus, ImgList, ExtCtrls, ComCtrls, ToolWin,
+  StdCtrls, DBCtrls, Grids, DBGrids,
+  SgtsDataGridFm, SgtsDataFm, SgtsFm, SgtsCDS,
+  SgtsCoreIntf, SgtsMenus;
+
+type
+  TSgtsRbkDrawingsForm = class(TSgtsDataGridForm)
+    PanelInfo: TPanel;
+    GroupBoxInfo: TGroupBox;
+    PanelNote: TPanel;
+    DBMemoNote: TDBMemo;
+    Splitter: TSplitter;
+  private
+    { Private declarations }
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+  end;
+
+  TSgtsRbkDrawingsIface=class(TSgtsDataGridIface)
+  public
+    procedure Init; override;
+  end;
+
+var
+  SgtsRbkDrawingsForm: TSgtsRbkDrawingsForm;
+
+implementation
+
+uses SgtsProviderConsts, SgtsIface, SgtsConsts, SgtsRbkDrawingEditFm,
+     SgtsSelectDefs;
+
+{$R *.dfm}
+
+{ TSgtsRbkDrawingsIface }
+
+procedure TSgtsRbkDrawingsIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkDrawingsForm;
+  InterfaceName:=SInterfaceDrawings;
+  InsertClass:=TSgtsRbkDrawingInsertIface;
+  UpdateClass:=TSgtsRbkDrawingUpdateIface;
+  DeleteClass:=TSgtsRbkDrawingDeleteIface;
+  with DataSet do begin
+    ProviderName:=SProviderSelectDrawings;
+    with SelectDefs do begin
+      AddKey('DRAWING_ID');
+      Add('NAME','Наименование',100);
+      Add('FILE_NAME','Файл чертежа',250);
+      AddInvisible('DESCRIPTION');
+    end;
+  end;
+end;
+
+{ TSgtsRbkDrawingsForm }
+
+constructor TSgtsRbkDrawingsForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+end;
+
+
+end.

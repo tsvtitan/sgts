@@ -1,0 +1,56 @@
+object SgtsMyForm: TSgtsMyForm
+  Left = 0
+  Top = 0
+  Caption = 'SgtsMyForm'
+  ClientHeight = 293
+  ClientWidth = 497
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  PixelsPerInch = 96
+  TextHeight = 13
+  object Splitter1: TSplitter
+    Left = 154
+    Top = 0
+    Width = 6
+    Height = 293
+    ExplicitTop = 8
+    ExplicitHeight = 411
+  end
+  object TreeViewMeasureType: TTreeView
+    Left = 0
+    Top = 0
+    Width = 154
+    Height = 293
+    Align = alLeft
+    BevelEdges = []
+    BevelInner = bvNone
+    BevelOuter = bvRaised
+    BevelKind = bkSoft
+    Indent = 19
+    TabOrder = 0
+    OnExpanded = TreeViewMeasureTypeExpanded
+    ExplicitLeft = 32
+    ExplicitTop = 40
+    ExplicitHeight = 225
+  end
+  object Panel1: TPanel
+    Left = 160
+    Top = 0
+    Width = 337
+    Height = 293
+    Align = alClient
+    BevelKind = bkSoft
+    BevelOuter = bvLowered
+    Caption = 'Panel1'
+    TabOrder = 1
+    ExplicitLeft = 320
+    ExplicitTop = 8
+    ExplicitWidth = 226
+    ExplicitHeight = 355
+  end
+end

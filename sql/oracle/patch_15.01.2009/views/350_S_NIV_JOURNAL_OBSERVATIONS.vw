@@ -1,0 +1,45 @@
+/* Создание просмотра журнала наблюдений нивелирования */
+
+CREATE OR REPLACE VIEW S_NIV_JOURNAL_OBSERVATIONS
+AS 
+SELECT CYCLE_ID,
+       CYCLE_NUM,
+       DATE_OBSERVATION,
+       MEASURE_TYPE_ID,
+       POINT_ID,
+       POINT_NAME,
+       ROUTE_ID,
+       COORDINATE_Z,
+       DISPLACE,
+       CUR_DISPLACE,
+       CONVERTER_ID,
+       CONVERTER_NAME,
+       DESCRIPTION,
+       OBJECT_PATHS,
+       OBJECT_PRIORITY
+  FROM S_NIV_JOURNAL_OBSERVATIONS_O
+UNION
+SELECT CYCLE_ID,
+       CYCLE_NUM,
+       DATE_OBSERVATION,
+       MEASURE_TYPE_ID,
+       POINT_ID,
+       POINT_NAME,
+       ROUTE_ID,
+       COORDINATE_Z,
+       DISPLACE,
+       CUR_DISPLACE,
+       CONVERTER_ID,
+       CONVERTER_NAME,
+       DESCRIPTION,
+       OBJECT_PATHS,
+       OBJECT_PRIORITY
+  FROM S_NIV_JOURNAL_OBSERVATIONS_N
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

@@ -1,0 +1,81 @@
+package objects;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$RUNONLY}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  vcljpg,
+  vcl,
+  dbrtl,
+  vclx,
+  vcldb,
+  teeui,
+  tee,
+  teedb,
+  VclSmp;
+
+contains
+  IdCoder3to4 in '..\imports\Indy\Protocols\IdCoder3to4.pas',
+  IdStreamRandomAccess in '..\imports\Indy\System\IdStreamRandomAccess.pas',
+  VirtualTrees in '..\imports\VirtualTree\VirtualTrees.pas',
+  VirtualDBTree in '..\imports\VirtualTree\VirtualDBTree.pas',
+  RxTimer in '..\imports\RX\Units\RxTimer.pas',
+  Rxcconst in '..\imports\RX\Units\Rxcconst.pas',
+  Rxconst in '..\imports\RX\Units\Rxconst.pas',
+  RxCtrls in '..\imports\RX\Units\RxCtrls.pas',
+  rxDateutil in '..\imports\RX\Units\rxDateutil.pas',
+  rxFileUtil in '..\imports\RX\Units\rxFileUtil.pas',
+  Rxhook in '..\imports\RX\Units\Rxhook.pas',
+  rxMaxmin in '..\imports\RX\Units\rxMaxmin.pas',
+  rxPickdate in '..\imports\RX\Units\rxPickdate.pas',
+  rxPlacemnt in '..\imports\RX\Units\rxPlacemnt.pas',
+  Rxprgrss in '..\imports\RX\Units\Rxprgrss.pas',
+  Rxprops in '..\imports\RX\Units\Rxprops.pas',
+  rxStrUtils in '..\imports\RX\Units\rxStrUtils.pas',
+  rxToolEdit in '..\imports\RX\Units\rxToolEdit.pas',
+  rxVclutils in '..\imports\RX\Units\rxVclutils.pas',
+  rxApputils in '..\imports\RX\Units\rxApputils.pas',
+  IdCoder in '..\imports\Indy\Protocols\IdCoder.pas',
+  IdStream in '..\imports\Indy\System\IdStream.pas',
+  IdStreamVCL in '..\imports\Indy\System\IdStreamVCL.pas',
+  IdStreamVCLBase in '..\imports\Indy\System\IdStreamVCLBase.pas',
+  IdStreamVCLWin32 in '..\imports\Indy\System\IdStreamVCLWin32.pas',
+  IdBaseComponent in '..\imports\Indy\System\IdBaseComponent.pas',
+  IdResourceStringsCore in '..\imports\Indy\Core\IdResourceStringsCore.pas',
+  IdAssignedNumbers in '..\imports\Indy\Core\IdAssignedNumbers.pas',
+  IdStackBSDBase in '..\imports\Indy\System\IdStackBSDBase.pas',
+  IdStackConsts in '..\imports\Indy\System\IdStackConsts.pas',
+  IdStackWindows in '..\imports\Indy\System\IdStackWindows.pas',
+  IdTStrings in '..\imports\Indy\System\IdTStrings.pas',
+  IdWinsock2 in '..\imports\Indy\System\IdWinsock2.pas',
+  IdWship6 in '..\imports\Indy\System\IdWship6.pas',
+  IdException in '..\imports\Indy\System\IdException.pas',
+  IdGlobal in '..\imports\Indy\System\IdGlobal.pas',
+  IdResourceStrings in '..\imports\Indy\System\IdResourceStrings.pas',
+  IdStack in '..\imports\Indy\System\IdStack.pas',
+  IdResourceStringsProtocols in '..\imports\Indy\Protocols\IdResourceStringsProtocols.pas';
+
+end.

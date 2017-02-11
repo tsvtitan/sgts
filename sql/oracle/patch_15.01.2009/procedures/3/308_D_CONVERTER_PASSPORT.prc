@@ -1,0 +1,19 @@
+/* Создание процедуры удаления паспорта преобразователя */
+
+CREATE OR REPLACE PROCEDURE D_CONVERTER_PASSPORT
+( 
+  OLD_CONVERTER_PASSPORT_ID IN INTEGER 
+) 
+AS 
+BEGIN 
+  DELETE FROM CONVERTER_PASSPORTS 
+        WHERE CONVERTER_PASSPORT_ID=OLD_CONVERTER_PASSPORT_ID; 
+  COMMIT;         
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+

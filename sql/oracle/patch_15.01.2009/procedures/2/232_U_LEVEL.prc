@@ -1,0 +1,25 @@
+/* Создание процедуры изменения уровня */
+
+CREATE OR REPLACE PROCEDURE U_LEVEL
+( 
+  LEVEL_ID IN INTEGER, 
+  NAME IN VARCHAR2, 
+  DESCRIPTION IN VARCHAR2, 
+  OLD_LEVEL_ID IN INTEGER 
+) 
+AS 
+BEGIN 
+  UPDATE LEVELS  
+     SET LEVEL_ID=U_LEVEL.LEVEL_ID, 
+         NAME=U_LEVEL.NAME,  
+         DESCRIPTION=U_LEVEL.DESCRIPTION  
+   WHERE LEVEL_ID=OLD_LEVEL_ID; 
+  COMMIT;         
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+

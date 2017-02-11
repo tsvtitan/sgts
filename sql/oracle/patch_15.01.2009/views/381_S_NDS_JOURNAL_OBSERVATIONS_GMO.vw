@@ -1,0 +1,43 @@
+/* Создание просмотра журнала наблюдений напряженно-деформированного состояния вместе с гидрометеорологией */
+
+CREATE OR REPLACE VIEW S_NDS_JOURNAL_OBSERVATIONS_GMO
+AS
+SELECT NDS.CYCLE_ID,
+       NDS.CYCLE_NUM,
+       NDS.DATE_OBSERVATION,
+       NDS.MEASURE_TYPE_ID,
+       NDS.POINT_ID,
+       NDS.POINT_NAME,
+       NDS.CONVERTER_ID,
+       NDS.CONVERTER_NAME,
+       NDS.TYPE,
+       NDS.COORDINATE_Z,
+       NDS.VALUE_STATER_CARRIE,
+       NDS.VALUE_EXERTION,
+       NDS.VALUE_EXERTION_ACCOUNT,
+       NDS.VALUE_TEMPERATURE,
+       NDS.VALUE_OPENING,
+       NDS.VALUE_RESISTANCE,
+       NDS.VALUE_FREQUENCY,
+       NDS.OBJECT_PATHS,
+       GMO.UVB,
+       GMO.UNB,
+       GMO.T_AIR,
+       GMO.T_WATER,
+       GMO.RAIN_DAY,
+       GMO.PREC,
+       GMO.PREC_NAME,
+       GMO.UNSET,
+       GMO.INFLUX,
+       GMO.V_VAULT
+  FROM S_NDS_JOURNAL_OBSERVATIONS NDS,
+       S_GMO_JOURNAL_OBSERVATIONS GMO
+ WHERE NDS.DATE_OBSERVATION = GMO.DATE_OBSERVATION(+)
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

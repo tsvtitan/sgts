@@ -1,0 +1,1 @@
+sgts.exe /install_sql install.que OracleSgts

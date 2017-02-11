@@ -1,0 +1,279 @@
+unit SgtsFunRoutePointIfaces;
+
+interface
+
+uses Classes, DB, 
+     SgtsRbkPointEditFm, SgtsExecuteDefs, SgtsDataTreeFmIntf;
+
+type
+
+  TSgtsFunRoutePointInsertIface=class(TSgtsRbkPointInsertIface)
+  private
+    FPointIdDef: TSgtsExecuteDefKey;
+    FUnionParentIdDef: TSgtsExecuteDefInvisible;
+    FTreeParentIdDef: TSgtsExecuteDefCalc;
+    function GetParentId(Def: TSgtsExecuteDefCalc): Variant;
+  public
+    procedure Init; override;
+    function CanShow: Boolean; override;
+    procedure SetDefValues; override;
+    procedure Insert; override;
+  end;
+
+  TSgtsFunRoutePointUpdateIface=class(TSgtsRbkPointUpdateIface)
+  private
+    FPointIdDef: TSgtsExecuteDefKey;
+    FUnionParentIdDef: TSgtsExecuteDefInvisible;
+  public
+    procedure Init; override;
+    procedure SetDefValues; override;
+  end;
+
+  TSgtsFunRoutePointDeleteIface=class(TSgtsRbkPointDeleteIface)
+  private
+    FPointIdDef: TSgtsExecuteDefKey;
+    FTreeIdDef: TSgtsExecuteDefKeyLink;
+    procedure DeleteAllPoints(PointId: Variant; TreeId: Variant);
+  public
+    procedure Init; override;
+    procedure SetDefValues; override;
+    procedure Delete; override;
+
+  end;
+
+implementation
+
+uses Variants, SysUtils,
+     SgtsDataFmIntf, SgtsCDS, SgtsDatabaseCDS, SgtsUtils, 
+     SgtsConsts, SgtsProviderConsts, SgtsRbkPointManagementFm,
+     SgtsDataEditFm, SgtsGetRecordsConfig, SgtsDataIfaceIntf;
+
+function InternalGetParentId(IfaceIntf: ISgtsDataIface; Def: TSgtsExecuteDefCalc; ParentIdDef: TSgtsExecuteDef): Variant;
+var
+  DS: TSgtsCDS;
+begin
+  Result:=Def.DefaultValue;
+  if Assigned(IfaceIntf) and not VarIsNull(ParentIdDef.Value) then begin
+    DS:=TSgtsCDS.Create(nil);
+    try
+      DS.Data:=IfaceIntf.DataSet.Data;
+      DS.Filter:=Format('%s=%s AND %s=%d',['UNION_ID',VarToStrDef(ParentIdDef.Value,'NULL'),'UNION_TYPE',Integer(utRoute)]);
+      DS.Filtered:=true;
+      if DS.Active and not DS.IsEmpty then
+        Result:=DS.FieldByName('TREE_ID').Value;
+    finally
+      DS.Free;
+    end;
+  end;
+end;
+     
+{ TSgtsFunRoutePointInsertIface }
+
+procedure TSgtsFunRoutePointInsertIface.Init;
+begin
+  inherited Init;
+  with DataSet.ExecuteDefs do begin
+    FPointIdDef:=TSgtsExecuteDefKey(Find('POINT_ID'));
+    FPointIdDef.Twins.Add('UNION_ID');
+    AddInvisible('UNION_TYPE',ptUnknown).Value:=utPoint;
+    FUnionParentIdDef:=AddInvisible('UNION_PARENT_ID',ptUnknown);
+    AddKey('TREE_ID',ptUnknown).ProviderName:=SProviderInsertPointManagement;
+    FTreeParentIdDef:=AddCalc('TREE_PARENT_ID',GetParentId,ptUnknown);
+  end;
+end;
+
+function TSgtsFunRoutePointInsertIface.CanShow: Boolean;
+begin
+  Result:=inherited CanShow and
+          Assigned(IfaceIntf) and
+          IfaceIntf.DataSet.Active and
+          not IfaceIntf.DataSet.IsEmpty;
+  if Result then
+    with IfaceIntf.DataSet do
+      Result:=TSgtsRbkPointManagementIfaceUnionType(FieldByName('UNION_TYPE').AsInteger) in [utRoute,utPoint];
+end;
+
+procedure TSgtsFunRoutePointInsertIface.SetDefValues;
+var
+  UnionType: TSgtsRbkPointManagementIfaceUnionType;
+  DS: TSgtsDatabaseCDS;
+begin
+  inherited SetDefValues;
+  if Assigned(IfaceIntf) then begin
+    with IfaceIntf.DataSet do begin
+      UnionType:=TSgtsRbkPointManagementIfaceUnionType(FieldByName('UNION_TYPE').AsInteger);
+      case UnionType of
+        utRoute: begin
+          FUnionParentIdDef.DefaultValue:=FieldByName('UNION_ID').Value;
+          FUnionParentIdDef.SetDefault;
+
+          FTreeParentIdDef.DefaultValue:=FieldByName('TREE_ID').Value;
+          FTreeParentIdDef.SetDefault;
+        end;
+        utPoint: begin
+          FUnionParentIdDef.DefaultValue:=FieldByName('UNION_PARENT_ID').Value;
+          FUnionParentIdDef.SetDefault;
+
+          FTreeParentIdDef.DefaultValue:=FieldByName('TREE_PARENT_ID').Value;
+          FTreeParentIdDef.SetDefault;
+        end;
+      end;
+
+      if not DisableSet then begin
+        DS:=TSgtsDatabaseCDS.Create(CoreIntf);
+        try
+          DS.ProviderName:=SProviderSelectPoints;
+          with DS.SelectDefs do begin
+            AddInvisible('POINT_TYPE_ID');
+            AddInvisible('POINT_TYPE_NAME');
+            AddInvisible('OBJECT_ID');
+            AddInvisible('OBJECT_NAME');
+            AddInvisible('COORDINATE_X');
+            AddInvisible('COORDINATE_Y');
+            AddInvisible('COORDINATE_Z');
+            AddInvisible('DATE_ENTER');
+            AddInvisible('OBJECT_PATHS');
+          end;
+          DS.FilterGroups.Add.Filters.Add('POINT_ID',fcEqual,FieldByName('UNION_ID').Value);
+          DS.Open;
+          DataSet.GetExecuteDefsByDataSet(DS);
+        finally
+          DS.Free;
+        end;
+      end;  
+
+    end;
+  end;  
+end;
+
+function TSgtsFunRoutePointInsertIface.GetParentId(Def: TSgtsExecuteDefCalc): Variant;
+begin
+  Result:=InternalGetParentId(IfaceIntf,Def,FUnionParentIdDef);
+end;
+
+procedure TSgtsFunRoutePointInsertIface.Insert;
+var
+  UnionType: TSgtsRbkPointManagementIfaceUnionType;
+  DS: TSgtsDatabaseCDS;
+  Priority: Integer;
+begin
+  inherited Insert;
+  if Assigned(IfaceIntf) then begin
+    with IfaceIntf.DataSet do begin
+      Priority:=1; 
+      UnionType:=TSgtsRbkPointManagementIfaceUnionType(FieldByName('UNION_TYPE').AsInteger);
+      if UnionType=utPoint then
+        Priority:=FieldByName('PRIORITY').AsInteger+1;
+      DS:=TSgtsDatabaseCDS.Create(CoreIntf);
+      try
+        DS.ProviderName:=SProviderInsertRoutePoint;
+        DS.ExecuteDefs.AddInvisible('POINT_ID').Value:=FPointIdDef.Value;
+        DS.ExecuteDefs.AddInvisible('ROUTE_ID').Value:=FUnionParentIdDef.Value;
+        DS.ExecuteDefs.AddInvisible('PRIORITY').Value:=Priority;
+        DS.Execute;
+      finally
+        DS.Free;
+      end;
+    end;
+  end;    
+end;
+
+{ TSgtsFunRoutePointUpdateIface }
+
+procedure TSgtsFunRoutePointUpdateIface.Init; 
+begin
+  inherited Init;
+  with DataSet.ExecuteDefs do begin
+    FPointIdDef:=TSgtsExecuteDefKey(Find('POINT_ID'));
+    FPointIdDef.Twins.Add('UNION_ID');
+    AddInvisible('UNION_TYPE',ptUnknown).Value:=utPoint;
+    FUnionParentIdDef:=AddInvisible('UNION_PARENT_ID',ptUnknown);
+    AddKeyLink('TREE_ID',ptUnknown);
+  end;
+end;
+
+procedure TSgtsFunRoutePointUpdateIface.SetDefValues;
+var
+  DS: TSgtsDatabaseCDS;
+begin
+  inherited SetDefValues;
+  if Assigned(IfaceIntf) then begin
+    with IfaceIntf.DataSet do begin
+      DS:=TSgtsDatabaseCDS.Create(CoreIntf);
+      try
+        DS.ProviderName:=SProviderSelectPoints;
+        with DS.SelectDefs do begin
+          AddInvisible('POINT_TYPE_ID');
+          AddInvisible('POINT_TYPE_NAME');
+          AddInvisible('OBJECT_ID');
+          AddInvisible('OBJECT_NAME');
+          AddInvisible('COORDINATE_X');
+          AddInvisible('COORDINATE_Y');
+          AddInvisible('COORDINATE_Z');
+          AddInvisible('DATE_ENTER');
+            AddInvisible('OBJECT_PATHS');
+        end;
+        DS.FilterGroups.Add.Filters.Add('POINT_ID',fcEqual,FieldByName('UNION_ID').Value);
+        DS.Open;
+        DataSet.GetExecuteDefsByDataSet(DS);
+      finally
+        DS.Free;
+      end;
+    end;
+  end;  
+end;
+
+{ TSgtsFunRoutePointDeleteIface }
+
+procedure TSgtsFunRoutePointDeleteIface.Init; 
+begin
+  inherited Init;
+  with DataSet.ExecuteDefs do begin
+    FPointIdDef:=TSgtsExecuteDefKey(Find('POINT_ID'));
+    FTreeIdDef:=AddKeyLink('TREE_ID',ptUnknown);
+  end;
+end;
+
+procedure TSgtsFunRoutePointDeleteIface.SetDefValues;
+begin
+  inherited SetDefValues;
+  if Assigned(IfaceIntf) then begin
+    with IfaceIntf.DataSet do begin
+      FPointIdDef.DefaultValue:=FieldByName('UNION_ID').Value;
+      FPointIdDef.SetDefault;
+    end;
+  end;
+end;
+
+procedure TSgtsFunRoutePointDeleteIface.DeleteAllPoints(PointId: Variant; TreeId: Variant);
+var
+  Str: TStringList;
+begin
+  if Assigned(IfaceIntf) then begin
+    with IfaceIntf.DataSet do begin
+      BeginUpdate(false);
+      Str:=TStringList.Create;
+      try
+        Str.Add(Format('UNION_ID=%s',[QuotedStr(VarToStrDef(PointId,''))]));
+        Str.Add(Format('TREE_ID<>%s',[QuotedStr(VarToStrDef(TreeId,''))]));
+        Filter:=GetFilterString(Str,'AND');
+        Filtered:=true;
+        Last;
+        while not Bof do begin
+          Delete;
+        end;
+      finally
+        Str.Free;
+        EndUpdate(true);
+      end;
+    end;
+  end;  
+end;
+
+procedure TSgtsFunRoutePointDeleteIface.Delete;
+begin
+  inherited Delete;
+  DeleteAllPoints(FPointIdDef.Value,FTreeIdDef.Value);
+end;
+
+end.

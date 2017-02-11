@@ -1,0 +1,78 @@
+unit SgtsCoreObj;
+
+interface
+
+uses SgtsObj,
+     SgtsCoreIntf, SgtsCoreObjIntf, SgtsLogIntf;
+
+type
+
+  TSgtsCoreObj=class(TSgtsObj,ISgtsCoreObj)
+  private
+    FCoreIntf: ISgtsCore;
+    procedure SetCoreIntf(Value: ISgtsCore);
+  protected
+    function _GetCore: ISgtsCore;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); reintroduce; virtual;
+    procedure InitByCore(ACoreIntf: ISgtsCore); virtual;
+    destructor Destroy; override;
+    procedure BeforeStart; virtual;
+    function LogWrite(const Message: String; LogType: TSgtsLogType=ltInformation): Boolean; virtual;
+
+    property CoreIntf: ISgtsCore read FCoreIntf write SetCoreIntf;
+  end;
+
+  TSgtsCoreObjClass=class of TSgtsCoreObj;
+
+implementation
+
+uses SysUtils,
+     SgtsConsts;
+
+{ TSgtsCoreObj }
+
+constructor TSgtsCoreObj.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create;
+  FCoreIntf:=ACoreIntf;
+end;
+
+destructor TSgtsCoreObj.Destroy;
+begin
+  FCoreIntf:=nil;
+  inherited Destroy;
+end;
+
+function TSgtsCoreObj._GetCore: ISgtsCore;
+begin
+  Result:=FCoreIntf;
+end;
+
+procedure TSgtsCoreObj.BeforeStart;
+begin
+end;
+
+procedure TSgtsCoreObj.SetCoreIntf(Value: ISgtsCore);
+begin
+  InitByCore(Value);
+end;
+
+procedure TSgtsCoreObj.InitByCore(ACoreIntf: ISgtsCore);
+begin
+  FCoreIntf:=ACoreIntf;
+end;
+
+function TSgtsCoreObj.LogWrite(const Message: String; LogType: TSgtsLogType=ltInformation): Boolean; 
+var
+  S: String;
+begin
+  Result:=false;
+  if Assigned(FCoreIntf) and
+     Assigned(FCoreIntf.Log) then begin
+    S:=Format(SLogNameFormat,[Name,Message]);
+    Result:=FCoreIntf.Log.Write(S,LogType);
+  end;
+end;
+
+end.

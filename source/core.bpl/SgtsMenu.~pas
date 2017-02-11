@@ -1,0 +1,16 @@
+unit SgtsMenu;
+
+interface
+
+uses Menus,
+     SgtsMenus,
+     SgtsMenuIntf;
+
+type
+
+  TSgtsMenu=class(TMenu,ISgtsMenu)
+  end;
+
+implementation
+
+end.

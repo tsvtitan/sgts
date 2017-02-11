@@ -1,0 +1,182 @@
+unit SgtsRbkObjectTreeEditFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, ToolWin, ImgList, Menus, ExtCtrls, StdCtrls, DB,
+  SgtsDataEditFm, SgtsDataInsertFm, SgtsDataUpdateFm, SgtsDataDelete,
+  SgtsFm, SgtsExecuteDefs, SgtsControls;
+
+type
+  TSgtsRbkObjectTreeEditForm = class(TSgtsDataEditForm)
+    LabelParent: TLabel;
+    EditParent: TEdit;
+    ButtonParent: TButton;
+    LabelObject: TLabel;
+    EditObject: TEdit;
+    ButtonObject: TButton;
+    LabelPriority: TLabel;
+    EditPriority: TEdit;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+  TSgtsRbkObjectTreeInsertIface=class(TSgtsDataInsertIface)
+  private
+    FIdDef: TSgtsExecuteDefKey;
+    FParentIdDef: TSgtsExecuteDefEditLink;
+    FNameDef: TSgtsExecuteDefEditLink;
+  protected
+
+    property IdDef: TSgtsExecuteDefKey read FIdDef;
+    property ParentIdDef: TSgtsExecuteDefEditLink read FParentIdDef;
+    property NameDef: TSgtsExecuteDefEditLink read FNameDef;
+  public
+    procedure Init; override;
+    procedure SetDefValues; override;
+  end;
+
+  TSgtsRbkObjectTreeInsertChildIface=class(TSgtsRbkObjectTreeInsertIface)
+  protected
+  public
+    procedure Init; override;
+    procedure SetDefValues; override;
+    function CanShow: Boolean; override;
+  end;
+
+  TSgtsRbkObjectTreeUpdateIface=class(TSgtsDataUpdateIface)
+  public
+    procedure Init; override;
+  end;
+
+  TSgtsRbkObjectTreeDeleteIface=class(TSgtsDataDeleteIface)
+  public
+    procedure Init; override;
+  end;
+
+var
+  SgtsRbkObjectTreeEditForm: TSgtsRbkObjectTreeEditForm;
+
+implementation
+
+uses DBClient,
+     SgtsIface, SgtsConsts, SgtsProviderConsts,
+     SgtsDatabaseCDS, SgtsDialogs, SgtsRbkObjectTreesFm,
+     SgtsRbkObjectsFm;
+
+{$R *.dfm}
+
+{ TSgtsRbkObjectTreeInsertIface }
+
+procedure TSgtsRbkObjectTreeInsertIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkObjectTreeEditForm;
+  InterfaceName:=SInterfaceObjectTreeInsert;
+  with DataSet do begin
+    ProviderName:=SProviderInsertObjectTree;
+    with ExecuteDefs do begin
+      FIdDef:=AddKey('OBJECT_TREE_ID');
+      FParentIdDef:=AddEditLink('PARENT_ID','EditParent','LabelParent','ButtonParent',
+                                TSgtsRbkObjectTreesIface,'PARENT_NAME','OBJECT_NAME','OBJECT_TREE_ID',false);
+      FNameDef:=AddEditLink('OBJECT_ID','EditObject','LabelObject','ButtonObject',
+                            TSgtsRbkObjectsIface,'OBJECT_NAME','NAME','OBJECT_ID',true);
+      AddEditInteger('PRIORITY','EditPriority','LabelPriority',true);                             
+    end;
+  end;
+end;
+
+procedure TSgtsRbkObjectTreeInsertIface.SetDefValues;
+var
+  Field: TField;
+begin
+  inherited SetDefValues;
+  if Assigned(IfaceIntf) then begin
+    Field:=IfaceIntf.DataSet.FindField(FParentIdDef.FieldName);
+    if Assigned(Field) then begin
+      FParentIdDef.DefaultValue:=Field.Value;
+      FParentIdDef.SetDefaults;
+    end;
+    Field:=IfaceIntf.DataSet.FindField(FParentIdDef.Link.FieldName);
+    if Assigned(Field) then begin
+      FParentIdDef.Link.DefaultValue:=Field.Value;
+      FParentIdDef.Link.SetDefaults;
+    end;
+  end;
+end;
+
+{ TSgtsRbkObjectTreeInsertChildIface }
+
+procedure TSgtsRbkObjectTreeInsertChildIface.Init;
+begin
+  inherited Init;
+  InterfaceName:=SInterfaceObjectTreeInsertChild;
+end;
+
+function TSgtsRbkObjectTreeInsertChildIface.CanShow: Boolean;
+begin
+  Result:=inherited CanShow and
+          Assigned(IfaceIntf) and
+          not IfaceIntf.DataSet.IsEmpty;
+end;
+
+procedure TSgtsRbkObjectTreeInsertChildIface.SetDefValues;
+var
+  Field: TField;
+begin
+  inherited SetDefValues;
+  if Assigned(IfaceIntf) then begin
+    Field:=IfaceIntf.DataSet.FindField(FIdDef.FieldName);
+    if Assigned(Field) then begin
+      FParentIdDef.DefaultValue:=Field.Value;
+      FParentIdDef.SetDefaults;
+    end;
+    Field:=IfaceIntf.DataSet.FindField(FNameDef.Link.FieldName);
+    if Assigned(Field) then begin
+      FParentIdDef.Link.DefaultValue:=Field.Value;
+      FParentIdDef.Link.SetDefaults;
+    end;
+  end;
+end;
+
+{ TSgtsRbkObjectTreeUpdateIface }
+
+procedure TSgtsRbkObjectTreeUpdateIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkObjectTreeEditForm;
+  InterfaceName:=SInterfaceObjectTreeUpdate;
+  with DataSet do begin
+    ProviderName:=SProviderUpdateObjectTree;
+    with ExecuteDefs do begin
+      AddKeyLink('OBJECT_TREE_ID');
+      AddEditLink('PARENT_ID','EditParent','LabelParent','ButtonParent',
+                  TSgtsRbkObjectTreesIface,'PARENT_NAME','OBJECT_NAME','OBJECT_TREE_ID',false);
+      AddEditLink('OBJECT_ID','EditObject','LabelObject','ButtonObject',
+                  TSgtsRbkObjectsIface,'OBJECT_NAME','NAME','OBJECT_ID',true);
+      AddEditInteger('PRIORITY','EditPriority','LabelPriority',true);                  
+    end;
+  end;
+end;
+
+{ TSgtsRbkObjectTreeDeleteIface }
+
+procedure TSgtsRbkObjectTreeDeleteIface.Init;
+begin
+  inherited Init;
+  InterfaceName:=SInterfaceObjectTreeDelete;
+  DeleteQuestion:='Удалить узел дерева объектов %OBJECT_NAME?';
+  with DataSet do begin
+    ProviderName:=SProviderDeleteObjectTree;
+    with ExecuteDefs do begin
+      AddKeyLink('OBJECT_TREE_ID');
+      AddInvisible('OBJECT_NAME');
+    end;
+  end;
+end;
+
+
+end.

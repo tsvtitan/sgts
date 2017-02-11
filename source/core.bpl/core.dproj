@@ -1,0 +1,725 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{82060741-d0bb-4990-9d14-986825abf4ee}</ProjectGuid>
+    <MainSource>core.dpk</MainSource>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+    <DCC_DependencyCheckOutputName>U:\bin\core.bpl</DCC_DependencyCheckOutputName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_DebugInformation>False</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+    <DCC_BplOutput>U:\bin</DCC_BplOutput>
+    <DCC_DcpOutput>U:\source\dcp</DCC_DcpOutput>
+    <DCC_UnitSearchPath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack;U:\source\imports\Indy\Core;U:\source\imports\Indy\Protocols;U:\source\imports\Indy\SuperCore;U:\source\imports\Indy\System;U:\source\imports\ExtLib</DCC_UnitSearchPath>
+    <DCC_ResourcePath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack;U:\source\imports\Indy\Core;U:\source\imports\Indy\Protocols;U:\source\imports\Indy\SuperCore;U:\source\imports\Indy\System;U:\source\imports\ExtLib</DCC_ResourcePath>
+    <DCC_ObjPath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack;U:\source\imports\Indy\Core;U:\source\imports\Indy\Protocols;U:\source\imports\Indy\SuperCore;U:\source\imports\Indy\System;U:\source\imports\ExtLib</DCC_ObjPath>
+    <DCC_IncludePath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack;U:\source\imports\Indy\Core;U:\source\imports\Indy\Protocols;U:\source\imports\Indy\SuperCore;U:\source\imports\Indy\System;U:\source\imports\ExtLib</DCC_IncludePath>
+    <DCC_Define>RELEASE</DCC_Define>
+    <DCC_SYMBOL_DEPRECATED>False</DCC_SYMBOL_DEPRECATED>
+    <DCC_SYMBOL_LIBRARY>False</DCC_SYMBOL_LIBRARY>
+    <DCC_SYMBOL_PLATFORM>False</DCC_SYMBOL_PLATFORM>
+    <DCC_UNIT_LIBRARY>False</DCC_UNIT_LIBRARY>
+    <DCC_UNIT_PLATFORM>False</DCC_UNIT_PLATFORM>
+    <DCC_UNIT_DEPRECATED>False</DCC_UNIT_DEPRECATED>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_BplOutput>U:\bin</DCC_BplOutput>
+    <DCC_DcpOutput>U:\source\dcp</DCC_DcpOutput>
+    <DCC_UnitSearchPath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX\Units;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack;U:\source\imports\Indy\Core;U:\source\imports\Indy\Protocols;U:\source\imports\Indy\SuperCore;U:\source\imports\Indy\System;U:\source\imports\ExtLib</DCC_UnitSearchPath>
+    <DCC_ResourcePath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX\Units;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack;U:\source\imports\Indy\Core;U:\source\imports\Indy\Protocols;U:\source\imports\Indy\SuperCore;U:\source\imports\Indy\System;U:\source\imports\ExtLib</DCC_ResourcePath>
+    <DCC_ObjPath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX\Units;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack;U:\source\imports\Indy\Core;U:\source\imports\Indy\Protocols;U:\source\imports\Indy\SuperCore;U:\source\imports\Indy\System;U:\source\imports\ExtLib</DCC_ObjPath>
+    <DCC_IncludePath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX\Units;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack;U:\source\imports\Indy\Core;U:\source\imports\Indy\Protocols;U:\source\imports\Indy\SuperCore;U:\source\imports\Indy\System;U:\source\imports\ExtLib</DCC_IncludePath>
+    <DCC_SYMBOL_DEPRECATED>False</DCC_SYMBOL_DEPRECATED>
+    <DCC_SYMBOL_LIBRARY>False</DCC_SYMBOL_LIBRARY>
+    <DCC_SYMBOL_PLATFORM>False</DCC_SYMBOL_PLATFORM>
+    <DCC_UNIT_LIBRARY>False</DCC_UNIT_LIBRARY>
+    <DCC_UNIT_PLATFORM>False</DCC_UNIT_PLATFORM>
+    <DCC_UNIT_DEPRECATED>False</DCC_UNIT_DEPRECATED>
+  </PropertyGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Delphi.Personality</Borland.Personality>
+    <Borland.ProjectType>Package</Borland.ProjectType>
+    <BorlandProject>
+<BorlandProject><Delphi.Personality><Parameters><Parameters Name="HostApplication">U:\bin\sgts.exe</Parameters><Parameters Name="UseLauncher">False</Parameters><Parameters Name="LoadAllSymbols">True</Parameters><Parameters Name="LoadUnspecifiedSymbols">False</Parameters></Parameters><Package_Options><Package_Options Name="ImplicitBuild">False</Package_Options><Package_Options Name="DesigntimeOnly">False</Package_Options><Package_Options Name="RuntimeOnly">True</Package_Options></Package_Options><VersionInfo><VersionInfo Name="IncludeVerInfo">True</VersionInfo><VersionInfo Name="AutoIncBuild">True</VersionInfo><VersionInfo Name="MajorVer">1</VersionInfo><VersionInfo Name="MinorVer">2</VersionInfo><VersionInfo Name="Release">0</VersionInfo><VersionInfo Name="Build">2</VersionInfo><VersionInfo Name="Debug">False</VersionInfo><VersionInfo Name="PreRelease">False</VersionInfo><VersionInfo Name="Special">False</VersionInfo><VersionInfo Name="Private">False</VersionInfo><VersionInfo Name="DLL">False</VersionInfo><VersionInfo Name="Locale">1049</VersionInfo><VersionInfo Name="CodePage">1251</VersionInfo></VersionInfo><VersionInfoKeys><VersionInfoKeys Name="CompanyName"></VersionInfoKeys><VersionInfoKeys Name="FileDescription"></VersionInfoKeys><VersionInfoKeys Name="FileVersion">1.2.0.2</VersionInfoKeys><VersionInfoKeys Name="InternalName"></VersionInfoKeys><VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys><VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys><VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys><VersionInfoKeys Name="ProductName"></VersionInfoKeys><VersionInfoKeys Name="ProductVersion">1.2</VersionInfoKeys></VersionInfoKeys><Source><Source Name="MainSource">core.dpk</Source></Source></Delphi.Personality></BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
+  <ItemGroup>
+    <DelphiCompile Include="core.dpk">
+      <MainSource>MainSource</MainSource>
+    </DelphiCompile>
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\dbrtl.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\dsnap.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\objects.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\report.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\rtl.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\vcl.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\vcldb.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\VclSmp.dcp" />
+    <DCCReference Include="SgtsAboutFm.pas">
+      <Form>SgtsAboutForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsAboutFmIntf.pas" />
+    <DCCReference Include="SgtsBase64.pas" />
+    <DCCReference Include="SgtsBaseFieldNamesFm.pas">
+      <Form>SgtsBaseFieldNamesForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsBaseFilterGroupsFm.pas">
+      <Form>SgtsBaseFilterGroupsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsBaseGraphFm.pas">
+      <Form>SgtsBaseGraphForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsBaseGraphPeriodIface.pas" />
+    <DCCReference Include="SgtsBaseGraphPeriodObjectsIface.pas" />
+    <DCCReference Include="SgtsBaseGraphPeriodObjectsRefreshFm.pas">
+      <Form>SgtsBaseGraphPeriodObjectsRefreshForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsBaseGraphPeriodPointsIface.pas" />
+    <DCCReference Include="SgtsBaseGraphPeriodPointsRefreshFm.pas">
+      <Form>SgtsBaseGraphPeriodPointsRefreshForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsBaseGraphPeriodRefreshFm.pas">
+      <Form>SgtsBaseGraphPeriodRefreshForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsBaseGraphRefreshFm.pas">
+      <Form>SgtsBaseGraphRefreshForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsBaseOrdersFm.pas">
+      <Form>SgtsBaseOrdersForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsBaseReportAdjustmentFm.pas">
+      <Form>SgtsBaseReportAdjustmentForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsBaseReportClasses.pas" />
+    <DCCReference Include="SgtsBaseReportComponents.pas" />
+    <DCCReference Include="SgtsBaseReportControls.pas" />
+    <DCCReference Include="SgtsBaseReportFm.pas">
+      <Form>SgtsBaseReportForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsBaseReportFunctions.pas" />
+    <DCCReference Include="SgtsCDS.pas" />
+    <DCCReference Include="SgtsCheckingFm.pas">
+      <Form>SgtsCheckingForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsChildFm.pas">
+      <Form>SgtsChildForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsChildFmIntf.pas" />
+    <DCCReference Include="SgtsCmdLine.pas" />
+    <DCCReference Include="SgtsCmdLineIntf.pas" />
+    <DCCReference Include="SgtsConfig.pas" />
+    <DCCReference Include="SgtsConfigIntf.pas" />
+    <DCCReference Include="SgtsConsts.pas" />
+    <DCCReference Include="SgtsControls.pas" />
+    <DCCReference Include="SgtsCore.pas" />
+    <DCCReference Include="SgtsCoreIntf.pas" />
+    <DCCReference Include="SgtsCoreObj.pas" />
+    <DCCReference Include="SgtsCoreObjIntf.pas" />
+    <DCCReference Include="SgtsDatabase.pas" />
+    <DCCReference Include="SgtsDatabaseCDS.pas" />
+    <DCCReference Include="SgtsDatabaseConfig.pas" />
+    <DCCReference Include="SgtsDatabaseConfigIntf.pas" />
+    <DCCReference Include="SgtsDatabaseIntf.pas" />
+    <DCCReference Include="SgtsDatabaseModules.pas" />
+    <DCCReference Include="SgtsDatabaseModulesIntf.pas" />
+    <DCCReference Include="SgtsDataDelete.pas" />
+    <DCCReference Include="SgtsDataDeleteIntf.pas" />
+    <DCCReference Include="SgtsDataEditFm.pas">
+      <Form>SgtsDataEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsDataEditFmIntf.pas" />
+    <DCCReference Include="SgtsDataExport.pas" />
+    <DCCReference Include="SgtsDataFm.pas">
+      <Form>SgtsDataForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsDataFmIntf.pas" />
+    <DCCReference Include="SgtsDataGridAdjustmentFm.pas">
+      <Form>SgtsDataGridAdjustmentForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsDataGridFm.pas">
+      <Form>SgtsDataGridForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsDataGridFmIntf.pas" />
+    <DCCReference Include="SgtsDataGridFrm.pas">
+      <Form>SgtsDataGridFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="SgtsDataGridMoveFrm.pas">
+      <Form>SgtsDataGridMoveFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="SgtsDataGridOleFrm.pas">
+      <Form>SgtsDataGridOleFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="SgtsDataIfaceIntf.pas" />
+    <DCCReference Include="SgtsDataInsertBySelect.pas" />
+    <DCCReference Include="SgtsDataInsertFm.pas">
+      <Form>SgtsRbkInsertForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsDataInsertFmIntf.pas" />
+    <DCCReference Include="SgtsDataTreeFm.pas">
+      <Form>SgtsDataTreeForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsDataTreeFmIntf.pas" />
+    <DCCReference Include="SgtsDataTreeGridFm.pas">
+      <Form>SgtsDataTreeGridForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsDataTreeGridFmIntf.pas" />
+    <DCCReference Include="SgtsDataTreeIfaceIntf.pas" />
+    <DCCReference Include="SgtsDataUpdateFm.pas">
+      <Form>SgtsRbkUpdateForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsDataUpdateFmIntf.pas" />
+    <DCCReference Include="SgtsDateEdit.pas" />
+    <DCCReference Include="SgtsDbGrid.pas" />
+    <DCCReference Include="SgtsDbTree.pas" />
+    <DCCReference Include="SgtsDialogFm.pas">
+      <Form>SgtsDialogForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsDialogFmIntf.pas" />
+    <DCCReference Include="SgtsDialogs.pas" />
+    <DCCReference Include="SgtsExcelConsts.pas" />
+    <DCCReference Include="SgtsExecuteConfig.pas" />
+    <DCCReference Include="SgtsExecuteDefs.pas" />
+    <DCCReference Include="SgtsExportSqlFm.pas">
+      <Form>SgtsExportSqlForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsExportSqlFmIntf.pas" />
+    <DCCReference Include="SgtsFieldEditFm.pas">
+      <Form>SgtsFieldEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsFieldEditFmIntf.pas" />
+    <DCCReference Include="SgtsFileIface.pas" />
+    <DCCReference Include="SgtsFileReport.pas" />
+    <DCCReference Include="SgtsFileReportIface.pas" />
+    <DCCReference Include="SgtsFileReportIntf.pas" />
+    <DCCReference Include="SgtsFloatEdit.pas" />
+    <DCCReference Include="SgtsFm.pas">
+      <Form>SgtsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsFmIntf.pas" />
+    <DCCReference Include="SgtsFunAccountIfaces.pas" />
+    <DCCReference Include="SgtsFunConverterComponentIfaces.pas" />
+    <DCCReference Include="SgtsFunConverterPassportIfaces.pas" />
+    <DCCReference Include="SgtsFunDivisionIfaces.pas" />
+    <DCCReference Include="SgtsFunMeasureTypeAlgorithmIfaces.pas" />
+    <DCCReference Include="SgtsFunMeasureTypeAlgorithmsFrm.pas">
+      <Form>SgtsFunMeasureTypeAlgorithmsFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="SgtsFunMeasureTypeIfaces.pas" />
+    <DCCReference Include="SgtsFunMeasureTypeParamIfaces.pas" />
+    <DCCReference Include="SgtsFunMeasureTypeParamsFrm.pas">
+      <Form>SgtsFunMeasureTypeParamsFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="SgtsFunMeasureTypePlanIfaces.pas" />
+    <DCCReference Include="SgtsFunMeasureTypeRouteIfaces.pas" />
+    <DCCReference Include="SgtsFunPersonnelIfaces.pas" />
+    <DCCReference Include="SgtsFunPersonnelManagementFm.pas">
+      <Form>SgtsFunPersonnelManagementForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsFunPointConverterIfaces.pas" />
+    <DCCReference Include="SgtsFunPointDocumentIfaces.pas" />
+    <DCCReference Include="SgtsFunPointDocumentsFrm.pas">
+      <Form>SgtsFunPointDocumentsFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="SgtsFunPointInstrumentIfaces.pas" />
+    <DCCReference Include="SgtsFunPointInstrumentsFrm.pas">
+      <Form>SgtsFunPointInstrumentsFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="SgtsFunPointManagementFilterFm.pas">
+      <Form>SgtsFunPointManagementFilterForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsFunPointManagementFm.pas">
+      <Form>SgtsFunPointManagementForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsFunPointManagementIfaceIntf.pas" />
+    <DCCReference Include="SgtsFunPointPassportIfaces.pas" />
+    <DCCReference Include="SgtsFunRoutePersonnelIfaces.pas" />
+    <DCCReference Include="SgtsFunRoutePointIfaces.pas" />
+    <DCCReference Include="SgtsFunSourceDataConditionFm.pas">
+      <Form>SgtsFunSourceDataConditionForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsFunSourceDataFm.pas">
+      <Form>SgtsFunSourceDataForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsFunSourceDataFrm.pas">
+      <Form>SgtsFunSourceDataFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="SgtsFunSourceDataInstrumentsIface.pas" />
+    <DCCReference Include="SgtsFunSourceDataMeasureDetailFrm.pas">
+      <Form>SgtsFunSourceDataMeasureDetailFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="SgtsFunSourceDataMeasureGeneralFrm.pas">
+      <Form>SgtsFunSourceDataMeasureGeneralFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="SgtsFunSourceDataMeasureUnitsIface.pas" />
+    <DCCReference Include="SgtsFunSourceDataMeasureVisualFrm.pas">
+      <Form>SgtsFunSourceDataMeasureVisualFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="SgtsFunSourceDataObjectTreesIface.pas" />
+    <DCCReference Include="SgtsFunSourceDataParamsIface.pas" />
+    <DCCReference Include="SgtsFunSourceDataPointsIface.pas" />
+    <DCCReference Include="SgtsGetRecordsConfig.pas" />
+    <DCCReference Include="SgtsGraphAdjustFm.pas">
+      <Form>SgtsGraphAdjustForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsGraphChartFm.pas">
+      <Form>SgtsGraphChartForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsGraphChartInfoFm.pas">
+      <Form>SgtsGraphChartInfoForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsGraphChartSeriesDefs.pas" />
+    <DCCReference Include="SgtsGraphFm.pas">
+      <Form>SgtsGraphForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsGraphIfaceIntf.pas" />
+    <DCCReference Include="SgtsGraphRefreshFm.pas">
+      <Form>SgtsGraphRefreshForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsGraphTestIface.pas" />
+    <DCCReference Include="SgtsGraphTestRefreshFm.pas">
+      <Form>SgtsGraphTestRefreshForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsGrpJournalFm.pas">
+      <Form>SgtsGrpJournalForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsGrpJournalRefreshFm.pas">
+      <Form>SgtsGrpJournalRefreshForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsHint.pas" />
+    <DCCReference Include="SgtsHintEx.pas" />
+    <DCCReference Include="SgtsIface.pas" />
+    <DCCReference Include="SgtsIfaceIntf.pas" />
+    <DCCReference Include="SgtsInstallSqlFm.pas">
+      <Form>SgtsInstallSqlForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsInstallSqlFmIntf.pas" />
+    <DCCReference Include="SgtsIntegerEdit.pas" />
+    <DCCReference Include="SgtsInterface.pas" />
+    <DCCReference Include="SgtsInterfaceIntf.pas" />
+    <DCCReference Include="SgtsInterfaceModules.pas" />
+    <DCCReference Include="SgtsInterfaceModulesIntf.pas" />
+    <DCCReference Include="SgtsJrnGridFm.pas">
+      <Form>SgtsJrnGridForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsJrnJournalActionsFm.pas">
+      <Form>SgtsJrnJournalActionsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsJrnJournalFieldEditFm.pas">
+      <Form>SgtsJrnJournalFieldEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsJrnJournalFieldsFm.pas">
+      <Form>SgtsJrnJournalFieldsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsJrnJournalObservationEditFm.pas">
+      <Form>SgtsJrnJournalObservationEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsJrnJournalObservationsFm.pas">
+      <Form>SgtsJrnJournalObservationsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsJrnJournalsFm.pas">
+      <Form>SgtsJrnJournalsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsLog.pas" />
+    <DCCReference Include="SgtsLoginFm.pas">
+      <Form>SgtsLoginForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsLoginFmIntf.pas" />
+    <DCCReference Include="SgtsLogIntf.pas" />
+    <DCCReference Include="SgtsMainFm.pas">
+      <Form>SgtsMainForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsMainFmIntf.pas" />
+    <DCCReference Include="SgtsMenus.pas" />
+    <DCCReference Include="SgtsModules.pas" />
+    <DCCReference Include="SgtsModulesIntf.pas" />
+    <DCCReference Include="SgtsObj.pas" />
+    <DCCReference Include="SgtsObjIntf.pas" />
+    <DCCReference Include="SgtsOptionsFm.pas">
+      <Form>SgtsOptionsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsOptionsFmIntf.pas" />
+    <DCCReference Include="SgtsPeriodExFm.pas">
+      <Form>SgtsPeriodExForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsPeriodFm.pas">
+      <Form>SgtsPeriodForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsPropertyInspector.pas" />
+    <DCCReference Include="SgtsProviderConsts.pas" />
+    <DCCReference Include="SgtsProviders.pas" />
+    <DCCReference Include="SgtsRbkAccountEditFm.pas">
+      <Form>SgtsRbkAccountEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkAccountRoleEditFm.pas">
+      <Form>SgtsRbkAccountRoleEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkAccountsFm.pas">
+      <Form>SgtsRbkAccountsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkAccountsRolesFm.pas">
+      <Form>SgtsRbkAccountsRolesForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkAlgorithmEditFm.pas">
+      <Form>SgtsRbkAlgorithmEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkAlgorithmsFm.pas">
+      <Form>SgtsRbkAlgorithmsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkBaseReportEditFm.pas">
+      <Form>SgtsRbkBaseReportEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkBaseReportsFm.pas">
+      <Form>SgtsRbkBaseReportsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkCheckingEditFm.pas">
+      <Form>SgtsRbkCheckingEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkCheckingsFm.pas">
+      <Form>SgtsRbkCheckingsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkComponentEditFm.pas">
+      <Form>SgtsRbkComponentEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkComponentsFm.pas">
+      <Form>SgtsRbkComponentsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkConverterEditFm.pas">
+      <Form>SgtsRbkConverterEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkConverterPassportEditFm.pas">
+      <Form>SgtsRbkConverterPassportEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkConverterPassportsFm.pas">
+      <Form>SgtsRbkConverterPassportsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkConvertersFm.pas">
+      <Form>SgtsRbkConvertersForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkCriteriaEditFm.pas">
+      <Form>SgtsRbkCriteriaEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkCriteriasFm.pas">
+      <Form>SgtsRbkCriteriasForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkCutEditFm.pas">
+      <Form>SgtsRbkCutEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkCutsFm.pas">
+      <Form>SgtsRbkCutsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkCycleEditFm.pas">
+      <Form>SgtsRbkCycleEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkCyclesFm.pas">
+      <Form>SgtsRbkCyclesForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkDefectViewEditFm.pas">
+      <Form>SgtsRbkDefectViewEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkDefectViewsFm.pas">
+      <Form>SgtsRbkDefectViewsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkDeviceEditFm.pas">
+      <Form>SgtsRbkDeviceEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkDevicePointEditFm.pas">
+      <Form>SgtsRbkDevicePointEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkDevicePointsFm.pas">
+      <Form>SgtsRbkDevicePointsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkDevicesFm.pas">
+      <Form>SgtsRbkDevicesForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkDivisionEditFm.pas">
+      <Form>SgtsRbkDivisionEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkDivisionsFm.pas">
+      <Form>SgtsRbkDivisionsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkDocumentEditFm.pas">
+      <Form>SgtsRbkDocumentEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkDocumentsFm.pas">
+      <Form>SgtsRbkDocumentsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkDrawingEditFm.pas">
+      <Form>SgtsRbkDrawingEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkDrawingsFm.pas">
+      <Form>SgtsRbkDrawingsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkFileReportEditFm.pas">
+      <Form>SgtsRbkFileReportEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkFileReportsFm.pas">
+      <Form>SgtsRbkFileReportsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkGraphEditFm.pas">
+      <Form>SgtsRbkGraphEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkGraphsFm.pas">
+      <Form>SgtsRbkGraphsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkGroupEditFm.pas">
+      <Form>SgtsRbkGroupEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkGroupObjectEditFm.pas">
+      <Form>SgtsRbkGroupObjectEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkGroupObjectsFm.pas">
+      <Form>SgtsRbkGroupObjectsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkGroupsFm.pas">
+      <Form>SgtsRbkGroupsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkInstrumentEditFm.pas">
+      <Form>SgtsRbkInstrumentEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkInstrumentPassportEditFm.pas">
+      <Form>SgtsRbkInstrumentPassportEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkInstrumentPassportsFm.pas">
+      <Form>SgtsRbkInstrumentPassportsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkInstrumentsFm.pas">
+      <Form>SgtsRbkInstrumentsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkInstrumentTypeEditFm.pas">
+      <Form>SgtsRbkInstrumentTypeEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkInstrumentTypesFm.pas">
+      <Form>SgtsRbkInstrumentTypesForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkInstrumentUnitEditFm.pas">
+      <Form>SgtsRbkInstrumentUnitEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkInstrumentUnitsFm.pas">
+      <Form>SgtsRbkInstrumentUnitsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkInterfaceReportEditFm.pas">
+      <Form>SgtsRbkInterfaceReportEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkInterfaceReportsFm.pas">
+      <Form>SgtsRbkInterfaceReportsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkLevelEditFm.pas">
+      <Form>SgtsRbkLevelEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkLevelsFm.pas">
+      <Form>SgtsRbkLevelsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkMeasureTypeAlgorithmEditFm.pas">
+      <Form>SgtsRbkMeasureTypeAlgorithmEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkMeasureTypeAlgorithmsFm.pas">
+      <Form>SgtsRbkMeasureTypeAlgorithmsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkMeasureTypeEditFm.pas">
+      <Form>SgtsRbkMeasureTypeEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkMeasureTypeParamEditFm.pas">
+      <Form>SgtsRbkMeasureTypeParamEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkMeasureTypeParamsFm.pas">
+      <Form>SgtsRbkMeasureTypeParamsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkMeasureTypeRouteEditFm.pas">
+      <Form>SgtsRbkMeasureTypeRouteEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkMeasureTypeRoutesFm.pas">
+      <Form>SgtsRbkMeasureTypeRoutesForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkMeasureTypesFm.pas">
+      <Form>SgtsRbkMeasureTypesForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkMeasureUnitEditFm.pas">
+      <Form>SgtsRbkMeasureUnitEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkMeasureUnitsFm.pas">
+      <Form>SgtsRbkMeasureUnitsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkObjectDocumentEditFm.pas">
+      <Form>SgtsRbkObjectDocumentEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkObjectDocumentsFm.pas">
+      <Form>SgtsRbkObjectDocumentsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkObjectDocumentsFrm.pas">
+      <Form>SgtsRbkObjectDocumentsFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkObjectDrawingEditFm.pas">
+      <Form>SgtsRbkObjectDrawingEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkObjectDrawingsFm.pas">
+      <Form>SgtsRbkObjectDrawingsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkObjectDrawingsFrm.pas">
+      <Form>SgtsRbkObjectDrawingsFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkObjectEditFm.pas">
+      <Form>SgtsRbkObjectEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkObjectPassportEditFm.pas">
+      <Form>SgtsRbkObjectPassportEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkObjectPassportIfaces.pas" />
+    <DCCReference Include="SgtsRbkObjectPassportsFm.pas">
+      <Form>SgtsRbkObjectPassportsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkObjectsFm.pas">
+      <Form>SgtsRbkObjectsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkObjectTreeEditFm.pas">
+      <Form>SgtsRbkObjectTreeEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkObjectTreesFm.pas">
+      <Form>SgtsRbkObjectTreesForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkParamEditFm.pas">
+      <Form>SgtsRbkParamEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkParamInstrumentEditFm.pas">
+      <Form>SgtsRbkParamInstrumentEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkParamInstrumentsFm.pas">
+      <Form>SgtsRbkParamInstrumentsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkParamLevelEditFm.pas">
+      <Form>SgtsRbkParamLevelEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkParamLevelsFm.pas">
+      <Form>SgtsRbkParamLevelsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkParamsFm.pas">
+      <Form>SgtsRbkParamsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPermissionEditFm.pas">
+      <Form>SgtsRbkPermissionEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPermissionFm.pas">
+      <Form>SgtsRbkPermissionForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPersonnelEditFm.pas">
+      <Form>SgtsRbkPersonnelEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPersonnelRouteEditFm.pas">
+      <Form>SgtsRbkPersonnelRouteEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPersonnelRoutesFm.pas">
+      <Form>SgtsRbkPersonnelRoutesForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPersonnelsFm.pas">
+      <Form>SgtsRbkPersonnelsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPlanEditFm.pas">
+      <Form>SgtsRbkPlanEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPlansFm.pas">
+      <Form>SgtsRbkPlansForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPointDocumentEditFm.pas">
+      <Form>SgtsRbkPointDocumentEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPointDocumentsFm.pas">
+      <Form>SgtsRbkPointDocumentsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPointEditFm.pas">
+      <Form>SgtsRbkPointEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPointInstrumentEditFm.pas">
+      <Form>SgtsRbkPointInstrumentEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPointInstrumentsFm.pas">
+      <Form>SgtsRbkPointInstrumentsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPointManagementFm.pas">
+      <Form>SgtsRbkPointManagementForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPointPassportEditFm.pas">
+      <Form>SgtsRbkPointPassportEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPointPassportsFm.pas">
+      <Form>SgtsRbkPointPassportsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPointsFm.pas">
+      <Form>SgtsRbkPointsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPointTypeEditFm.pas">
+      <Form>SgtsRbkPointTypeEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkPointTypesFm.pas">
+      <Form>SgtsRbkPointTypesForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkRoleEditFm.pas">
+      <Form>SgtsRbkRoleEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkRolesAndAccountsFm.pas">
+      <Form>SgtsRbkRolesAndAccountsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkRolesFm.pas">
+      <Form>SgtsRbkRolesForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkRouteEditFm.pas">
+      <Form>SgtsRbkRouteEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkRoutePointEditFm.pas">
+      <Form>SgtsRbkRoutePointEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkRoutePointsFm.pas">
+      <Form>SgtsRbkRoutePointsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRbkRoutesFm.pas">
+      <Form>SgtsRbkRoutesForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRecalcJournalObservationsFm.pas">
+      <Form>SgtsRecalcJournalObservationsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsRefreshCutsFm.pas">
+      <Form>SgtsRefreshCutsForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsReportFm.pas">
+      <Form>SgtsReportForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsReportFmIntf.pas" />
+    <DCCReference Include="SgtsReportIfaceIntf.pas" />
+    <DCCReference Include="SgtsReportModules.pas" />
+    <DCCReference Include="SgtsReportModulesIntf.pas" />
+    <DCCReference Include="SgtsRoles.pas" />
+    <DCCReference Include="SgtsSelectDefs.pas" />
+    <DCCReference Include="SgtsSplashFm.pas">
+      <Form>SgtsSplashForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsSplashFmIntf.pas" />
+    <DCCReference Include="SgtsStringsEdit.pas" />
+    <DCCReference Include="SgtsTimedMsgFm.pas">
+      <Form>SgtsTimedMsgForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsUtils.pas" />
+    <DCCReference Include="SgtsVariants.pas" />
+    <DCCReference Include="SgtsVersionInfo.pas" />
+    <DCCReference Include="SgtsWizFm.pas">
+      <Form>SgtsWizForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsWizFmIntf.pas" />
+  </ItemGroup>
+</Project>

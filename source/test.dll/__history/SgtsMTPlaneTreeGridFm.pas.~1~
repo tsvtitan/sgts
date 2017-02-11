@@ -1,0 +1,106 @@
+unit SgtsMTPlaneTreeGridFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, Menus, ImgList, ExtCtrls, ComCtrls, ToolWin, DBGrids,
+  SgtsDataTreeFm, SgtsDbGrid, SgtsFm, SgtsCDS,SgtsDatabaseCDS,SgtsCoreIntf,
+  SgtsDataTreeGridFmIntf, StdCtrls, SgtsDataTreeGridFm,
+     SgtsDataFm;
+
+
+type
+  TSgtsMTPlanTreeGridForm = class(TSgtsDataTreeGridForm)
+  private
+    { Private declarations }
+    //FDataSet: TSgtsDatabaseCDS;
+  public
+    { Public declarations }
+    //procedure ShowSubItems(ParentNode: TTreeNode);
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+  end;
+
+  TSgtsMTPlanIface = class(TSgtsDataIface)
+  public
+    procedure Init; override;
+    function CanShow: Boolean; override;
+  end;
+
+
+var
+  SgtsMTPlanTreeGridForm: TSgtsMTPlanTreeGridForm;
+
+implementation
+
+uses SgtsConsts, SgtsDatabaseIntf,
+     SgtsDialogs, SgtsRbkTestFm, SgtsGetRecordsConfig;
+
+{$R *.dfm}
+
+{TSgtsDataMTPlanIface}
+
+procedure TSgtsMTPlanIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsMTPlanTreeGridForm;
+  InterfaceName:='Планирование видов измерения';
+  MenuPath:=Format(SFunctionsMenu,['Планирование видов измерения']);
+  MenuIndex:=1004;
+  with Permissions do begin
+    AddDefault(SPermissionNameShow);
+  end;
+end;
+
+function TSgtsMTPlanIface.CanShow: Boolean;
+begin
+  Result:=PermissionExists(SPermissionNameShow);
+end;
+
+{TSgtsMTPlanTreeGridForm}
+
+constructor TSgtsMTPlanTreeGridForm.Create(ACoreIntf: ISgtsCore);
+{var
+  /_curNode: TTreeNode;
+  i, _indexDS: Integer;}
+begin
+  inherited Create(ACoreIntf);
+  {FDataSet:=TSgtsDataBaseCDS.Create(ACoreIntf);
+  FDataSet.ProviderName:='MEASURE_TYPES';
+  with FDataSet.SelectDefs do begin
+    AddInvisible('MEASURE_TYPE_ID');
+    AddInvisible('PARENT_ID');
+    AddInvisible('NAME');
+    AddInvisible('PRIORITY');
+  end;
+
+  FDataSet.CheckProvider:=false;
+  FDataSet.Close;
+  FDataSet.Open;
+  FDataSet.Orders.Add('PRIORITY', otAsc);
+  FDataSet.First;
+  ShowInfo('Record count = '+IntToStr(FDataSet.RecordCount));
+
+  for i := 0 to FDataSet.RecordCount - 1 do begin
+    if FDataSet.FieldByName('PARENT_ID').AsInteger = 0 then begin
+      _curNode := TreeViewMeasureType.Items.AddObject(nil,
+          FDataSet.FieldByName('NAME').AsString,
+          TObject(FDataSet.FieldByName('MEASURE_TYPE_ID').AsInteger));
+            _indexDS := FDataSet.RecNo;
+            ShowSubItems(_curNode);
+            FDataSet.First;
+            FDataSet.MoveBy(_indexDS-1)
+
+    end;
+    FDataSet.Next;
+  end; }
+end;
+
+destructor TSgtsMTPlanTreeGridForm.Destroy;
+begin
+  inherited Destroy;
+end;
+
+
+end.

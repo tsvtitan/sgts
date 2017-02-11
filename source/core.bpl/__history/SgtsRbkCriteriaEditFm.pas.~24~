@@ -1,0 +1,142 @@
+unit SgtsRbkCriteriaEditFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, ToolWin, ImgList, Menus, ExtCtrls, StdCtrls,
+  SgtsDataEditFm, SgtsDataInsertFm, SgtsDataUpdateFm, SgtsDataDelete,
+  SgtsFm, SgtsControls, SgtsExecuteDefs;
+
+type
+
+  TSgtsRbkCriteriaEditForm = class(TSgtsDataEditForm)
+    LabelName: TLabel;
+    EditName: TEdit;
+    LabelDescription: TLabel;
+    MemoDescription: TMemo;
+    LabelPriority: TLabel;
+    EditPriority: TEdit;
+    LabelAlgorithm: TLabel;
+    EditAlgorithm: TEdit;
+    ButtonAlgorithm: TButton;
+    CheckBoxEnabled: TCheckBox;
+    LabelFirstMinValue: TLabel;
+    EditFirstMinValue: TEdit;
+    EditFirstMaxValue: TEdit;
+    LabelFirstMaxValue: TLabel;
+    LabelSecondMinValue: TLabel;
+    EditSecondMinValue: TEdit;
+    EditSecondMaxValue: TEdit;
+    LabelSecondMaxValue: TLabel;
+    LabelMeasureUnit: TLabel;
+    EditMeasureUnit: TEdit;
+    ButtonMeasureUnit: TButton;
+    CheckBoxFirstModulo: TCheckBox;
+    CheckBoxSecondModulo: TCheckBox;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+  TSgtsRbkCriteriaInsertIface=class(TSgtsDataInsertIface)
+  public
+    procedure Init; override;
+  end;
+
+  TSgtsRbkCriteriaUpdateIface=class(TSgtsDataUpdateIface)
+  public
+    procedure Init; override;
+  end;
+
+  TSgtsRbkCriteriaDeleteIface=class(TSgtsDataDeleteIface)
+  public
+    procedure Init; override;
+  end;
+
+var
+  SgtsRbkCriteriaEditForm: TSgtsRbkCriteriaEditForm;
+
+implementation
+
+uses DBClient,
+     SgtsIface, SgtsConsts, SgtsProviderConsts,
+     SgtsDatabaseCDS, SgtsDialogs, SgtsGetRecordsConfig,
+     SgtsRbkAlgorithmsFm, SgtsRbkMeasureUnitsFm,
+     SgtsRbkParamEditFm;
+
+{$R *.dfm}
+
+{ TSgtsRbkCriteriaInsertIface }
+
+procedure TSgtsRbkCriteriaInsertIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkCriteriaEditForm;
+  InterfaceName:=SInterfaceCriteriaInsert;
+  with DataSet do begin
+    ProviderName:=SProviderInsertCriteria;
+    with ExecuteDefs do begin
+      AddKey('CRITERIA_ID');
+      AddEdit('NAME','EditName','LabelName',true);
+      AddMemo('DESCRIPTION','MemoDescription','LabelDescription',false);
+      AddEditLink('ALGORITHM_ID','EditAlgorithm','LabelAlgorithm','ButtonAlgorithm',
+                  TSgtsRbkAlgorithmsIface,'ALGORITHM_NAME','NAME','ALGORITHM_ID',true);
+      AddEditFloat('FIRST_MIN_VALUE','EditFirstMinValue','LabelFirstMinValue',true);
+      AddEditFloat('FIRST_MAX_VALUE','EditFirstMaxValue','LabelFirstMaxValue');
+      AddEditFloat('SECOND_MIN_VALUE','EditSecondMinValue','LabelSecondMinValue',true);
+      AddEditFloat('SECOND_MAX_VALUE','EditSecondMaxValue','LabelSecondMaxValue');
+
+      AddEditLink('MEASURE_UNIT_ID','EditMeasureUnit','LabelMeasureUnit','ButtonMeasureUnit',
+                  TSgtsRbkMeasureUnitsIface,'MEASURE_UNIT_NAME','NAME','MEASURE_UNIT_ID');
+      AddEditInteger('PRIORITY','EditPriority','LabelPriority',true);
+      AddCheck('ENABLED','CheckBoxEnabled');
+    end;
+  end;
+end;
+
+{ TSgtsRbkCriteriaUpdateIface }
+
+procedure TSgtsRbkCriteriaUpdateIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkCriteriaEditForm;
+  InterfaceName:=SInterfaceCriteriaUpdate;
+  with DataSet do begin
+    ProviderName:=SProviderUpdateCriteria;
+    with ExecuteDefs do begin
+      AddKeyLink('CRITERIA_ID');
+      AddEdit('NAME','EditName','LabelName',true);
+      AddMemo('DESCRIPTION','MemoDescription','LabelDescription',false);
+      AddEditLink('ALGORITHM_ID','EditAlgorithm','LabelAlgorithm','ButtonAlgorithm',
+                  TSgtsRbkAlgorithmsIface,'ALGORITHM_NAME','NAME','ALGORITHM_ID',true);
+      AddEditFloat('FIRST_MIN_VALUE','EditFirstMinValue','LabelFirstMinValue',true);
+      AddEditFloat('FIRST_MAX_VALUE','EditFirstMaxValue','LabelFirstMaxValue');
+      AddEditFloat('SECOND_MIN_VALUE','EditSecondMinValue','LabelSecondMinValue',true);
+      AddEditFloat('SECOND_MAX_VALUE','EditSecondMaxValue','LabelSecondMaxValue');
+      AddEditInteger('PRIORITY','EditPriority','LabelPriority',true);
+      AddCheck('ENABLED','CheckBoxEnabled');
+    end;
+  end;
+end;
+
+{ TSgtsRbkCriteriaDeleteIface }
+
+procedure TSgtsRbkCriteriaDeleteIface.Init;
+begin
+  inherited Init;
+  InterfaceName:=SInterfaceCriteriaDelete;
+  DeleteQuestion:='Удалить критерий %NAME?';
+  with DataSet do begin
+    ProviderName:=SProviderDeleteCriteria;
+    with ExecuteDefs do begin
+      AddKeyLink('CRITERIA_ID');
+      AddInvisible('NAME');
+    end;
+  end;
+end;
+
+{ TSgtsRbkInsertCriteriaForm }
+
+end.

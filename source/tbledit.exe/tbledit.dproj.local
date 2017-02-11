@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2008.12.20 12:14:14.445.pas,U:\source\tbledit.exe\SgtsTableEditFrm.pas=</Transaction>
+    <Transaction>2008.12.20 12:14:14.445.dfm,U:\source\tbledit.exe\SgtsTableEditFrm.dfm=</Transaction>
+    <Transaction>2008.12.20 12:32:16.055.pas,U:\source\tbledit.exe\Unit1.pas=U:\source\tbledit.exe\SgtsMemoFm.pas</Transaction>
+    <Transaction>2008.12.20 12:32:16.055.dfm,U:\source\tbledit.exe\Unit1.dfm=U:\source\tbledit.exe\SgtsMemoFm.dfm</Transaction>
+  </Transactions>
+</BorlandProject>

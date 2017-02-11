@@ -1,0 +1,33 @@
+object SgtsMTPlanFrame: TSgtsMTPlanFrame
+  Left = 0
+  Top = 0
+  Width = 405
+  Height = 298
+  TabOrder = 0
+  object PanelPlan: TPanel
+    Left = 0
+    Top = 0
+    Width = 405
+    Height = 298
+    Align = alClient
+    BevelOuter = bvNone
+    TabOrder = 0
+    ExplicitLeft = 96
+    ExplicitTop = 104
+    ExplicitWidth = 185
+    ExplicitHeight = 41
+    object GridPattern: TDBGrid
+      Left = 0
+      Top = 0
+      Width = 405
+      Height = 298
+      Align = alClient
+      TabOrder = 0
+      TitleFont.Charset = DEFAULT_CHARSET
+      TitleFont.Color = clWindowText
+      TitleFont.Height = -11
+      TitleFont.Name = 'Tahoma'
+      TitleFont.Style = []
+    end
+  end
+end

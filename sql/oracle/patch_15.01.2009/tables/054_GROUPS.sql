@@ -1,0 +1,15 @@
+/* Создание таблицы групп */
+
+CREATE TABLE GROUPS
+(
+  GROUP_ID INTEGER NOT NULL, 
+  NAME VARCHAR2(100) NOT NULL,
+  DESCRIPTION VARCHAR2(250),
+  PRIMARY KEY (GROUP_ID)
+)
+
+--
+
+/* Фиксация изменений */
+
+COMMIT

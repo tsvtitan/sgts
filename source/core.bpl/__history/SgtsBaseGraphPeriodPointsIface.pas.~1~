@@ -1,0 +1,143 @@
+unit SgtsBaseGraphPeriodPointsIface;
+
+interface
+
+uses SgtsBaseGraphPeriodIface,
+     SgtsBaseGraphPeriodPointsRefreshFm;
+
+type
+
+  TSgtsBaseGraphPeriodPointsIface=class(TSgtsBaseGraphPeriodIface)
+  private
+    function GetRefreshIface: TSgtsBaseGraphPeriodPointsRefreshIface;
+  protected
+    procedure CreateAllSeriesByAxisParams; override;
+    procedure CreateDataSetFilters; override;
+  public
+    procedure Init; override;
+
+    property RefreshIface: TSgtsBaseGraphPeriodPointsRefreshIface read GetRefreshIface;
+  end;
+
+implementation
+
+uses Classes, SysUtils, Variants,
+     SgtsGraphFm, SgtsGraphChartFm, SgtsBaseGraphRefreshFm, SgtsGraphChartSeriesDefs,
+     SgtsBaseGraphFm, SgtsGetRecordsConfig, SgtsUtils, SgtsBaseGraphPeriodRefreshFm,
+     SgtsDatabaseCDS, SgtsConfig, SgtsConsts;
+
+{ TSgtsBaseGraphPeriodPointsIface }
+
+procedure TSgtsBaseGraphPeriodPointsIface.Init;
+begin
+  inherited Init;
+  RefreshClass:=TSgtsBaseGraphPeriodPointsRefreshIface;
+end;
+
+function TSgtsBaseGraphPeriodPointsIface.GetRefreshIface: TSgtsBaseGraphPeriodPointsRefreshIface;
+begin
+  Result:=TSgtsBaseGraphPeriodPointsRefreshIface(inherited RefreshIface);
+end;
+
+procedure TSgtsBaseGraphPeriodPointsIface.CreateAllSeriesByAxisParams;
+
+  procedure CreateAxisByPointsWithOutHistory(Param: TSgtsBaseGraphAxisParam);
+  var
+    PointI: TSgtsBaseGraphPoint;
+    S: String;
+    Str: TStringList;
+    i: Integer;
+  begin
+    Str:=TStringList.Create;
+    try
+      DefaultDataSet.Filter:='';
+      DefaultDataSet.Filtered:=false;
+      for i:=0 to RefreshIface.Points.Count-1 do begin
+        PointI:=RefreshIface.Points.Items[i];
+        S:=Format('POINT_ID=%s',[QuotedStr(VarToStrDef(PointI.Id,''))]);
+        Str.Add(S);
+        CreateSeriesByAxisParams(RefreshIface.LeftAxisParams,atLeftBottom,Param,true,DefaultDataSet,S,PointI.Caption);
+        CreateSeriesByAxisParams(RefreshIface.RightAxisParams,atRightBottom,Param,true,DefaultDataSet,S,PointI.Caption);
+      end;
+      S:=GetFilterString(Str,'OR');
+      CreateSeriesByAxisParams(RefreshIface.LeftAxisParams,atLeftBottom,Param,false,DefaultDataSet,S);
+      CreateSeriesByAxisParams(RefreshIface.RightAxisParams,atRightBottom,Param,false,DefaultDataSet,S);
+      DefaultDataSet.SelectDefs.AddInvisible('POINT_ID');
+    finally
+      Str.Free;
+    end;
+  end;
+
+var
+  Param: TSgtsBaseGraphAxisParam;
+  PointI: TSgtsBaseGraphPoint;
+  S: String;
+  Str: TStringList;
+  History: TSgtsBaseGraphHistory;
+  DataSet: TSgtsDatabaseCDS;
+  S1: String;
+  i,j: Integer;
+begin
+  if Assigned(RefreshIface) then begin
+    SeriesDefs.Clear;
+    ClearHistoryDataSets;
+    Param:=RefreshIface.BottomAxisParams.GetFirstCheck;
+    if Assigned(Param) then begin
+      if RefreshIface.Histories.Count>0 then begin
+        if RefreshIface.Points.Count>0 then begin
+          CreateAxisByPointsWithOutHistory(Param);
+          for i:=0 to RefreshIface.Histories.Count-1 do begin
+            History:=RefreshIface.Histories.Items[i];
+            DataSet:=CreateDataSet(ProviderName);
+            HistoryDataSets.Add(DataSet);
+            Str:=TStringList.Create;
+            try
+              for j:=0 to RefreshIface.Points.Count-1 do begin
+                PointI:=RefreshIface.Points.Items[j];
+                S:=Format('POINT_ID=%s',[QuotedStr(VarToStrDef(PointI.Id,''))]);
+                Str.Add(S);
+                S1:=Format('%s. %s',[PointI.Caption,History.Caption]);
+                CreateSeriesByAxisParams(RefreshIface.LeftAxisParams,atLeftBottom,Param,true,DataSet,S,S1,false);
+                CreateSeriesByAxisParams(RefreshIface.RightAxisParams,atRightBottom,Param,true,DataSet,S,S1,false);
+              end;
+              S:=GetFilterString(Str,'OR');
+              CreateSeriesByAxisParams(RefreshIface.LeftAxisParams,atLeftBottom,Param,false,DataSet,S,History.Caption,false);
+              CreateSeriesByAxisParams(RefreshIface.RightAxisParams,atRightBottom,Param,false,DataSet,S,History.Caption,false);
+              DataSet.SelectDefs.AddInvisible('POINT_ID');
+            finally
+              Str.Free;
+            end;
+          end;
+        end else
+          inherited CreateAllSeriesByAxisParams;
+      end else begin
+        if RefreshIface.Points.Count>0 then begin
+          CreateAxisByPointsWithOutHistory(Param);
+        end else
+          inherited CreateAllSeriesByAxisParams;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsIface.CreateDataSetFilters;
+var
+  i,j: Integer;
+  PointI: TSgtsBaseGraphPoint;
+begin
+  inherited CreateDataSetFilters;
+  if Assigned(RefreshIface) then begin
+    if RefreshIface.Points.Count>0 then begin
+      for i:=0 to DataSets.Count-1 do begin
+        with DataSets.Items[i].FilterGroups.Add do begin
+          for j:=0 to RefreshIface.Points.Count-1 do begin
+            PointI:=RefreshIface.Points.Items[j];
+            Filters.Add('POINT_ID',fcEqual,PointI.Id).Operator:=foOr;
+          end;
+        end;
+      end;
+    end;
+  end;
+end;
+
+end.

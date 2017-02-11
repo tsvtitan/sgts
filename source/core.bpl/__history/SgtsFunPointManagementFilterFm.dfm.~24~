@@ -1,0 +1,140 @@
+inherited SgtsFunPointManagementFilterForm: TSgtsFunPointManagementFilterForm
+  Left = 504
+  Top = 302
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsSizeable
+  Caption = #1060#1080#1083#1100#1090#1088' '#1080#1079#1084#1077#1088#1080#1090#1077#1083#1100#1085#1099#1093' '#1090#1086#1095#1077#1082
+  ClientHeight = 173
+  ClientWidth = 412
+  Constraints.MinHeight = 200
+  Constraints.MinWidth = 420
+  OldCreateOrder = False
+  ExplicitLeft = 504
+  ExplicitTop = 302
+  ExplicitWidth = 420
+  ExplicitHeight = 200
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited PanelDialog: TPanel
+    Width = 412
+    Height = 135
+    ExplicitTop = 2
+    ExplicitWidth = 381
+    ExplicitHeight = 217
+    object LabelCoordinateZFrom: TLabel
+      Left = 36
+      Top = 42
+      Width = 63
+      Height = 13
+      Alignment = taRightJustify
+      Caption = #1054#1090#1084#1077#1090#1082#1072' '#1086#1090':'
+      FocusControl = EditCoordinateZFrom
+    end
+    object LabelCoordinateZTo: TLabel
+      Left = 186
+      Top = 42
+      Width = 17
+      Height = 13
+      Alignment = taRightJustify
+      Caption = #1076#1086':'
+      FocusControl = EditCoordinateZTo
+    end
+    object LabelObject: TLabel
+      Left = 23
+      Top = 61
+      Width = 76
+      Height = 26
+      Alignment = taRightJustify
+      Caption = #1056#1072#1089#1087#1086#1083#1086#1078#1077#1085#1080#1077' '#1086#1073#1098#1077#1082#1090#1072':'
+      FocusControl = MemoObject
+      WordWrap = True
+    end
+    object LabelMeasureType: TLabel
+      Left = 20
+      Top = 14
+      Width = 79
+      Height = 13
+      Alignment = taRightJustify
+      Caption = #1042#1080#1076' '#1080#1079#1084#1077#1088#1077#1085#1080#1103':'
+      FocusControl = EditMeasureType
+    end
+    object EditCoordinateZFrom: TEdit
+      Left = 105
+      Top = 39
+      Width = 68
+      Height = 21
+      TabOrder = 2
+    end
+    object EditCoordinateZTo: TEdit
+      Left = 209
+      Top = 39
+      Width = 68
+      Height = 21
+      TabOrder = 3
+    end
+    object MemoObject: TMemo
+      Left = 105
+      Top = 66
+      Width = 271
+      Height = 62
+      Anchors = [akLeft, akTop, akRight, akBottom]
+      ScrollBars = ssVertical
+      TabOrder = 4
+      WordWrap = False
+    end
+    object ButtonObject: TButton
+      Left = 382
+      Top = 66
+      Width = 21
+      Height = 21
+      Hint = #1042#1099#1073#1088#1072#1090#1100' '#1086#1073#1098#1077#1082#1090
+      Anchors = [akTop, akRight]
+      Caption = '...'
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 5
+      OnClick = ButtonObjectClick
+    end
+    object EditMeasureType: TEdit
+      Left = 105
+      Top = 11
+      Width = 271
+      Height = 21
+      Anchors = [akLeft, akTop, akRight]
+      Color = clBtnFace
+      ReadOnly = True
+      TabOrder = 0
+    end
+    object ButtonMeasureType: TButton
+      Left = 382
+      Top = 11
+      Width = 21
+      Height = 21
+      Hint = #1042#1099#1073#1088#1072#1090#1100' '#1074#1080#1076' '#1080#1079#1084#1077#1088#1077#1085#1080#1103
+      Anchors = [akTop, akRight]
+      Caption = '...'
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 1
+      OnClick = ButtonMeasureTypeClick
+    end
+  end
+  inherited PanelButton: TPanel
+    Top = 135
+    Width = 412
+    ExplicitTop = 217
+    ExplicitWidth = 381
+    inherited ButtonOk: TButton
+      Left = 250
+      Top = 8
+      ExplicitLeft = 610
+      ExplicitTop = 8
+    end
+    inherited ButtonCancel: TButton
+      Left = 332
+      Top = 8
+      ExplicitLeft = 692
+      ExplicitTop = 8
+    end
+  end
+end

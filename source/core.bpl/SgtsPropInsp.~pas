@@ -1,0 +1,13 @@
+unit SgtsPropInsp;
+
+interface
+
+uses ELPropInsp;
+
+type
+  TSgtsPropertyInspector=class(TELPropertyInspector)
+  end;
+
+implementation
+
+end.

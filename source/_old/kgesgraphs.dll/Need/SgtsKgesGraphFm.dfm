@@ -1,0 +1,11 @@
+inherited SgtsKgesGraphForm: TSgtsKgesGraphForm
+  Caption = 'SgtsKgesGraphForm'
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited PanelView: TPanel
+    inherited Chart: TDBChart
+      Legend.ColorWidth = 30
+      Legend.TextStyle = ltsPlain
+    end
+  end
+end

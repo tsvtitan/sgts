@@ -1,0 +1,27 @@
+unit SgtsMenuIface;
+
+interface
+
+uses SgtsIface;
+
+type
+
+  TSgtsMenuIface=class(TSgtsIface)
+  private
+    FFileName: String;
+  public
+    procedure Init;
+
+    property FileName: String read FFileName write FFileName;
+  end;
+
+implementation
+
+{ TSgtsMenuIface }
+
+procedure TSgtsMenuIface.Init;
+begin
+  inherited Init;
+end;
+
+end.

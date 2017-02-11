@@ -1,0 +1,15 @@
+object TSgtsMTCalendarGraphFrm: TTSgtsMTCalendarGraphFrm
+  Left = 0
+  Top = 0
+  Width = 396
+  Height = 262
+  TabOrder = 0
+  object Edit1: TEdit
+    Left = 96
+    Top = 24
+    Width = 121
+    Height = 21
+    TabOrder = 0
+    Text = 'Edit1'
+  end
+end

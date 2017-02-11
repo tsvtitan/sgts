@@ -1,0 +1,45 @@
+unit Unit2;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, ToolWin, ImgList, ExtCtrls, Grids, DBGrids, DB, Menus,
+  SgtsDbGrid, SgtsDatabaseCDS, SgtsCoreIntf, SgtsCDS,
+  SgtsDataInsertFm, SgtsDataUpdateFm, SgtsDataDelete, SgtsDataFmIntf,
+  SgtsDataFm, SgtsDataIfaceIntf, SgtsExecuteDefs, SgtsGetRecordsConfig, SgtsMenus,
+  SgtsConfigIntf, StdCtrls;
+
+type
+  TFrame2 = class(TFrame)//,ISgtsDataIface)
+    Edit1: TEdit;
+  private
+    { Private declarations }
+    FDataSet: TSgtsDatabaseCDS;
+  public
+    { Public declarations }
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+
+    property DataSet: TSgtsDatabaseCDS read FDataSet;
+  end;
+
+implementation
+
+{$R *.dfm}
+
+
+constructor TFrame2.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  FDataSet:=TSgtsDatabaseCDS.Create(nil);
+
+end;
+
+destructor TFrame2.Destroy;
+begin
+  FDataSet.Free;
+  inherited Destroy;
+end;
+
+end.

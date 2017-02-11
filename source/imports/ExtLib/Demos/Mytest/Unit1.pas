@@ -1,0 +1,38 @@
+unit Unit1;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  ImgList, ComCtrls, ToolWin, Grids, ELPropInsp, StdCtrls,
+  ExtCtrls;
+
+type
+  TForm1 = class(TForm)
+    ELPropertyInspector1: TELPropertyInspector;
+    ToolBar1: TToolBar;
+    ToolButton1: TToolButton;
+    ToolButton2: TToolButton;
+    ImageList1: TImageList;
+    Button1: TButton;
+    LabeledEdit1: TLabeledEdit;
+    procedure Button1Click(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+
+implementation
+
+{$R *.DFM}
+
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+  ELPropertyInspector1.Add(LabeledEdit1);
+end;
+
+end.

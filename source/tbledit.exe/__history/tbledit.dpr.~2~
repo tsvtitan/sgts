@@ -1,0 +1,15 @@
+program tbledit;
+
+uses
+  Forms,
+  SgtsTableEditFm in 'SgtsTableEditFm.pas' {SgtsTableEditForm},
+  SgtsTableNewFm in 'SgtsTableNewFm.pas' {SgtsTableNewForm};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.Title := 'Редактор XML таблиц';
+  Application.CreateForm(TSgtsTableEditForm, SgtsTableEditForm);
+  Application.Run;
+end.

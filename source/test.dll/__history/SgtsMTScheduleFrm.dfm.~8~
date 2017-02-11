@@ -1,0 +1,79 @@
+object SgtsMTScheduleFrame: TSgtsMTScheduleFrame
+  Left = 0
+  Top = 0
+  Width = 362
+  Height = 304
+  Align = alClient
+  TabOrder = 0
+  ExplicitWidth = 451
+  object Panel2: TPanel
+    Left = 0
+    Top = 0
+    Width = 362
+    Height = 304
+    Align = alClient
+    BevelOuter = bvNone
+    Caption = 'Panel2'
+    TabOrder = 0
+    ExplicitWidth = 209
+    object Splitter1: TSplitter
+      Left = 108
+      Top = 0
+      Width = 0
+      Height = 304
+      ExplicitLeft = 193
+    end
+    object Splitter2: TSplitter
+      Left = 105
+      Top = 0
+      Height = 304
+      ExplicitLeft = 184
+      ExplicitTop = 104
+      ExplicitHeight = 100
+    end
+    object Panel1: TPanel
+      Left = 0
+      Top = 0
+      Width = 105
+      Height = 304
+      Align = alLeft
+      BevelOuter = bvNone
+      Caption = 'Panel1'
+      TabOrder = 0
+      object CheckListBox1: TCheckListBox
+        Left = 0
+        Top = 0
+        Width = 105
+        Height = 304
+        Align = alClient
+        ItemHeight = 13
+        Items.Strings = (
+          #1071#1085#1074#1072#1088#1100
+          #1060#1077#1074#1088#1072#1083#1100
+          #1052#1072#1088#1090
+          #1040#1087#1088#1077#1083#1100
+          #1052#1072#1081
+          #1048#1102#1085#1100
+          #1048#1102#1083#1100
+          #1040#1074#1075#1091#1089#1090
+          #1057#1077#1085#1090#1103#1073#1088#1100
+          #1053#1086#1103#1073#1088#1100
+          #1044#1077#1082#1072#1073#1088#1100)
+        TabOrder = 0
+        ExplicitWidth = 225
+      end
+    end
+    object Panel3: TPanel
+      Left = 108
+      Top = 0
+      Width = 254
+      Height = 304
+      Align = alClient
+      BevelOuter = bvNone
+      Caption = 'Panel3'
+      TabOrder = 1
+      ExplicitLeft = 228
+      ExplicitWidth = 134
+    end
+  end
+end

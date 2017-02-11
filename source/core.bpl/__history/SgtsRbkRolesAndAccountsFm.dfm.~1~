@@ -1,0 +1,29 @@
+inherited SgtsRbkRolesAndAccountsForm: TSgtsRbkRolesAndAccountsForm
+  Left = 391
+  Top = 158
+  Width = 500
+  Caption = #1056#1086#1083#1080' '#1080' '#1091#1095#1077#1090#1085#1099#1077' '#1079#1072#1087#1080#1089#1080
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited BevelStatus: TBevel
+    Width = 492
+  end
+  inherited StatusBar: TStatusBar
+    Width = 492
+  end
+  inherited PanelView: TPanel
+    Width = 457
+    inherited GridPattern: TDBGrid
+      Width = 451
+    end
+  end
+  inherited PanelButton: TPanel
+    Width = 492
+    inherited ButtonCancel: TButton
+      Left = 411
+    end
+    inherited ButtonOk: TButton
+      Left = 329
+    end
+  end
+end

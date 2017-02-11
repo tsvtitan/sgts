@@ -1,0 +1,1 @@
+$(DELPHI)\Lib;$(DELPHI)\Bin;$(DELPHI)\Imports;U:\source\core.bpl;U:\source\imports\VirtualTree

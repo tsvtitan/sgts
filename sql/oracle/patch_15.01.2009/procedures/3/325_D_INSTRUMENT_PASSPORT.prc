@@ -1,0 +1,19 @@
+/* Создание процедуры удаления паспорта прибора */
+
+CREATE OR REPLACE PROCEDURE D_INSTRUMENT_PASSPORT
+( 
+  OLD_INSTRUMENT_PASSPORT_ID IN INTEGER 
+) 
+AS 
+BEGIN 
+  DELETE FROM INSTRUMENT_PASSPORTS 
+        WHERE INSTRUMENT_PASSPORT_ID=OLD_INSTRUMENT_PASSPORT_ID; 
+  COMMIT;         
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+

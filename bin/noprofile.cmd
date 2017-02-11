@@ -1,0 +1,1 @@
+sgts.exe /noprofile

@@ -1,0 +1,14 @@
+program sqledit;
+
+uses
+  Forms,
+  SgtsTableEditFrm in 'SgtsTableEditFrm.pas' {SgtsTableEditFrame: TFrame},
+  SgtsTableNewFm in 'SgtsTableNewFm.pas' {SgtsTableNewForm};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.Title := 'Редактор SQL скриптов';
+  Application.Run;
+end.

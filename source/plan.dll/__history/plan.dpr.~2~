@@ -1,0 +1,16 @@
+library plan;
+
+{$R *.res}
+                           
+uses
+  SgtsPlanGraphFm in '..\test.dll\SgtsPlanGraphFm.pas' {SgtsPlanGraphForm},
+  SgtsChildFm in '..\core.bpl\SgtsChildFm.pas' {SgtsChildForm},
+  SgtsFm in '..\core.bpl\SgtsFm.pas' {SgtsForm},
+  SgtsPlanInterface in 'SgtsPlanInterface.pas',
+  SgtsPlan in 'SgtsPlan.pas';
+
+exports
+  InitInterface;
+      
+begin
+end.

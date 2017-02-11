@@ -1,0 +1,345 @@
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SID=*)(SERVICE_NAME=s1)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????)))(ADDRESS=(PROTOCOL=TCP)(HOST=s1)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 21-СЕН-2006 13:32:23
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:соединение отвергнуто
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SID=*)(SERVICE_NAME=s1)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????)))(ADDRESS=(PROTOCOL=TCP)(HOST=s1)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 21-СЕН-2006 13:33:30
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:соединение отвергнуто
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SID=*)(SERVICE_NAME=s1)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????)))(ADDRESS=(PROTOCOL=TCP)(HOST=s1)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 21-СЕН-2006 13:34:11
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:соединение отвергнуто
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SID=*)(SERVICE_NAME=s1)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????)))(ADDRESS=(PROTOCOL=TCP)(HOST=s1)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 21-СЕН-2006 13:34:49
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:соединение отвергнуто
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SID=*)(SERVICE_NAME=s1)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????)))(ADDRESS=(PROTOCOL=TCP)(HOST=s1)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 21-СЕН-2006 13:35:25
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:соединение отвергнуто
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SID=*)(SERVICE_NAME=s1)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????)))(ADDRESS=(PROTOCOL=TCP)(HOST=s1)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 21-СЕН-2006 13:36:53
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:соединение отвергнуто
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SID=*)(SERVICE_NAME=s1)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????)))(ADDRESS=(PROTOCOL=TCP)(HOST=s1)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 21-СЕН-2006 13:38:10
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:соединение отвергнуто
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SID=*)(SERVICE_NAME=s1)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????)))(ADDRESS=(PROTOCOL=TCP)(HOST=s1)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 21-СЕН-2006 13:39:50
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:соединение отвергнуто
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SID=*)(SERVICE_NAME=s1)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????)))(ADDRESS=(PROTOCOL=TCP)(HOST=s1)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 21-СЕН-2006 14:12:02
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:соединение отвергнуто
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SID=*)(SERVICE_NAME=s1)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????)))(ADDRESS=(PROTOCOL=TCP)(HOST=s1)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 21-СЕН-2006 14:13:18
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:соединение отвергнуто
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SID=*)(SERVICE_NAME=s1)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????)))(ADDRESS=(PROTOCOL=TCP)(HOST=s1)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 21-СЕН-2006 14:14:34
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:соединение отвергнуто
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SID=*)(SERVICE_NAME=s1)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????)))(ADDRESS=(PROTOCOL=TCP)(HOST=s1)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 21-СЕН-2006 14:14:39
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:соединение отвергнуто
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SID=*)(SERVICE_NAME=s1)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????)))(ADDRESS=(PROTOCOL=TCP)(HOST=s1)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 21-СЕН-2006 14:15:14
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:соединение отвергнуто
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SID=*)(SERVICE_NAME=s1)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????)))(ADDRESS=(PROTOCOL=TCP)(HOST=s1)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 21-СЕН-2006 14:17:12
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:соединение отвергнуто
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SID=*)(SERVICE_NAME=s1)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????)))(ADDRESS=(PROTOCOL=TCP)(HOST=s1)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 26-СЕН-2006 17:43:21
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:соединение отвергнуто
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleSGTS)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))'))(CONNECT_DATA=(SID=SGTS)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 26-СЕН-2006 17:43:36
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:ошибка адаптера протокола
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Ошибка адаптера протокола
+    nt secondary err code: 2
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12514, connecting to:
+ (DESCRIPTION=(CONNECT_DATA=(SID=*)(SERVICE_NAME=s1)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????)))(ADDRESS=(PROTOCOL=TCP)(HOST=s1)(PORT=1521)))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 26-СЕН-2006 17:45:53
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:соединение отвергнуто
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12545, connecting to:
+ (DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=vm2003s)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=SGTS)(CID=(PROGRAM=C:\Program Files\Borland\Delphi7\Bin\delphi32.exe)(HOST=S1)(USER=?????????????))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 9.2.0.4.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 9.2.0.4.0 - Production
+  Time: 11-НОЯ-2006 17:21:44
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12545
+    TNS-12545: TNS:Сбой соединения, т.к. конечный хост или объект не существуют
+    ns secondary err code: 12560
+    nt main err code: 515
+    TNS-00515: Сбой соединения, т.к. конечный хост или объект не существуют
+    nt secondary err code: 1004
+    nt OS err code: 0

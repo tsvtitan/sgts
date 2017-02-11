@@ -1,0 +1,7 @@
+inherited SgtsKgesGraphGmoRefreshForm: TSgtsKgesGraphGmoRefreshForm
+  Left = 532
+  Top = 182
+  Caption = #1059#1089#1083#1086#1074#1080#1103' '#1075#1088#1072#1092#1080#1082#1086#1074' '#1087#1086' '#1043#1080#1076#1088#1086#1084#1077#1090#1077#1086#1088#1086#1083#1086#1075#1080#1080
+  PixelsPerInch = 96
+  TextHeight = 13
+end

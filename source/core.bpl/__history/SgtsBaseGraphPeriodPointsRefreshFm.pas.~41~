@@ -1,0 +1,669 @@
+unit SgtsBaseGraphPeriodPointsRefreshFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Menus, StdCtrls, ComCtrls, Contnrs, CheckLst, ExtCtrls,
+  SgtsBaseGraphPeriodRefreshFm, SgtsFm, SgtsVariants, SgtsCoreIntf, SgtsGraphIfaceIntf,
+  SgtsIface;
+
+type
+  TSgtsBaseGraphPoint=class(TObject)
+  private
+    FCaption: String;
+    FId: Variant;
+    FName: String;
+    FRouteId: Variant;
+  public
+    property Caption: String read FCaption write FCaption;
+    property Id: Variant read FId write FId;
+    property Name: String read FName write FName;
+    property RouteId: Variant read FRouteId write FRouteId;
+  end;
+
+  TSgtsBaseGraphPoints=class(TObjectList)
+  private
+    function GetItems(Index: Integer): TSgtsBaseGraphPoint;
+    procedure SetItems(Index: Integer; Value: TSgtsBaseGraphPoint);
+  public
+    function Find(Id: Variant): TSgtsBaseGraphPoint;
+    function Add(Id: Variant; Name: String): TSgtsBaseGraphPoint;
+    procedure CopyFrom(Source: TSgtsBaseGraphPoints);
+
+    procedure LoadFromStream(Stream: TStream);
+    procedure SaveToStream(Stream: TStream);
+    function GetPointsStr: String;
+    procedure SetPointsStr(Value: String);
+    
+    property Items[Index: Integer]: TSgtsBaseGraphPoint read GetItems write SetItems;
+  end;
+
+  TSgtsBaseGraphPeriodPointsRefreshIface=class;
+
+  TSgtsBaseGraphPeriodPointsRefreshForm = class(TSgtsBaseGraphPeriodRefreshForm)
+    PanelPoints: TPanel;
+    GroupBoxPoints: TGroupBox;
+    PanelListPoints: TPanel;
+    PanelButtonsPoints: TPanel;
+    ButtonPointsAdd: TButton;
+    ButtonPointsDelete: TButton;
+    ListBoxPoints: TListBox;
+    PopupMenuPoints: TPopupMenu;
+    MenuItemPointsAdd: TMenuItem;
+    MenuItemPointsChange: TMenuItem;
+    N2: TMenuItem;
+    MenuItemPointsDelete: TMenuItem;
+    MenuItemPointsClear: TMenuItem;
+    procedure ButtonPointsAddClick(Sender: TObject);
+    procedure ButtonPointsDeleteClick(Sender: TObject);
+    procedure ButtonOkClick(Sender: TObject);
+    procedure ListBoxPointsKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure ButtonDefaultClick(Sender: TObject);
+    procedure ListBoxPointsDblClick(Sender: TObject);
+    procedure PopupMenuPointsPopup(Sender: TObject);
+    procedure MenuItemPointsClearClick(Sender: TObject);
+    procedure MenuItemPointsDeleteClick(Sender: TObject);
+    procedure MenuItemPointsAddClick(Sender: TObject);
+    procedure MenuItemPointsChangeClick(Sender: TObject);
+  private
+    FPoints: TSgtsBaseGraphPoints;
+    function GetIface: TSgtsBaseGraphPeriodPointsRefreshIface;
+    function GetFirstPointIdSelected(var Index: Integer): Variant;
+    procedure FillPoints;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+    property Iface: TSgtsBaseGraphPeriodPointsRefreshIface read GetIface;
+  end;
+
+  TSgtsBaseGraphPeriodPointsRefreshIface=class(TSgtsBaseGraphPeriodRefreshIface)
+  private
+    FMeasureTypes: TSgtsVariantList;
+    FDefaultPoints: TSgtsBaseGraphPoints;
+    FPoints: TSgtsBaseGraphPoints;
+    FParamPoints: String;
+    function GetForm: TSgtsBaseGraphPeriodPointsRefreshForm;
+    procedure UpdateByDetermination;
+  protected
+    function GetFormClass: TSgtsFormClass; override;
+    procedure BeforeShowModal; override;
+    procedure AfterShowModal(ModalResult: TModalResult); override;
+
+    property DefaultPoints: TSgtsBaseGraphPoints read FDefaultPoints;
+  public
+    constructor Create(ACoreIntf: ISgtsCore; AParentIface: TSgtsIface); override;
+    destructor Destroy; override;
+
+    procedure Init; override;
+
+    procedure ReadParams(DatabaseConfig: Boolean=true); override;
+    procedure WriteParams(DatabaseConfig: Boolean=true); override;
+
+    procedure BeforeReadParams; override;
+    procedure BeforeWriteParams; override;
+    
+    function GetPointCaption(PointName: String; PointId: Variant; RouteId: Variant): String; virtual;
+
+    property MeasureTypes: TSgtsVariantList read FMeasureTypes;
+    property Form: TSgtsBaseGraphPeriodPointsRefreshForm read GetForm;
+    property Points: TSgtsBaseGraphPoints read FPoints;
+  end;
+
+var
+  SgtsBaseGraphPeriodPointsRefreshForm: TSgtsBaseGraphPeriodPointsRefreshForm;
+
+implementation
+
+uses SgtsConsts, SgtsUtils, SgtsCDS, SgtsDatabaseCDS, SgtsProviderConsts,
+     SgtsFunPointManagementFm, SgtsRbkPointManagementFm, SgtsGetRecordsConfig,
+     SgtsSelectDefs, SgtsDialogs, SgtsConfigIntf, SgtsGraphRefreshFm, SgtsConfig,
+     SgtsBaseGraphFm;
+
+{$R *.dfm}
+
+{ TSgtsBaseGraphPoints }
+
+function TSgtsBaseGraphPoints.GetItems(Index: Integer): TSgtsBaseGraphPoint;
+begin
+  Result:=TSgtsBaseGraphPoint(inherited Items[Index]);
+end;
+
+procedure TSgtsBaseGraphPoints.SetItems(Index: Integer; Value: TSgtsBaseGraphPoint);
+begin
+  inherited Items[Index]:=Value;
+end;
+
+function TSgtsBaseGraphPoints.Find(Id: Variant): TSgtsBaseGraphPoint;
+var
+  i: Integer;
+  Point: TSgtsBaseGraphPoint;
+begin
+  Result:=nil;
+  for i:=0 to Count-1 do begin
+    Point:=Items[i];
+    if Point.Id=Id then begin
+      Result:=Point;
+      exit;
+    end;
+  end;
+end;
+
+function TSgtsBaseGraphPoints.Add(Id: Variant; Name: String): TSgtsBaseGraphPoint;
+begin
+  Result:=nil;
+  if not Assigned(Find(id)) then begin
+    Result:=TSgtsBaseGraphPoint.Create;
+    Result.Id:=Id;
+    Result.Name:=Name;
+    inherited Add(Result);
+  end; 
+end;
+
+procedure TSgtsBaseGraphPoints.CopyFrom(Source: TSgtsBaseGraphPoints);
+var
+  i: Integer;
+  Point1, Point2: TSgtsBaseGraphPoint;
+begin
+  if Assigned(Source) then begin
+    Clear;
+    for i:=0 to Source.Count-1 do begin
+      Point1:=Source.Items[i];
+      Point2:=Add(Point1.Id,Point1.Name);
+      if Assigned(Point2) then begin
+        Point2.Caption:=Point1.Caption;
+        Point2.RouteId:=Point1.RouteId;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsBaseGraphPoints.LoadFromStream(Stream: TStream);
+var
+  Reader: TReader;
+  Item: TSgtsBaseGraphPoint;
+  S1, S2: String;
+  Id: Variant; 
+begin
+  Reader:=TReader.Create(Stream,FilerPageSize);
+  try
+    Reader.ReadListBegin;
+    Clear;
+    while not Reader.EndOfList do begin
+      S1:=Reader.ReadString;
+      Id:=Reader.ReadVariant;
+      S2:=Reader.ReadString;
+      Item:=Add(Id,S2);
+      if Assigned(Item) then begin
+        Item.Caption:=S1;
+        Item.RouteId:=Reader.ReadVariant;
+      end;
+    end;
+    Reader.ReadListEnd;
+  finally
+    Reader.Free;
+  end;  
+end;
+
+procedure TSgtsBaseGraphPoints.SaveToStream(Stream: TStream);
+var
+  i: Integer;
+  Writer: TWriter;
+  Item: TSgtsBaseGraphPoint;
+begin
+  Writer:=TWriter.Create(Stream,FilerPageSize);
+  try
+    Writer.WriteListBegin;
+    for i:=0 to Count-1 do begin
+      Item:=Items[i];
+      Writer.WriteString(Item.Caption);
+      Writer.WriteVariant(Item.Id);
+      Writer.WriteString(Item.Name);
+      Writer.WriteVariant(Item.RouteId);
+    end;
+    Writer.WriteListEnd;
+  finally
+    Writer.Free;
+  end;
+end;
+
+function TSgtsBaseGraphPoints.GetPointsStr: String;
+var
+  S: String;
+  Stream: TMemoryStream;
+begin
+  Stream:=TMemoryStream.Create;
+  try
+    Result:='';
+    SaveToStream(Stream);
+    SetLength(S,Stream.Size);
+    System.Move(Stream.Memory^,Pointer(S)^,Stream.Size);
+    Result:=S;
+  finally
+    Stream.Free;
+  end;
+end;
+
+procedure TSgtsBaseGraphPoints.SetPointsStr(Value: String);
+var
+  Stream: TMemoryStream;
+  DefStream: TMemoryStream;
+begin
+  Stream:=TMemoryStream.Create;
+  DefStream:=TMemoryStream.Create;
+  try
+    SaveToStream(DefStream);
+    DefStream.Position:=0;
+    Stream.SetSize(Length(Value));
+    System.Move(Pointer(Value)^,Stream.Memory^,Length(Value));
+    try
+      LoadFromStream(Stream);
+    except
+      LoadFromStream(DefStream);
+    end;
+  finally
+    DefStream.Free;
+    Stream.Free;
+  end;
+end;
+
+{ TSgtsBaseGraphPeriodPointsRefreshIface }
+
+constructor TSgtsBaseGraphPeriodPointsRefreshIface.Create(ACoreIntf: ISgtsCore; AParentIface: TSgtsIface);
+begin
+  inherited Create(ACoreIntf,AParentIface);
+  FMeasureTypes:=TSgtsVariantList.Create;
+  FPoints:=TSgtsBaseGraphPoints.Create;
+  FDefaultPoints:=TSgtsBaseGraphPoints.Create;
+end;
+
+destructor TSgtsBaseGraphPeriodPointsRefreshIface.Destroy;
+begin
+  FDefaultPoints.Free;
+  FPoints.Free;
+  FMeasureTypes.Free;
+  inherited Destroy;
+end;
+
+function TSgtsBaseGraphPeriodPointsRefreshIface.GetFormClass: TSgtsFormClass;
+begin
+  Result:=TSgtsBaseGraphPeriodPointsRefreshForm;
+end;
+
+function TSgtsBaseGraphPeriodPointsRefreshIface.GetForm: TSgtsBaseGraphPeriodPointsRefreshForm;
+begin
+  Result:=TSgtsBaseGraphPeriodPointsRefreshForm(inherited Form);
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshIface.Init;
+begin
+  inherited Init;
+  UpdateByDetermination;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshIface.UpdateByDetermination;
+var
+  Config: TSgtsConfig;
+  Strings: TStringList;
+  i: Integer;
+  S,S2: String;
+  Value: Integer;
+begin
+  if Assigned(ParentIface) then begin
+    if ParentIface is TSgtsBaseGraphIface then begin
+      Config:=TSgtsConfig.Create(CoreIntf);
+      Strings:=TStringList.Create;
+      try
+        Config.LoadFromString(TSgtsBaseGraphIface(ParentIface).Determination);
+        Config.ReadSection(SGraphDeterminationMeasureTypes,Strings);
+        MeasureTypes.Clear;
+        for i:=0 to Strings.Count-1 do begin
+          S:=Strings.Strings[i];
+          S2:=Config.Read(SGraphDeterminationMeasureTypes,S,'');
+          Value:=0;
+          if TryStrToInt(S2,Value) then
+            MeasureTypes.Add(Value);
+        end;
+      finally
+        Strings.Free;
+        Config.Free;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshIface.BeforeShowModal;
+begin
+  inherited BeforeShowModal;
+  if Assigned(Form) then begin
+    Form.FPoints.CopyFrom(FPoints);
+    Form.FillPoints;
+  end;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshIface.AfterShowModal(ModalResult: TModalResult);
+begin
+  inherited AfterShowModal(ModalResult);
+  if ModalResult=mrOk then begin
+    if Assigned(Form) then begin
+      FPoints.CopyFrom(Form.FPoints);
+    end;
+  end;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshIface.BeforeReadParams;
+begin
+  inherited BeforeReadParams;
+  FDefaultPoints.CopyFrom(FPoints);
+  FParamPoints:=FPoints.GetPointsStr;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshIface.BeforeWriteParams;
+begin
+  inherited BeforeWriteParams;
+  FParamPoints:=FPoints.GetPointsStr;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshIface.ReadParams(DatabaseConfig: Boolean=true);
+begin
+  inherited ReadParams(DatabaseConfig);
+  FParamPoints:=ReadParam(SConfigParamPoints,FParamPoints,cmBase64);
+  FPoints.SetPointsStr(FParamPoints);
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshIface.WriteParams(DatabaseConfig: Boolean=true);
+begin
+  WriteParam(SConfigParamPoints,FParamPoints,cmBase64);
+  inherited WriteParams(DatabaseConfig);
+end;
+
+function TSgtsBaseGraphPeriodPointsRefreshIface.GetPointCaption(PointName: String; PointId: Variant; RouteId: Variant): String;
+var
+  DS: TSgtsDatabaseCDS;
+begin
+  Result:=PointName;
+  DS:=TSgtsDatabaseCDS.Create(CoreIntf);
+  try
+    DS.ProviderName:=SProviderSelectMeasureTypeConverters;
+    with DS.SelectDefs do begin
+      AddInvisible('MEASURE_TYPE_NAME');
+      AddInvisible('CONVERTER_NAME');
+      AddInvisible('COORDINATE_Z');
+      AddInvisible('OBJECT_PATHS');
+    end;
+    with DS.FilterGroups.Add do begin
+      Filters.Add('POINT_ID',fcEqual,PointId);
+      Filters.Add('ROUTE_ID',fcEqual,RouteId);
+    end;  
+    DS.Open;
+    if DS.Active and not DS.IsEmpty then
+      Result:=Format('%s. %s. ÈÒ %s מעל.%s %s',[DS.FieldByName('MEASURE_TYPE_NAME').AsString,
+                                                  DS.FieldByName('CONVERTER_NAME').AsString,
+                                                  PointName,
+                                                  DS.FieldByName('COORDINATE_Z').AsString,
+                                                  DS.FieldByName('OBJECT_PATHS').AsString]);
+  finally
+    DS.Free;
+  end;
+end;
+
+{ TSgtsBaseGraphPeriodPointsRefreshForm }
+
+constructor TSgtsBaseGraphPeriodPointsRefreshForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FPoints:=TSgtsBaseGraphPoints.Create;
+end;
+
+destructor TSgtsBaseGraphPeriodPointsRefreshForm.Destroy;
+begin
+  FPoints.Free;
+  inherited Destroy;
+end;
+
+function TSgtsBaseGraphPeriodPointsRefreshForm.GetIface: TSgtsBaseGraphPeriodPointsRefreshIface;
+begin
+  Result:=TSgtsBaseGraphPeriodPointsRefreshIface(inherited Iface);
+end;
+
+function TSgtsBaseGraphPeriodPointsRefreshForm.GetFirstPointIdSelected(var Index: Integer): Variant;
+var
+  i: Integer;
+  Point: TSgtsBaseGraphPoint;
+begin
+  Result:=Null;
+  for i:=0 to ListBoxPoints.Items.Count-1 do begin
+    if ListBoxPoints.Selected[i] then begin
+      Point:=TSgtsBaseGraphPoint(ListBoxPoints.Items.Objects[i]);
+      Result:=Point.Id;
+      Index:=i;
+      exit;
+    end;
+  end;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshForm.ButtonPointsAddClick(
+  Sender: TObject);
+var
+  i: Integer;
+  Data: String;
+  AIface: TSgtsFunPointManagementIface;
+  FilterGroups: TSgtsGetRecordsConfigFilterGroups;
+  APointId: Variant;
+  DS: TSgtsCDS;
+  AName: String;
+  Point: TSgtsBaseGraphPoint;
+  Position: Integer;
+  Index: Integer;
+begin
+  AIface:=TSgtsFunPointManagementIface.Create(CoreIntf);
+  FilterGroups:=TSgtsGetRecordsConfigFilterGroups.Create;
+  DS:=TSgtsCDS.Create(nil);
+  ListBoxPoints.Items.BeginUpdate;
+  try
+    APointId:=GetFirstPointIdSelected(Index);
+    with FilterGroups.Add do begin
+      for i:=0 to Iface.MeasureTypes.Count-1 do begin
+        Filters.Add('MEASURE_TYPE_ID',fcEqual,Iface.MeasureTypes.Items[i].Value).Operator:=foOr;
+      end;
+    end;
+    AIface.FilterOnShow:=VarIsNull(APointId);
+    if AIface.SelectByUnionType('UNION_ID;UNION_TYPE',VarArrayOf([APointId,utPoint]),
+                                Data,utPoint,FilterGroups,true) then begin
+      DS.XMLData:=Data;
+      if DS.Active and not DS.IsEmpty then begin
+        CoreIntf.MainForm.Progress(0,0,0);
+        try
+          Position:=0;
+          DS.First;
+          while not DS.Eof do begin
+            APointId:=DS.FieldByName('UNION_ID').Value;
+            AName:=DS.FieldByName('NAME').AsString;
+            Point:=FPoints.Add(APointId,AName);
+            if Assigned(Point) then begin
+              Point.RouteId:=DS.FieldByName('UNION_PARENT_ID').Value;
+              Point.Caption:=Iface.GetPointCaption(AName,APointId,Point.RouteId);
+            end;
+            Inc(Position);
+            CoreIntf.MainForm.Progress(0,DS.RecordCount,Position);
+            DS.Next;
+          end;
+          FillPoints;
+        finally
+          CoreIntf.MainForm.Progress(0,0,0);
+        end;
+      end;
+    end;
+  finally
+    ListBoxPoints.Items.EndUpdate;
+    DS.Free;
+    FilterGroups.Free;
+    AIface.Free;
+  end;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshForm.ButtonPointsDeleteClick(
+  Sender: TObject);
+var
+  i: Integer;
+  Point: TSgtsBaseGraphPoint;
+begin
+  for i:=ListBoxPoints.Items.Count-1 downto 0 do begin
+    if ListBoxPoints.Selected[i] then begin
+      Point:=TSgtsBaseGraphPoint(ListBoxPoints.Items.Objects[i]);
+      FPoints.Remove(Point);
+    end;
+  end;
+  ListBoxPoints.DeleteSelected;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshForm.ButtonOkClick(
+  Sender: TObject);
+begin
+  ModalResult:=mrNone;
+  if ListBoxPoints.Items.Count=0 then begin
+    ShowError(SNeedSelectPoints);
+    ListBoxPoints.SetFocus;
+    exit;
+  end;
+  inherited ButtonOkClick(Sender);
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshForm.FillPoints;
+var
+  i: Integer;
+  Point: TSgtsBaseGraphPoint;
+begin
+  ListBoxPoints.Items.BeginUpdate;
+  try
+    ListBoxPoints.Items.Clear;
+    for i:=0 to FPoints.Count-1 do begin
+      Point:=FPoints.Items[i];
+      ListBoxPoints.Items.AddObject(Point.Caption,Point);
+    end;
+  finally
+    ListBoxPoints.Items.EndUpdate;
+  end;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshForm.ListBoxPointsKeyDown(
+  Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if Key=VK_DELETE then begin
+    ButtonPointsDeleteClick(nil);
+  end;
+  if Key=VK_INSERT then begin
+    ButtonPointsAddClick(nil);
+  end;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshForm.MenuItemPointsAddClick(
+  Sender: TObject);
+begin
+  ButtonPointsAdd.Click;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshForm.MenuItemPointsChangeClick(
+  Sender: TObject);
+var
+  i: Integer;
+  Data: String;
+  AIface: TSgtsFunPointManagementIface;
+  FilterGroups: TSgtsGetRecordsConfigFilterGroups;
+  APointId: Variant;
+  DS: TSgtsCDS;
+  AName: String;
+  Point: TSgtsBaseGraphPoint;
+  Index: Integer;
+begin
+  AIface:=TSgtsFunPointManagementIface.Create(CoreIntf);
+  FilterGroups:=TSgtsGetRecordsConfigFilterGroups.Create;
+  DS:=TSgtsCDS.Create(nil);
+  try
+    APointId:=GetFirstPointIdSelected(Index);
+    with FilterGroups.Add do begin
+      for i:=0 to Iface.MeasureTypes.Count-1 do begin
+        Filters.Add('MEASURE_TYPE_ID',fcEqual,Iface.MeasureTypes.Items[i].Value).Operator:=foOr;
+      end;
+    end;
+    AIface.FilterOnShow:=VarIsNull(APointId);
+    if AIface.SelectByUnionType('UNION_ID;UNION_TYPE',VarArrayOf([APointId,utPoint]),
+                                Data,utPoint,FilterGroups,false) then begin
+      DS.XMLData:=Data;
+      if DS.Active and not DS.IsEmpty then begin
+        APointId:=DS.FieldByName('UNION_ID').Value;
+        AName:=DS.FieldByName('NAME').AsString;
+        Point:=FPoints.Items[Index];
+        Point.Id:=APointId;
+        Point.Name:=AName;
+        Point.RouteId:=DS.FieldByName('UNION_PARENT_ID').Value;
+        Point.Caption:=Iface.GetPointCaption(AName,APointId,Point.RouteId);
+        FillPoints;
+        ListBoxPoints.ItemIndex:=Index;
+        ListBoxPoints.Selected[Index]:=true; 
+      end;
+    end;
+  finally
+    DS.Free;
+    FilterGroups.Free;
+    AIface.Free;
+  end;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshForm.MenuItemPointsClearClick(
+  Sender: TObject);
+begin
+  FPoints.Clear;
+  ListBoxPoints.Clear;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshForm.MenuItemPointsDeleteClick(
+  Sender: TObject);
+begin
+  ButtonPointsDelete.Click;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshForm.PopupMenuPointsPopup(
+  Sender: TObject);
+var
+  APointId: Variant;
+  Index: Integer;
+begin
+  APointId:=GetFirstPointIdSelected(Index);
+  MenuItemPointsChange.Enabled:=not VarIsNull(APointId);
+  MenuItemPointsDelete.Enabled:=not VarIsNull(APointId);
+  MenuItemPointsClear.Enabled:=ListBoxPoints.Items.Count>0;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshForm.ButtonDefaultClick(
+  Sender: TObject);
+begin
+  inherited;
+  FPoints.CopyFrom(Iface.DefaultPoints);
+  FillPoints;
+end;
+
+procedure TSgtsBaseGraphPeriodPointsRefreshForm.ListBoxPointsDblClick(
+  Sender: TObject);
+var
+  Index: Integer;
+  Point: TSgtsBaseGraphPoint;
+  S: String;
+begin
+  Index:=ListBoxPoints.ItemIndex;
+  if Index<>-1 then begin
+    Point:=TSgtsBaseGraphPoint(ListBoxPoints.Items.Objects[Index]);
+    S:=ListBoxPoints.Items.Strings[Index];
+    if InputQuery(SCaptionPoint,SInputCaptionPoint,S) then begin
+      if Trim(S)='' then begin
+        ShowError(SPointCaptionNotEmpty);
+      end else begin
+        ListBoxPoints.Items.Strings[Index]:=S;
+        Point.Caption:=S;
+      end;  
+    end;
+  end;
+end;
+
+end.

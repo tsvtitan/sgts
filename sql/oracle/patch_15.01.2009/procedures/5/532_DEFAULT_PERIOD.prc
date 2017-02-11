@@ -1,0 +1,26 @@
+/* Создание процедуры по умолчанию для периода */
+
+CREATE OR REPLACE PROCEDURE DEFAULT_PERIOD
+( 
+  POINT_ID INTEGER, 
+  PARAM_ID_3 IN INTEGER, 
+  INSTRUMENT_ID_3 IN INTEGER, 
+  MEASHURE_UNIT_ID_3 IN INTEGER, 
+  VALUE_2 IN OUT FLOAT, 
+  VALUE_3 IN OUT FLOAT 
+)   
+AS 
+BEGIN 
+  IF (VALUE_3 IS NULL) THEN 
+    VALUE_3:=0.0; 
+  END IF; 
+  IF (VALUE_3<>0.0) THEN 
+    VALUE_2:=1/VALUE_3*1000; 
+  END IF; 
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT

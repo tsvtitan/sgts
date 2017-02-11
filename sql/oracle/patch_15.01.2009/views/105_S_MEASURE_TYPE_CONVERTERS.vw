@@ -1,0 +1,46 @@
+/* Создание просмотра преобразователей видов измерения */
+
+CREATE OR REPLACE VIEW S_MEASURE_TYPE_CONVERTERS
+AS 
+SELECT   MTR.MEASURE_TYPE_ID,
+         MT.NAME AS MEASURE_TYPE_NAME,
+         RP.ROUTE_ID,
+         R.NAME AS ROUTE_NAME,
+         P.POINT_ID,
+         P.NAME AS POINT_NAME,
+         C.CONVERTER_ID,
+         C.NAME AS CONVERTER_NAME,
+         P.COORDINATE_Z,
+         OT.OBJECT_PATHS
+    FROM MEASURE_TYPES MT,
+         MEASURE_TYPE_ROUTES MTR,
+         ROUTES R,
+         ROUTE_POINTS RP,
+         POINTS P,
+         CONVERTERS C,
+         (SELECT     OT1.OBJECT_ID,
+                     SUBSTR (MAX (SYS_CONNECT_BY_PATH (O1.NAME, '\')), 2) AS OBJECT_PATHS
+                FROM OBJECT_TREES OT1,
+                     OBJECTS O1
+               WHERE OT1.OBJECT_ID = O1.OBJECT_ID
+          START WITH OT1.PARENT_ID IS NULL
+          CONNECT BY OT1.PARENT_ID = PRIOR OT1.OBJECT_TREE_ID
+            GROUP BY OT1.OBJECT_ID) OT
+   WHERE MT.MEASURE_TYPE_ID = MTR.MEASURE_TYPE_ID
+     AND MTR.ROUTE_ID = R.ROUTE_ID
+     AND R.ROUTE_ID = RP.ROUTE_ID
+     AND RP.POINT_ID = P.POINT_ID
+     AND P.POINT_ID = C.CONVERTER_ID
+     AND P.OBJECT_ID = OT.OBJECT_ID
+ORDER BY MT.PRIORITY,
+         MTR.PRIORITY,
+         RP.PRIORITY
+
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

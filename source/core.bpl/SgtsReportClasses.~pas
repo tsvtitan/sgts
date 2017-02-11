@@ -1,0 +1,16 @@
+unit SgtsReportClasses;
+
+interface
+
+uses frxDesgn, frxClass;
+
+type
+
+  TSgtsFastReportDesigner=class(TfrxDesigner)
+  end;
+
+  TSgts
+
+implementation
+
+end.

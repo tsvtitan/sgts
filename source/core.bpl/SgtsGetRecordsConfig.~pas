@@ -1,0 +1,867 @@
+unit SgtsGetRecordsConfig;
+
+interface
+
+uses Classes, DB, Contnrs, Variants,
+     SgtsSelectDefs;
+
+type
+  TSgtsGetRecordsConfigFieldNameFuncType=(fftNone,fftSum);
+
+  TSgtsGetRecordsConfigFieldName=class(TObject)
+  private
+    FName: String;
+    FFuncType: TSgtsGetRecordsConfigFieldNameFuncType;
+  public
+    property Name: String read FName write FName;
+    property FuncType: TSgtsGetRecordsConfigFieldNameFuncType read FFuncType write FFuncType;
+  end;
+
+  TSgtsGetRecordsConfigFieldNames=class(TObjectList)
+  private
+    function GetItems(Index: Integer): TSgtsGetRecordsConfigFieldName;
+    procedure SetItems(Index: Integer; Value: TSgtsGetRecordsConfigFieldName);
+  public
+    function Find(Name: String): TSgtsGetRecordsConfigFieldName;
+    function Add(Name: String; FuncType: TSgtsGetRecordsConfigFieldNameFuncType=ftNone): TSgtsGetRecordsConfigFieldName;
+
+    property Items[Index: Integer]: TSgtsGetRecordsConfigFieldName read GetItems write SetItems;
+  end;
+
+  TSgtsGetRecordsConfigParam=class(TObject)
+  private
+    FFieldName: string;
+    FValue: Variant;
+    FDataType: TFieldType;
+    FIsNull: Boolean;
+    FParamType: TParamType;
+  public
+    property FieldName: string read FFieldName write FFieldName;
+    property DataType: TFieldType read FDataType write FDataType;
+    property Value: Variant read FValue write FValue;
+    property IsNull: Boolean read FIsNull write FIsNull;
+    property ParamType: TParamType read FParamType write FParamType;
+  end;
+
+  TSgtsGetRecordsConfigParams=class(TObjectList)
+  private
+    function GetItems(Index: Integer): TSgtsGetRecordsConfigParam;
+    procedure SetItems(Index: Integer; Value: TSgtsGetRecordsConfigParam);
+  public
+    function Find(const FieldName: string): TSgtsGetRecordsConfigParam;
+    function Add(const FieldName: string; Value: Variant; IsNull: Boolean): TSgtsGetRecordsConfigParam;
+
+    property Items[Index: Integer]: TSgtsGetRecordsConfigParam read GetItems write SetItems;
+  end;
+
+  TSgtsGetRecordsConfigOrderType=(otDisable,otAsc,otDesc);
+
+  TSgtsGetRecordsConfigOrder=class(TObject)
+  private
+    FFieldName: string;
+    FCaption: String;
+    FOrderType: TSgtsGetRecordsConfigOrderType;
+  public
+    property Caption: String read FCaption write FCaption;
+    property FieldName: String read FFieldName write FFieldName;
+    property OrderType: TSgtsGetRecordsConfigOrderType read FOrderType write FOrderType;
+  end;
+
+  TSgtsGetRecordsConfigOrders=class(TObjectList)
+  private
+    function GetEnabled: Boolean;
+    function GetItems(Index: Integer): TSgtsGetRecordsConfigOrder;
+    procedure SetItems(Index: Integer; Value: TSgtsGetRecordsConfigOrder);
+  public
+    function Find(const FieldName: string): TSgtsGetRecordsConfigOrder;
+    function Add(const FieldName: string; OrderType: TSgtsGetRecordsConfigOrderType): TSgtsGetRecordsConfigOrder;
+    procedure CopyFrom(Source: TSgtsGetRecordsConfigOrders; IsClear: Boolean=true);
+    procedure CopyFromSelectDefs(SelectDefs: TSgtsSelectDefs);
+    procedure LoadFromStream(Stream: TStream);
+    procedure SaveToStream(Stream: TStream);
+    function GetOrdersStr: String;
+    procedure SetOrdersStr(Value: String);
+
+    property Items[Index: Integer]: TSgtsGetRecordsConfigOrder read GetItems write SetItems;
+    property Enabled: Boolean read GetEnabled;
+  end;
+
+  TSgtsGetRecordsConfigFilterOperator=(foAnd,foOr);
+
+  TSgtsGetRecordsConfigFilterCondition=(fcEqual,fcGreater,fcLess,fcNotEqual,fcEqualGreater,fcEqualLess,
+                                        fcLike,fcNotLike,fcIsNull,fcIsNotNull);
+  TSgtsGetRecordsConfigFilterType=(ftFieldName,ftSQL);
+
+  TSgtsGetRecordsConfigFilter=class(TObject)
+  private
+    FFieldName: string;
+    FOperator: TSgtsGetRecordsConfigFilterOperator;
+    FCondition: TSgtsGetRecordsConfigFilterCondition;
+    FCheckCase: Boolean;
+    FRightSide: Boolean;
+    FLeftSide: Boolean;
+    FValue: Variant;
+    FFilterType: TSgtsGetRecordsConfigFilterType;
+  public
+    property FieldName: string read FFieldName write FFieldName;
+    property Operator: TSgtsGetRecordsConfigFilterOperator read FOperator write FOperator;
+    property Condition: TSgtsGetRecordsConfigFilterCondition read FCondition write FCondition;
+    property CheckCase: Boolean read FCheckCase write FCheckCase;
+    property RightSide: Boolean read FRightSide write FRightSide;
+    property LeftSide: Boolean read FLeftSide write FLeftSide;
+    property Value: Variant read FValue write FValue;
+    property FilterType: TSgtsGetRecordsConfigFilterType read FFilterType write FFilterType;
+  end;
+
+  TSgtsGetRecordsConfigFilters=class(TObjectList)
+  private
+    function GetItems(Index: Integer): TSgtsGetRecordsConfigFilter;
+    procedure SetItems(Index: Integer; Value: TSgtsGetRecordsConfigFilter);
+  public
+    function Find(const FieldName: string): TSgtsGetRecordsConfigFilter;
+    function Add(const FieldName: string; Condition: TSgtsGetRecordsConfigFilterCondition; Value: Variant): TSgtsGetRecordsConfigFilter;
+    function AddSql(const Sql: String): TSgtsGetRecordsConfigFilter;
+
+    property Items[Index: Integer]: TSgtsGetRecordsConfigFilter read GetItems write SetItems;
+  end;
+
+  TSgtsGetRecordsConfigFilterGroup=class(TObject)
+  private
+    FGroupName: String;
+    FOperator: TSgtsGetRecordsConfigFilterOperator;
+    FFilters: TSgtsGetRecordsConfigFilters;
+    FEnabled: Boolean;
+    FVisible: Boolean;
+    FActive: Boolean;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure CopyFrom(Source: TSgtsGetRecordsConfigFilterGroup; IsClear: Boolean=true);
+
+    property GroupName: String read FGroupName write FGroupName;
+    property Operator: TSgtsGetRecordsConfigFilterOperator read FOperator write FOperator;
+    property Filters: TSgtsGetRecordsConfigFilters read FFilters;
+    property Enabled: Boolean read FEnabled write FEnabled;
+    property Visible: Boolean read FVisible write FVisible;
+    property Active: Boolean read FActive write FActive;
+  end;
+
+  TSgtsGetRecordsConfigFilterGroups=class(TObjectList)
+  private
+    function GetVisibleEnabled: Boolean;
+    function GetItems(Index: Integer): TSgtsGetRecordsConfigFilterGroup;
+    procedure SetItems(Index: Integer; Value: TSgtsGetRecordsConfigFilterGroup);
+  public
+    function Add(Operator: TSgtsGetRecordsConfigFilterOperator=foAnd): TSgtsGetRecordsConfigFilterGroup;
+    function Insert(Index: Integer; Operator: TSgtsGetRecordsConfigFilterOperator=foAnd): TSgtsGetRecordsConfigFilterGroup;
+    function AddByName(GroupName: String; Operator: TSgtsGetRecordsConfigFilterOperator=foAnd; Visible: Boolean=false): TSgtsGetRecordsConfigFilterGroup;
+    function Find(GroupName: String): TSgtsGetRecordsConfigFilterGroup;
+    procedure CopyFrom(Source: TSgtsGetRecordsConfigFilterGroups; IsClear: Boolean=true; UseInsert: Boolean=false; ACount: Integer=0);
+    procedure CopyFromSelectDefs(SelectDefs: TSgtsSelectDefs);
+    procedure LoadFromStream(Stream: TStream);
+    procedure SaveToStream(Stream: TStream);
+    function GetFiltersStr: String;
+    procedure SetFiltersStr(Value: String);
+    function GetUserFilter: String;
+    procedure DeleteInactive;
+
+    property Items[Index: Integer]: TSgtsGetRecordsConfigFilterGroup read GetItems write SetItems;
+    property VisibleEnabled: Boolean read GetVisibleEnabled;
+  end;
+
+  TSgtsGetRecordsConfig=class(TObject)
+  private
+    FStartPos: Integer;
+    FFetchCount: Integer;
+    FRecsOut: Integer;
+    FAllCount: Integer;
+    FFieldNames: TSgtsGetRecordsConfigFieldNames;
+    FParams: TSgtsGetRecordsConfigParams;
+    FOrders: TSgtsGetRecordsConfigOrders;
+    FFilterGroups: TSgtsGetRecordsConfigFilterGroups;
+    FCheckProvider: Boolean;
+  public
+    constructor Create;
+    destructor Destroy; override;
+
+    property StartPos: Integer read FStartPos write FStartPos;
+    property FetchCount: Integer read FFetchCount write FFetchCount;
+    property RecsOut: Integer read FRecsOut write FRecsOut;
+    property FieldNames: TSgtsGetRecordsConfigFieldNames read FFieldNames;
+    property AllCount: Integer read FAllCount write FAllCount;
+    property Params: TSgtsGetRecordsConfigParams read FParams;
+    property Orders: TSgtsGetRecordsConfigOrders read FOrders;
+    property FilterGroups: TSgtsGetRecordsConfigFilterGroups read FFilterGroups;
+    property CheckProvider: Boolean read FCheckProvider write FCheckProvider;
+  end;
+
+function GetFilterOperatorName(Operator: TSgtsGetRecordsConfigFilterOperator): String;
+function GetFilterConditionName(Condition: TSgtsGetRecordsConfigFilterCondition): string;
+
+implementation
+
+uses SysUtils,
+     SgtsConsts;
+
+function GetFilterOperatorName(Operator: TSgtsGetRecordsConfigFilterOperator): String;
+begin
+  Result:='';
+  case Operator of
+    foAnd: Result:='и';
+    foOr: Result:='или';
+  end;
+end;
+
+function GetFilterConditionName(Condition: TSgtsGetRecordsConfigFilterCondition): string;
+begin
+  Result:='';
+  case Condition of
+    fcEqual: Result:='=';
+    fcGreater: Result:='>';
+    fcLess: Result:='<';
+    fcNotEqual: Result:='<>';
+    fcEqualGreater: Result:='>=';
+    fcEqualLess: Result:='<=';
+    fcLike: Result:='входит';
+    fcNotLike: Result:='не входит';
+    fcIsNull: Result:='пусто';
+    fcIsNotNull: Result:='не пусто';
+  end;
+end;
+
+{ TSgtsGetRecordsConfigFieldNames }
+
+function TSgtsGetRecordsConfigFieldNames.GetItems(Index: Integer): TSgtsGetRecordsConfigFieldName;
+begin
+  Result:=TSgtsGetRecordsConfigFieldName(inherited Items[Index]);
+end;
+
+procedure TSgtsGetRecordsConfigFieldNames.SetItems(Index: Integer; Value: TSgtsGetRecordsConfigFieldName);
+begin
+  inherited Items[Index]:=Value;
+end;
+
+function TSgtsGetRecordsConfigFieldNames.Find(Name: String): TSgtsGetRecordsConfigFieldName;
+var
+  i: Integer;
+begin
+  Result:=nil;
+  for i:=0 to Count-1 do begin
+    Result:=Items[i];
+    if AnsiSameText(Result.Name,Name) then begin
+      exit;
+    end;
+  end;
+end;
+
+function TSgtsGetRecordsConfigFieldNames.Add(Name: String; FuncType: TSgtsGetRecordsConfigFieldNameFuncType=ftNone): TSgtsGetRecordsConfigFieldName;
+begin
+  Result:=TSgtsGetRecordsConfigFieldName.Create;
+  Result.Name:=Name;
+  Result.FuncType:=FuncType;
+  inherited Add(Result);
+end;
+
+{ TSgtsGetRecordsConfigParams }
+
+function TSgtsGetRecordsConfigParams.GetItems(Index: Integer): TSgtsGetRecordsConfigParam;
+begin
+  Result:=TSgtsGetRecordsConfigParam(inherited Items[Index]);
+end;
+
+procedure TSgtsGetRecordsConfigParams.SetItems(Index: Integer; Value: TSgtsGetRecordsConfigParam);
+begin
+  inherited Items[Index]:=Value;
+end;
+
+function TSgtsGetRecordsConfigParams.Find(const FieldName: string): TSgtsGetRecordsConfigParam;
+var
+  i: Integer;
+begin
+  Result:=nil;
+  for i:=0 to Count-1 do
+    if AnsiSameText(Items[i].FieldName,FieldName) then begin
+      Result:=Items[i];
+      exit;
+    end;
+end;
+
+function TSgtsGetRecordsConfigParams.Add(const FieldName: string; Value: Variant; IsNull: Boolean): TSgtsGetRecordsConfigParam;
+begin
+  Result:=nil;
+  if not Assigned(Find(FieldName)) then begin
+    Result:=TSgtsGetRecordsConfigParam.Create;
+    Result.FieldName:=FieldName;
+    Result.Value:=Value;
+    Result.IsNull:=IsNull;
+    inherited Add(Result);
+  end;
+end;
+
+{ TSgtsGetRecordsConfigOrders }
+
+function TSgtsGetRecordsConfigOrders.GetItems(Index: Integer): TSgtsGetRecordsConfigOrder;
+begin
+  Result:=TSgtsGetRecordsConfigOrder(inherited Items[Index]);
+end;
+
+procedure TSgtsGetRecordsConfigOrders.SetItems(Index: Integer; Value: TSgtsGetRecordsConfigOrder);
+begin
+  inherited Items[Index]:=Value;
+end;
+
+function TSgtsGetRecordsConfigOrders.Find(const FieldName: string): TSgtsGetRecordsConfigOrder;
+var
+  i: Integer;
+begin
+  Result:=nil;
+  for i:=0 to Count-1 do begin
+    if AnsiSameText(Items[i].FieldName,FieldName) then begin
+      Result:=Items[i];
+      exit;
+    end;
+  end;
+end;
+
+function TSgtsGetRecordsConfigOrders.Add(const FieldName: string; OrderType: TSgtsGetRecordsConfigOrderType): TSgtsGetRecordsConfigOrder;
+begin
+  Result:=nil;
+  if not Assigned(Find(FieldName)) then begin
+    Result:=TSgtsGetRecordsConfigOrder.Create;
+    Result.FieldName:=FieldName;
+    Result.OrderType:=OrderType;
+    inherited Add(Result);
+  end;
+end;
+
+procedure TSgtsGetRecordsConfigOrders.CopyFrom(Source: TSgtsGetRecordsConfigOrders; IsClear: Boolean=true);
+var
+  i: Integer;
+  Item,ItemNew: TSgtsGetRecordsConfigOrder;
+begin
+  if IsClear then
+    Clear;
+  if Assigned(Source) then begin
+    for i:=0 to Source.Count-1 do begin
+      Item:=Source.Items[i];
+      ItemNew:=Add(Item.FieldName,Item.OrderType);
+      if Assigned(ItemNew) then
+        ItemNew.Caption:=Item.Caption;
+    end;
+  end;
+end;
+
+procedure TSgtsGetRecordsConfigOrders.CopyFromSelectDefs(SelectDefs: TSgtsSelectDefs);
+var
+  i: Integer;
+  Item: TSgtsSelectDef;
+  ItemNew: TSgtsGetRecordsConfigOrder;
+begin
+  if Assigned(SelectDefs) then begin
+    for i:=0 to SelectDefs.Count-1 do begin
+      Item:=SelectDefs.Items[i];
+      if (Trim(Item.Caption)<>'') and (Item.FieldKind=fkData) then begin
+        ItemNew:=Find(Item.Name);
+        if not Assigned(ItemNew) then
+          ItemNew:=Add(Item.Name,otDisable);
+        if Assigned(ItemNew) then
+          ItemNew.Caption:=Item.Caption;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsGetRecordsConfigOrders.LoadFromStream(Stream: TStream);
+var
+  Reader: TReader;
+  Item: TSgtsGetRecordsConfigOrder;
+begin
+  Reader:=TReader.Create(Stream,FilerPageSize);
+  try
+    Reader.ReadListBegin;
+    Clear;
+    while not Reader.EndOfList do begin
+      Item:=Add(Reader.ReadString,TSgtsGetRecordsConfigOrderType(Reader.ReadInteger));
+      if Assigned(Item) then
+        Item.Caption:=Reader.ReadString;
+    end;
+    Reader.ReadListEnd;
+  finally
+    Reader.Free;
+  end;  
+end;
+
+procedure TSgtsGetRecordsConfigOrders.SaveToStream(Stream: TStream);
+var
+  i: Integer;
+  Writer: TWriter;
+  Item: TSgtsGetRecordsConfigOrder;
+begin
+  Writer:=TWriter.Create(Stream,FilerPageSize);
+  try
+    Writer.WriteListBegin;
+    for i:=0 to Count-1 do begin
+      Item:=Items[i];
+      Writer.WriteString(Item.FieldName);
+      Writer.WriteInteger(Integer(Item.OrderType));
+      Writer.WriteString(Item.Caption);
+    end;
+    Writer.WriteListEnd;
+  finally
+    Writer.Free;
+  end;
+end;
+
+function TSgtsGetRecordsConfigOrders.GetOrdersStr: String;
+var
+  S: String;
+  Stream: TMemoryStream;
+begin
+  Stream:=TMemoryStream.Create;
+  try
+    Result:='';
+    SaveToStream(Stream);
+    SetLength(S,Stream.Size);
+    System.Move(Stream.Memory^,Pointer(S)^,Stream.Size);
+    Result:=S;
+  finally
+    Stream.Free;
+  end;
+end;
+
+procedure TSgtsGetRecordsConfigOrders.SetOrdersStr(Value: String);
+var
+  Stream: TMemoryStream;
+  DefStream: TMemoryStream;
+begin
+  Stream:=TMemoryStream.Create;
+  DefStream:=TMemoryStream.Create;
+  try
+    SaveToStream(DefStream);
+    DefStream.Position:=0;
+    Stream.SetSize(Length(Value));
+    System.Move(Pointer(Value)^,Stream.Memory^,Length(Value));
+    try
+      LoadFromStream(Stream);
+    except
+      LoadFromStream(DefStream);
+    end;
+  finally
+    DefStream.Free;
+    Stream.Free;
+  end;
+end;
+
+function TSgtsGetRecordsConfigOrders.GetEnabled: Boolean;
+var
+  i: Integer;
+begin
+  Result:=false;
+  for i:=0 to Count-1 do
+    if Items[i].OrderType<>otDisable then begin
+      Result:=true;
+      break;
+    end;
+end;
+
+{ TSgtsGetRecordsConfigFilters }
+
+function TSgtsGetRecordsConfigFilters.GetItems(Index: Integer): TSgtsGetRecordsConfigFilter;
+begin
+  Result:=TSgtsGetRecordsConfigFilter(inherited Items[Index]);
+end;
+
+procedure TSgtsGetRecordsConfigFilters.SetItems(Index: Integer; Value: TSgtsGetRecordsConfigFilter);
+begin
+  inherited Items[Index]:=Value;
+end;
+
+function TSgtsGetRecordsConfigFilters.Find(const FieldName: string): TSgtsGetRecordsConfigFilter;
+var
+  i: Integer;
+begin
+  Result:=nil;
+  for i:=0 to Count-1 do
+    if AnsiSameText(Items[i].FieldName,FieldName) then begin
+      Result:=Items[i];
+      exit;
+    end;
+end;
+
+function TSgtsGetRecordsConfigFilters.Add(const FieldName: string; Condition: TSgtsGetRecordsConfigFilterCondition; Value: Variant): TSgtsGetRecordsConfigFilter;
+begin
+  Result:=TSgtsGetRecordsConfigFilter.Create;
+  Result.FieldName:=FieldName;
+  Result.Condition:=Condition;
+  Result.Operator:=foAnd;
+  Result.CheckCase:=false;
+  Result.Value:=Value;
+  Result.FilterType:=ftFieldName;
+  inherited Add(Result);
+end;
+
+function TSgtsGetRecordsConfigFilters.AddSql(const Sql: String): TSgtsGetRecordsConfigFilter;
+begin
+  Result:=TSgtsGetRecordsConfigFilter.Create;
+  Result.FieldName:='';
+  Result.Condition:=fcEqual;
+  Result.Operator:=foAnd;
+  Result.FilterType:=ftSQL;
+  Result.Value:=SQL;
+  inherited Add(Result);
+end;
+
+{ TSgtsGetRecordsConfigFilterGroup }
+
+constructor TSgtsGetRecordsConfigFilterGroup.Create;
+begin
+  inherited Create;
+  FFilters:=TSgtsGetRecordsConfigFilters.Create;
+  FEnabled:=true;
+  FVisible:=false;
+  FActive:=true;
+end;
+
+destructor TSgtsGetRecordsConfigFilterGroup.Destroy;
+begin
+  FFilters.Free;
+  inherited Destroy;
+end;
+
+procedure TSgtsGetRecordsConfigFilterGroup.CopyFrom(Source: TSgtsGetRecordsConfigFilterGroup; IsClear: Boolean=true);
+var
+  i: Integer;
+  Filter, NewFilter: TSgtsGetRecordsConfigFilter;
+begin
+  if IsClear then
+    FFilters.Clear;
+  if Assigned(Source) then begin
+    GroupName:=Source.GroupName;
+    Enabled:=Source.Enabled;
+    Visible:=Source.Visible;
+    Active:=Source.Active;
+    for i:=0 to Source.Filters.Count-1 do begin
+      Filter:=Source.Filters.Items[i];
+      NewFilter:=Filters.Add(Filter.FieldName,Filter.Condition,Filter.Value);
+      NewFilter.Operator:=Filter.Operator;
+      NewFilter.CheckCase:=Filter.CheckCase;
+      NewFilter.RightSide:=Filter.RightSide;
+      NewFilter.LeftSide:=Filter.LeftSide;
+      NewFilter.FilterType:=Filter.FilterType;
+    end;
+  end;  
+end;
+
+{ TSgtsGetRecordsConfigFilterGroups }
+
+function TSgtsGetRecordsConfigFilterGroups.GetItems(Index: Integer): TSgtsGetRecordsConfigFilterGroup;
+begin
+  Result:=TSgtsGetRecordsConfigFilterGroup(inherited Items[Index]);
+end;
+
+procedure TSgtsGetRecordsConfigFilterGroups.SetItems(Index: Integer; Value: TSgtsGetRecordsConfigFilterGroup);
+begin
+  inherited Items[Index]:=Value;
+end;
+
+function TSgtsGetRecordsConfigFilterGroups.Add(Operator: TSgtsGetRecordsConfigFilterOperator=foAnd): TSgtsGetRecordsConfigFilterGroup;
+begin
+  Result:=TSgtsGetRecordsConfigFilterGroup.Create;
+  Result.Operator:=Operator;
+  inherited Add(Result);
+end;
+
+function TSgtsGetRecordsConfigFilterGroups.Insert(Index: Integer; Operator: TSgtsGetRecordsConfigFilterOperator=foAnd): TSgtsGetRecordsConfigFilterGroup;
+begin
+  Result:=TSgtsGetRecordsConfigFilterGroup.Create;
+  Result.Operator:=Operator;
+  inherited Insert(Index,Result);
+end;
+
+function TSgtsGetRecordsConfigFilterGroups.AddByName(GroupName: String;
+                                                     Operator: TSgtsGetRecordsConfigFilterOperator=foAnd;
+                                                     Visible: Boolean=false): TSgtsGetRecordsConfigFilterGroup;
+begin
+  Result:=Add(Operator);
+  if Assigned(Result) then begin
+    Result.GroupName:=GroupName;
+    Result.Visible:=Visible;
+  end;  
+end;
+
+function TSgtsGetRecordsConfigFilterGroups.Find(GroupName: String): TSgtsGetRecordsConfigFilterGroup;
+var
+  i: Integer;
+  Item: TSgtsGetRecordsConfigFilterGroup;
+begin
+  Result:=nil;
+  for i:=0 to Count-1 do begin
+    Item:=Items[i];
+    if AnsiSameText(Item.GroupName,GroupName) then begin
+      Result:=Item;
+    end;
+  end;
+end;
+
+procedure TSgtsGetRecordsConfigFilterGroups.CopyFrom(Source: TSgtsGetRecordsConfigFilterGroups;
+                                                     IsClear: Boolean=true; UseInsert: Boolean=false; ACount: Integer=0);
+var
+  i: Integer;
+  Group, NewGroup: TSgtsGetRecordsConfigFilterGroup;
+  NCount: Integer;
+begin
+  if IsClear then
+    Clear;
+  if Assigned(Source) then begin
+    NCount:=Source.Count;
+    if (ACount>0) and (ACount<=NCount) then
+      NCount:=ACount;
+    for i:=0 to NCount-1 do begin
+      Group:=Source.Items[i];
+      if not UseInsert then
+        NewGroup:=Add(Group.Operator)
+      else NewGroup:=Insert(i,Group.Operator);
+      NewGroup.CopyFrom(Group);
+    end;
+  end;
+end;
+
+procedure TSgtsGetRecordsConfigFilterGroups.CopyFromSelectDefs(SelectDefs: TSgtsSelectDefs);
+var
+  i: Integer;
+  Item: TSgtsSelectDef;
+  NewGroup: TSgtsGetRecordsConfigFilterGroup;
+begin
+  if Assigned(SelectDefs) then begin
+    for i:=0 to SelectDefs.Count-1 do begin
+      Item:=SelectDefs.Items[i];
+      if (Trim(Item.Caption)<>'') and (Item.FieldKind=fkData) then begin
+        NewGroup:=Find(Item.Caption);
+        if not Assigned(NewGroup) then
+          NewGroup:=Add(foAnd);
+        if Assigned(NewGroup) then begin
+          NewGroup.GroupName:=Item.Caption;
+          NewGroup.Enabled:=false;
+          NewGroup.Visible:=true;
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsGetRecordsConfigFilterGroups.LoadFromStream(Stream: TStream);
+var
+  Reader: TReader;
+  Group: TSgtsGetRecordsConfigFilterGroup;
+  Filter: TSgtsGetRecordsConfigFilter;
+  FieldName: String;
+  Operator: TSgtsGetRecordsConfigFilterOperator;
+  Condition: TSgtsGetRecordsConfigFilterCondition;
+  CheckCase: Boolean;
+  RightSide: Boolean;
+  LeftSide: Boolean;
+  Value: Variant;
+  FilterType: TSgtsGetRecordsConfigFilterType;
+begin
+  Reader:=TReader.Create(Stream,FilerPageSize);
+  try
+    Clear;
+    Reader.ReadListBegin;
+    while not Reader.EndOfList do begin
+      Group:=AddByName(Reader.ReadString,TSgtsGetRecordsConfigFilterOperator(Reader.ReadInteger));
+      Group.Enabled:=Reader.ReadBoolean;
+      Group.Visible:=Reader.ReadBoolean;
+      Reader.ReadListBegin;
+      while not Reader.EndOfList do begin
+        FieldName:=Reader.ReadString;
+        Operator:=TSgtsGetRecordsConfigFilterOperator(Reader.ReadInteger);
+        Condition:=TSgtsGetRecordsConfigFilterCondition(Reader.ReadInteger);
+        CheckCase:=Reader.ReadBoolean;
+        RightSide:=Reader.ReadBoolean;
+        LeftSide:=Reader.ReadBoolean;
+        Value:=Reader.ReadVariant;
+        FilterType:=TSgtsGetRecordsConfigFilterType(Reader.ReadInteger);
+
+        Filter:=Group.Filters.Add(FieldName,Condition,Value);
+        Filter.Operator:=Operator;
+        Filter.CheckCase:=CheckCase;
+        Filter.RightSide:=RightSide;
+        Filter.LeftSide:=LeftSide;
+        Filter.Value:=Value;
+        Filter.FilterType:=FilterType;
+      end;
+      Reader.ReadListEnd;
+    end;
+    Reader.ReadListEnd;
+  finally
+    Reader.Free;
+  end;
+end;
+
+procedure TSgtsGetRecordsConfigFilterGroups.SaveToStream(Stream: TStream);
+var
+  i,j: Integer;
+  Writer: TWriter;
+  Group: TSgtsGetRecordsConfigFilterGroup;
+  Filter: TSgtsGetRecordsConfigFilter;
+begin
+  Writer:=TWriter.Create(Stream,FilerPageSize);
+  try
+    Writer.WriteListBegin;
+    for i:=0 to Count-1 do begin
+      Group:=Items[i];
+      Writer.WriteString(Group.GroupName);
+      Writer.WriteInteger(Integer(Group.Operator));
+      Writer.WriteBoolean(Group.Enabled);
+      Writer.WriteBoolean(Group.Visible);
+      Writer.WriteListBegin;
+      for j:=0 to Group.Filters.Count-1 do begin
+        Filter:=Group.Filters.Items[j];
+        Writer.WriteString(Filter.FieldName);
+        Writer.WriteInteger(Integer(Filter.Operator));
+        Writer.WriteInteger(Integer(Filter.Condition));
+        Writer.WriteBoolean(Filter.CheckCase);
+        Writer.WriteBoolean(Filter.RightSide);
+        Writer.WriteBoolean(Filter.LeftSide);
+        Writer.WriteVariant(Filter.Value);
+        Writer.WriteInteger(Integer(Filter.FilterType));
+      end;
+      Writer.WriteListEnd;
+    end;
+    Writer.WriteListEnd;
+  finally
+    Writer.Free;
+  end;
+end;
+
+function TSgtsGetRecordsConfigFilterGroups.GetFiltersStr: String;
+var
+  S: String;
+  Stream: TMemoryStream;
+begin
+  Stream:=TMemoryStream.Create;
+  try
+    Result:='';
+    SaveToStream(Stream);
+    SetLength(S,Stream.Size);
+    System.Move(Stream.Memory^,Pointer(S)^,Stream.Size);
+    Result:=S;
+  finally
+    Stream.Free;
+  end;
+end;
+
+procedure TSgtsGetRecordsConfigFilterGroups.SetFiltersStr(Value: String);
+var
+  Stream: TMemoryStream;
+  DefStream: TMemoryStream;
+begin
+  Stream:=TMemoryStream.Create;
+  DefStream:=TMemoryStream.Create;
+  try
+    SaveToStream(DefStream);
+    DefStream.Position:=0;
+    Stream.SetSize(Length(Value));
+    System.Move(Pointer(Value)^,Stream.Memory^,Length(Value));
+    try
+      LoadFromStream(Stream);
+    except
+      LoadFromStream(DefStream);
+    end;
+  finally
+    DefStream.Free;
+    Stream.Free;
+  end;
+end;
+
+function TSgtsGetRecordsConfigFilterGroups.GetVisibleEnabled: Boolean;
+var
+  i: Integer;
+  Group: TSgtsGetRecordsConfigFilterGroup;
+begin
+  Result:=false;
+  for i:=0 to Count-1 do begin
+    Group:=Items[i];
+    Result:=Group.Visible and Group.Enabled and (Group.Filters.Count>0);
+    if Result then
+      break;
+  end;
+end;
+
+function TSgtsGetRecordsConfigFilterGroups.GetUserFilter: String;
+var
+  i,j: Integer;
+  Group: TSgtsGetRecordsConfigFilterGroup;
+  Filter: TSgtsGetRecordsConfigFilter;
+  S1,S2,S3,S4: String;
+begin
+  Result:='';
+  for i:=0 to Count-1 do begin
+    Group:=Items[i];
+    S1:='';
+    if (Group.Filters.Count>0) and
+       Group.Enabled and
+       Group.Visible then begin
+      S1:='( ';
+      for j:=0 to Group.Filters.Count-1 do begin
+        Filter:=Group.Filters.Items[j];
+        S2:=GetFilterOperatorName(Filter.Operator);
+        S3:=GetFilterConditionName(Filter.Condition);
+        S4:=VarToStrDef(Filter.Value,'');
+        case Filter.Condition of
+          fcIsNull,fcIsNotNull: begin
+            S4:=S3;
+            S3:=GetFilterConditionName(fcEqual);
+          end;
+        end;
+        if j=0 then begin
+          S1:=S1+'['+Group.GroupName+'] '+S3+' ['+S4+']';
+        end else begin
+          S1:=S1+' '+S2+' ['+Group.GroupName+'] '+S3+' ['+S4+']';
+        end;
+      end;
+      S1:=Trim(S1)+' )';
+    end;
+    if Trim(Result)='' then begin
+      if Trim(S1)<>'' then
+        Result:=S1;
+    end else begin
+      if Trim(S1)<>'' then
+        Result:=Result+' '+GetFilterOperatorName(foAnd)+' '+S1;
+    end;
+  end;
+end;
+
+procedure TSgtsGetRecordsConfigFilterGroups.DeleteInactive;
+var
+  i: Integer;
+  Group: TSgtsGetRecordsConfigFilterGroup;
+begin
+  for i:=Count-1 downto 0 do begin
+    Group:=Items[i];
+    if not Group.Active then
+      Delete(i);
+  end;
+end;
+
+{ TSgtsGetRecordsConfig }
+
+constructor TSgtsGetRecordsConfig.Create;
+begin
+  inherited Create;
+  FFieldNames:=TSgtsGetRecordsConfigFieldNames.Create;
+  FParams:=TSgtsGetRecordsConfigParams.Create;
+  FOrders:=TSgtsGetRecordsConfigOrders.Create;
+  FFilterGroups:=TSgtsGetRecordsConfigFilterGroups.Create;
+end;
+
+destructor TSgtsGetRecordsConfig.Destroy;
+begin
+  FFilterGroups.Free;
+  FOrders.Free;
+  FParams.Free;
+  FFieldNames.Free;
+  inherited Destroy;
+end;
+
+end.

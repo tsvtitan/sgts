@@ -1,0 +1,16 @@
+library test;
+
+{$R *.res}
+                           
+uses
+  SgtsFm in '..\core.bpl\SgtsFm.pas' {SgtsForm},
+  SgtsChildFm in '..\core.bpl\SgtsChildFm.pas' {SgtsChildForm},
+  SgtsTestInterface in 'SgtsTestInterface.pas',
+  SgtsPlanGraphFm in 'SgtsPlanGraphFm.pas' {SgtsPlanGraphForm},
+  SgtsTest in 'SgtsTest.pas';
+
+exports
+  InitInterface;
+      
+begin
+end.

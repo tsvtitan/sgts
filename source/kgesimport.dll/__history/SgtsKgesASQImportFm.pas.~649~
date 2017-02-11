@@ -1,0 +1,874 @@
+unit SgtsKgesASQImportFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, DB, Grids, DBGrids, ExtCtrls,  DBTables, ComCtrls, DBCtrls,
+  SgtsFm, SgtsChildFm, SgtsCoreIntf, SgtsDatabaseCDS, SgtsProviders, SgtsCDS,
+  SgtsDbGrid, SgtsSelectDefs, SgtsControls, Menus;
+
+type
+  TSgtsKgesASQImportForm = class(TSgtsChildForm)
+    GridPanel: TGridPanel;
+    GroupBoxData: TGroupBox;
+    GroupBoxResult: TGroupBox;
+    GridDataPattern: TDBGrid;
+    PanelData: TPanel;
+    LabelState: TLabel;
+    ComboBoxState: TComboBox;
+    ButtonLoad: TButton;
+    DataSourceData: TDataSource;
+    StatusBar: TStatusBar;
+    NavigatorData: TDBNavigator;
+    GridResultPattern: TDBGrid;
+    DataSourceResult: TDataSource;
+    PanelResult: TPanel;
+    ButtonImport: TButton;
+    NavigatorResult: TDBNavigator;
+    LabelCycle: TLabel;
+    EditCycle: TEdit;
+    ButtonCycle: TButton;
+    CheckBoxClearCycle: TCheckBox;
+    OpenDialog: TOpenDialog;
+    PopupMenu: TPopupMenu;
+    MenuItemFrequency: TMenuItem;
+    MenuItemResistance: TMenuItem;
+    MenuItemResistanceLine: TMenuItem;
+    N1: TMenuItem;
+    MenuItemUnCheckAll: TMenuItem;
+    procedure ButtonCycleClick(Sender: TObject);
+    procedure ButtonLoadClick(Sender: TObject);
+    procedure ButtonImportClick(Sender: TObject);
+    procedure GridResultPatternKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure MenuItemUnCheckAllClick(Sender: TObject);
+    procedure MenuItemFrequencyClick(Sender: TObject);
+  private
+    FGridData: TSgtsDbGrid;
+    FSelectDefsData: TSgtsSelectDefs;
+    FDSData: TSgtsCDS;
+    FGridResult: TSgtsDbGrid;
+    FSelectDefsResult: TSgtsSelectDefs;
+    FDSResult: TSgtsCDS;
+    FCycleId: Variant;
+    FMeasureTypeIDs: TStringList;
+    FCommutators: TStringList;
+    FIndexAdresData: String;
+    FLastResultId: String;
+    FMaxStandart: Variant;
+
+    procedure DeleteByCycle;
+    procedure Load;
+    procedure Import;
+    procedure DataAfterScroll(DataSet: TDataSet);
+    procedure ResultAfterScroll(DataSet: TDataSet);
+    function GridDataGetBrushColor(Sender: TObject; Column: TColumn): TColor;
+    function GridDataGetFontColor(Sender: TObject; Column: TColumn; var FontStyles: TFontStyles): TColor;
+    procedure ViewPointInfo(AsPoint: Boolean);
+    procedure UpdateByType;
+    procedure GridResultCellClick(Column: TColumn);
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+  end;
+
+  TSgtsKgesASQImportIface=class(TSgtsChildIface)
+  public
+    procedure Init; override;
+    function CanShow: Boolean; override;
+  end;
+
+var
+  SgtsKgesASQImportForm: TSgtsKgesASQImportForm;
+
+implementation
+
+uses MDBFTable,
+     SgtsConsts, SgtsDatabaseIntf, SgtsUtils,
+     SgtsDialogs, SgtsGetRecordsConfig, SgtsRbkCyclesFm, SgtsFunPointManagementFm, SgtsRbkPointManagementFm;
+
+{$R *.dfm}
+
+{ TSgtsKgesASQImportIface }
+
+procedure TSgtsKgesASQImportIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsKgesASQImportForm;
+  InterfaceName:='Импорт из автоматизированной системы опроса';
+  MenuPath:=Format(SServiceMenu,['Импорт из АИС']);
+  MenuIndex:=1001;
+  with Permissions do begin
+    AddDefault(SPermissionNameShow);
+  end;
+end;
+
+function TSgtsKgesASQImportIface.CanShow: Boolean;
+begin
+  Result:=PermissionExists(SPermissionNameShow);
+end;
+
+{ TSgtsTestForm }
+
+constructor TSgtsKgesASQImportForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+
+  FGridData:=TSgtsDbGrid.Create(Self);
+  with FGridData do begin
+    Parent:=GridDataPattern.Parent;
+    Align:=GridDataPattern.Align;
+    AlignWithMargins:=GridDataPattern.AlignWithMargins;
+    SetBounds(GridDataPattern.Left,GridDataPattern.Top,GridDataPattern.Width,GridDataPattern.Height);
+    Constraints.Assign(GridDataPattern.Constraints);
+    Margins:=GridDataPattern.Margins;
+    Font.Assign(GridDataPattern.Font);
+    RowSelected.Font:=Font;
+    CellSelected.Font:=Font;
+    CellSelected.Font.Color:=clHighlightText;
+    TitleCellMouseDown.Font:=Font;
+    Options:=Options-[dgEditing]-[dgTabs];
+    TabOrder:=GridDataPattern.TabOrder;
+    LocateEnabled:=true;
+    PopupMenu:=GridDataPattern.PopupMenu;
+    ColumnSortEnabled:=false;
+    AutoFit:=true;
+    VisibleRowNumber:=true;
+    OnGetBrushColor:=GridDataGetBrushColor;
+    OnGetFontColor:=GridDataGetFontColor;
+  end;
+  FGridData.DataSource:=DataSourceData;
+  GridDataPattern.Free;
+  GridDataPattern:=nil;
+
+  FDSData:=TSgtsCDS.Create(nil);
+  with FDSData do begin
+    FIndexAdresData:=AddIndexDef('ADRES;ADRES',tsAsc).Name;
+    CreateField('DATA_ID',ftString,32);
+    CreateField('RESULT_ID',ftString,32);
+    CreateField('ADRES',ftInteger);
+    CreateField('DATA',ftDateTime);
+    CreateField('TIME',ftString,10);
+    CreateField('TIP',ftString,10);
+    TFloatField(CreateField('IZMER',ftFloat)).DisplayFormat:='#0.0';
+    CreateDataSet;
+  end;
+
+  DataSourceData.DataSet:=FDSData;
+
+  FSelectDefsData:=TSgtsSelectDefs.Create;
+  with FSelectDefsData do begin
+    Add('ADRES','Адрес',60);
+    Add('DATA','Дата',80);
+    Add('TIME','Время',80);
+    Add('TIP','Тип',30);
+    Add('IZMER','Значение',80);
+  end;
+
+  CreateGridColumnsBySelectDefs(FGridData,FSelectDefsData);
+
+  FGridResult:=TSgtsDbGrid.Create(Self);
+  with FGridResult do begin
+    Parent:=GridResultPattern.Parent;
+    Align:=GridResultPattern.Align;
+    AlignWithMargins:=GridResultPattern.AlignWithMargins;
+    SetBounds(GridResultPattern.Left,GridResultPattern.Top,GridResultPattern.Width,GridResultPattern.Height);
+    Constraints.Assign(GridResultPattern.Constraints);
+    Margins:=GridResultPattern.Margins;
+    Font.Assign(GridResultPattern.Font);
+    RowSelected.Font:=Font;
+    CellSelected.Font:=Font;
+    CellSelected.Font.Color:=clHighlightText;
+    TitleCellMouseDown.Font:=Font;
+    Options:=Options-[dgEditing]-[dgTabs];
+    TabOrder:=GridResultPattern.TabOrder;
+    LocateEnabled:=true;
+    PopupMenu:=GridResultPattern.PopupMenu;
+    ColumnSortEnabled:=false;
+    AutoFit:=true;
+    VisibleRowNumber:=true;
+    OnKeyDown:=GridResultPattern.OnKeyDown;
+    OnCellClick:=GridResultCellClick;
+  end;
+  FGridResult.DataSource:=DataSourceResult;
+  GridResultPattern.Free;
+  GridResultPattern:=nil;
+
+  FDSResult:=TSgtsCDS.Create(nil);
+  with FDSResult do begin
+    CreateField('RESULT_ID',ftString,32);
+    CreateField('MEASURE_TYPE_ID',ftInteger);
+    CreateField('MEASURE_TYPE_NAME',ftString,100);
+    CreateField('POINT_ID',ftInteger);
+    CreateField('POINT_NAME',ftInteger);
+    CreateField('CONVERTER_ID',ftInteger);
+    CreateField('CONVERTER_NAME',ftString,100);
+    CreateField('DATE_OBSERVATION',ftDateTime);
+    TFloatField(CreateField('RESISTANCE_LINE',ftFloat)).DisplayFormat:='#0.0';
+    TFloatField(CreateField('RESISTANCE',ftFloat)).DisplayFormat:='#0.0';
+    TFloatField(CreateField('FREQUENCY',ftFloat)).DisplayFormat:='#0.0';
+    TFloatField(CreateField('PERIOD',ftFloat)).DisplayFormat:='#0.00000';
+    CreateField('STATE',ftFloat);
+    CreateField('IS_BASE',ftInteger);
+
+    CreateDataSet;
+  end;
+
+  DataSourceResult.DataSet:=FDSResult;
+
+  FSelectDefsResult:=TSgtsSelectDefs.Create;
+  with FSelectDefsResult do begin
+    Add('POINT_NAME','Измерительная точка',60);
+    Add('DATE_OBSERVATION','Дата наблюдения',80);
+    Add('CONVERTER_NAME','Преобразователь',60);
+    Add('RESISTANCE_LINE','Линия',40);
+    Add('RESISTANCE','Сопротивление',40);
+    Add('FREQUENCY','Частота',40);
+    Add('PERIOD','Период',60);
+    Add('STATE','Состояние водовода',40);
+    AddDrawCheck('IS_BASE_EX','Базовый','IS_BASE',40,false);
+    AddInvisible('IS_BASE').Field:=FDSResult.FieldByName('IS_BASE');
+  end;
+
+  CreateGridColumnsBySelectDefs(FGridResult,FSelectDefsResult);
+
+  FCycleId:=Null;
+
+  FMeasureTypeIDs:=TStringList.Create;
+  with FMeasureTypeIDs do begin
+    Add('60001');
+    Add('60002');
+    Add('60003');
+    Add('60004');
+    Add('60005');
+  end;
+
+  FCommutators:=TStringList.Create;
+  with FCommutators do begin
+    Add('1');
+    Add('2');
+    Add('4');
+    Add('5');
+    Add('6');
+    Add('7');
+    Add('8');
+    Add('10');
+    Add('13');
+    Add('15');
+    Add('16');
+    Add('17');
+    Add('18');
+    Add('20');
+    Add('21');
+    Add('27');
+    Add('28');
+    Add('29');
+    Add('30');
+    Add('31');
+  end;
+  
+end;
+
+destructor TSgtsKgesASQImportForm.Destroy;
+begin
+  FCommutators.Free;
+  FMeasureTypeIDs.Free;
+  FSelectDefsResult.Free;
+  FDSResult.Free;
+  FSelectDefsData.Free;
+  FDSData.Free;
+  inherited Destroy;
+end;
+
+procedure TSgtsKgesASQImportForm.ButtonCycleClick(Sender: TObject);
+var
+  Data: String;
+  AIface: TSgtsRbkCyclesIface;
+  DS: TSgtsCDS;
+begin
+  AIface:=TSgtsRbkCyclesIface.Create(CoreIntf);
+  DS:=TSgtsCDS.Create(nil);
+  try
+    if AIface.SelectVisible('CYCLE_ID',FCycleId,Data) then begin
+      DS.XMLData:=Data;
+      if DS.Active and not DS.IsEmpty then begin
+        EditCycle.Text:=Format(SCycleFormat,[DS.FieldByName('CYCLE_NUM').AsInteger,
+                                             GetMonthNameByIndex(DS.FieldByName('CYCLE_MONTH').AsInteger),
+                                             DS.FieldByName('CYCLE_YEAR').AsInteger]);
+        FCycleId:=DS.FieldByName('CYCLE_ID').Value;                                             
+      end;
+    end;
+  finally
+    DS.Free;
+    AIface.Free;
+  end;
+end;
+
+procedure TSgtsKgesASQImportForm.ButtonImportClick(Sender: TObject);
+begin
+  if Trim(EditCycle.Text)='' then begin
+    ShowError('Выберите цикл.');
+    EditCycle.SetFocus;
+    exit;
+  end;
+
+  if CheckBoxClearCycle.Checked then begin
+    if ShowWarningQuestion(Format('Вы уверены в удалении исходных данных за цикл: %s?',[EditCycle.Text]),mbNo)=mrYes then
+      DeleteByCycle;
+  end;
+
+  Import;
+end;
+
+procedure TSgtsKgesASQImportForm.ButtonLoadClick(Sender: TObject);
+var
+  Value: String;
+  Standart: Extended;
+begin
+  if ComboBoxState.ItemIndex=-1 then begin
+    ShowError('Выберите состояние водовода.');
+    ComboBoxState.SetFocus;
+    Exit;
+  end;
+
+  FMaxStandart:=Null;
+  Standart:=0.0;
+  Value:=FloatToStr(Standart);
+  if InputQuery('Введите стандарт','Максимальный стандарт',Value) then begin
+    if TryStrToFloat(Value,Standart) then begin
+      FMaxStandart:=Standart;
+    end else
+      exit;
+  end else
+    exit;
+
+  Load;
+end;
+
+procedure TSgtsKgesASQImportForm.DeleteByCycle;
+var
+  DS: TSgtsDatabaseCDS;
+  i: Integer;
+  OldCursor: TCursor;
+  MeasureTypeId: Variant;
+begin
+  OldCursor:=Screen.Cursor;
+  Screen.Cursor:=crHourGlass;
+  CoreIntf.MainForm.Progress(0,0,0);
+  try
+    for i:=0 to FMeasureTypeIDs.Count-1 do begin
+      MeasureTypeId:=StrToInt(FMeasureTypeIDs.Strings[i]);
+      DS:=TSgtsDatabaseCDS.Create(CoreIntf);
+      try
+        DS.StopException:=true;
+        DS.WithWaitCursor:=false;
+        DS.CheckProvider:=false;
+        DS.ProviderName:='DELETE_BY_CYCLE';
+        with DS.ExecuteDefs do begin
+          AddValue('MEASURE_TYPE_ID',MeasureTypeId);
+          AddValue('CYCLE_ID',FCycleId);
+        end;
+        DS.Execute;
+      finally
+        DS.Free;
+      end;
+      CoreIntf.MainForm.Progress(0,FMeasureTypeIDs.Count-1,i+1);
+    end;
+  finally
+    CoreIntf.MainForm.Progress(0,0,0);
+    Screen.Cursor:=OldCursor;
+  end;
+end;
+
+procedure TSgtsKgesASQImportForm.Load;
+var
+  DSConverters: TSgtsDatabaseCDS;
+  ResultId: String;
+  MeasureTypeId: Integer;
+  MeasureTypeName: String;
+  PointId: Integer;
+  PointName: String;
+  ConverterId: Integer;
+  ConverterName: String;
+  DateObservation: TDateTime;
+  ResistanceLine: Extended;
+  Resistance: Extended;
+  Frequency: Extended;
+  Period: Extended;
+
+  procedure RefreshResult(IsNew: Boolean; ByFrequency: Boolean);
+  begin
+    if IsNew then begin
+      FDSResult.Append;
+      FDSResult.FieldByName('RESULT_ID').AsString:=ResultId;
+    end else
+      FDSResult.Edit;
+
+    FDSResult.FieldByName('MEASURE_TYPE_ID').AsInteger:=MeasureTypeId;
+    FDSResult.FieldByName('MEASURE_TYPE_NAME').AsString:=MeasureTypeName;
+    FDSResult.FieldByName('POINT_ID').AsInteger:=PointId;
+    FDSResult.FieldByName('POINT_NAME').AsString:=PointName;
+    FDSResult.FieldByName('CONVERTER_ID').AsInteger:=ConverterId;
+    FDSResult.FieldByName('CONVERTER_NAME').AsString:=ConverterName;
+    FDSResult.FieldByName('DATE_OBSERVATION').AsDateTime:=DateObservation;
+    FDSResult.FieldByName('RESISTANCE_LINE').AsFloat:=ResistanceLine;
+    if not ByFrequency then begin
+      FDSResult.FieldByName('RESISTANCE').AsFloat:=Resistance;
+      if IsNew then begin
+        FDSResult.FieldByName('FREQUENCY').AsFloat:=0.0;
+        FDSResult.FieldByName('PERIOD').AsFloat:=0.0;
+      end;
+    end else begin
+      FDSResult.FieldByName('FREQUENCY').AsFloat:=Frequency;
+      FDSResult.FieldByName('PERIOD').AsFloat:=Period;
+      if IsNew then begin
+        FDSResult.FieldByName('RESISTANCE').AsFloat:=0.0;
+      end;
+    end;
+    FDSResult.FieldByName('STATE').AsFloat:=ComboBoxState.ItemIndex;
+    FDSResult.FieldByName('IS_BASE').AsInteger:=0;
+    FDSResult.Post;
+  end;
+
+  function GetPointInfo(Adres: String): Boolean;
+  begin
+    Result:=false;
+    if DSConverters.Locate('POINT_NAME',StrToInt(Adres)) then begin
+      MeasureTypeId:=DSConverters.FieldByName('MEASURE_TYPE_ID').AsInteger;
+      MeasureTypeName:=DSConverters.FieldByName('MEASURE_TYPE_NAME').AsString;
+      PointId:=DSConverters.FieldByName('POINT_ID').AsInteger;
+      PointName:=DSConverters.FieldByName('POINT_NAME').AsString;
+      ConverterId:=DSConverters.FieldByName('CONVERTER_ID').AsInteger;
+      ConverterName:=DSConverters.FieldByName('CONVERTER_NAME').AsString;
+      Result:=true;
+    end;
+  end;
+
+var
+  Table: TMDBFTable;
+  Position: Integer;
+  Adres: String;
+  L: Integer;
+  SFirst: String;
+  SLast: String;
+  Commutator: String;
+  CommutatorExists: Boolean;
+  AType: String;
+  i: Integer;
+  Founded: Boolean;
+  ByFrequency: Boolean;
+  OldCursor: TCursor;
+  Standart: Extended;
+begin
+  if OpenDialog.Execute then begin
+    OldCursor:=Screen.Cursor;
+    Screen.Cursor:=crHourGlass;
+    Table:=TMDBFTable.Create(nil);
+    DSConverters:=TSgtsDatabaseCDS.Create(CoreIntf);
+    FDSData.AfterScroll:=nil;
+    FDSResult.AfterScroll:=nil;
+    FDSData.DisableControls;
+    FDSResult.DisableControls;
+    try
+      Table.FileName:=OpenDialog.FileName;
+      Update;
+      Table.Open;
+      if Table.Active then begin
+
+        DSConverters.ProviderName:='S_MEASURE_TYPE_CONVERTERS';
+        with DSConverters do begin
+          with SelectDefs do begin
+            AddInvisible('MEASURE_TYPE_ID');
+            AddInvisible('MEASURE_TYPE_NAME');
+            AddInvisible('POINT_ID');
+            AddInvisible('POINT_NAME');
+            AddInvisible('CONVERTER_ID');
+            AddInvisible('CONVERTER_NAME');
+          end;
+          with FilterGroups.Add do begin
+            for i:=0 to FMeasureTypeIDs.Count-1 do begin
+              Filters.Add('MEASURE_TYPE_ID',fcEqual,StrToInt(FMeasureTypeIDs.Strings[i])).Operator:=foOr;
+            end;
+          end;
+        end;
+        DSConverters.Open;
+
+        if DSConverters.Active then begin
+
+          FDSData.EmptyDataSet;
+
+          Table.First;
+          try
+            FDSData.IndexName:='';
+            while not Table.Eof do begin
+
+              Standart:=Table.FieldByName('STANDART').AsFloat;
+              if Standart<=VarToExtendedDef(FMaxStandart,0.0) then begin
+                FDSData.Append;
+                FDSData.FieldByName('DATA_ID').AsString:=CreateUniqueId;
+                FDSData.FieldValuesBySource(Table,true,false);
+                FDSData.Post;
+              end;
+
+              Table.Next;
+            end;
+
+            FDSData.IndexName:=FIndexAdresData;
+
+            CoreIntf.MainForm.Progress(0,0,0);
+            try
+
+              FDSResult.EmptyDataSet;
+              Commutator:='';
+              CommutatorExists:=false;
+              Position:=0;
+
+              FDSData.First;
+              while not FDSData.Eof do begin
+
+                Adres:=FDSData.FieldByName('ADRES').AsString;
+                AType:=AnsiUpperCase(FDSData.FieldByName('TIP').AsString);
+
+                L:=Length(Adres);
+                if L>2 then begin
+                  SLast:=Copy(Adres,L-1,2);
+                  SFirst:=Copy(Adres,1,L-Length(SLast));
+                  if SLast='01' then begin
+                    Commutator:=SFirst;
+                    ResistanceLine:=FDSData.FieldByName('IZMER').AsFloat;
+                    DateObservation:=FDSData.FieldByName('DATA').AsDateTime;
+                    ResultId:='';
+                    CommutatorExists:=AType='R';
+                  end else begin
+                    if CommutatorExists and (SFirst=Commutator) then begin
+                      if GetPointInfo(Adres) then begin
+
+                        Resistance:=0.0;
+                        Frequency:=0.0;
+                        Period:=0.0;
+
+                        ByFrequency:=false;
+
+                        if AType='R' then
+                          Resistance:=FDSData.FieldByName('IZMER').AsFloat
+                        else begin
+                          Frequency:=FDSData.FieldByName('IZMER').AsFloat;
+                          if Frequency<>0.0 then begin
+                            if Frequency<5.0 then begin
+                              Period:=Frequency;
+                              Frequency:=1/Period*1000;
+                            end else begin
+                              Period:=1/Frequency*1000;
+                            end;
+                          end;
+                          ByFrequency:=true;
+                        end;
+
+                        Founded:=FDSResult.Locate('POINT_NAME;DATE_OBSERVATION',VarArrayOf([Adres,DateObservation]),[loCaseInsensitive]);
+                        if not Founded then begin
+                          ResultId:=CreateUniqueId;
+                          RefreshResult(true,ByFrequency);
+                        end else
+                          RefreshResult(false,ByFrequency);
+                      end;
+
+                    end;
+                  end;
+                end;
+
+                Inc(Position);
+                CoreIntf.MainForm.Progress(0,FDSData.RecordCount,Position);
+
+                FDSData.Edit;
+                FDSData.FieldByName('RESULT_ID').AsString:=ResultId;
+                FDSData.Post;
+
+                FDSData.Next;
+              end;
+            finally
+              CoreIntf.MainForm.Progress(0,0,0);
+            end;
+
+            FDSData.First;
+            FDSResult.First;
+          finally
+            CoreIntf.MainForm.Progress(0,0,0);
+          end;
+        end;
+      end;
+    finally
+      FDSResult.EnableControls;
+      FDSData.EnableControls;
+      FDSResult.AfterScroll:=ResultAfterScroll;
+      FDSData.AfterScroll:=DataAfterScroll;
+      DSConverters.Free;
+      Table.Free;
+      Screen.Cursor:=OldCursor;
+    end;
+  end;
+end;
+
+procedure TSgtsKgesASQImportForm.MenuItemFrequencyClick(Sender: TObject);
+var
+  Flag: Boolean;
+begin
+  if FDSResult.Active and
+     not FDSResult.IsEmpty then begin
+    FDSResult.BeginUpdate(true);
+    try
+      FDSResult.First;
+      while not FDSResult.Eof do begin
+
+        Flag:=false;
+
+        if MenuItemResistanceLine=Sender then
+          Flag:=FDSResult.FieldByName('RESISTANCE_LINE').AsFloat<>0.0;
+
+        if MenuItemResistance=Sender then
+          Flag:=FDSResult.FieldByName('RESISTANCE').AsFloat<>0.0;
+
+        if MenuItemFrequency=Sender then
+          Flag:=FDSResult.FieldByName('FREQUENCY').AsFloat<>0.0;
+          
+        if Flag then begin
+          FDSResult.Edit;
+          FDSResult.FieldByName('IS_BASE').Value:=True;
+          FDSResult.Post;
+        end;
+        
+        FDSResult.Next;
+      end;
+    finally
+      FDSResult.EndUpdate(true);
+    end;
+  end;
+end;
+
+procedure TSgtsKgesASQImportForm.MenuItemUnCheckAllClick(Sender: TObject);
+begin
+  if FDSResult.Active and
+     not FDSResult.IsEmpty then begin
+    FDSResult.BeginUpdate(true);
+    try
+      FDSResult.First;
+      while not FDSResult.Eof do begin
+        FDSResult.Edit;
+        FDSResult.FieldByName('IS_BASE').Value:=false;
+        FDSResult.Post;
+        FDSResult.Next;
+      end;
+    finally
+      FDSResult.EndUpdate(true);
+    end;
+  end;
+end;
+
+procedure TSgtsKgesASQImportForm.UpdateByType;
+var
+  Adres: String;
+  L: Integer;
+  SLast: String;
+  AType: String;
+begin
+  FGridResult.Columns[3].Font.Style:=[];
+  FGridResult.Columns[4].Font.Style:=[];
+  FGridResult.Columns[5].Font.Style:=[];
+  FGridResult.Columns[6].Font.Style:=[];
+  Adres:=FDSData.FieldByName('ADRES').AsString;
+  L:=Length(Adres);
+  if L>2 then begin
+    SLast:=Copy(Adres,L-1,2);
+    if SLast='01' then begin
+      FGridResult.Columns[3].Font.Style:=[];
+      FGridResult.Columns[4].Font.Style:=[];
+      FGridResult.Columns[5].Font.Style:=[];
+      FGridResult.Columns[6].Font.Style:=[];
+    end else begin
+      AType:=FDSData.FieldByName('TIP').AsString;
+      if AType='R' then begin
+        FGridResult.Columns[3].Font.Style:=[];
+        FGridResult.Columns[4].Font.Style:=[fsBold];
+        FGridResult.Columns[5].Font.Style:=[];
+        FGridResult.Columns[6].Font.Style:=[];
+      end else begin
+        FGridResult.Columns[3].Font.Style:=[];
+        FGridResult.Columns[4].Font.Style:=[];
+        FGridResult.Columns[5].Font.Style:=[fsBold];
+        FGridResult.Columns[6].Font.Style:=[fsBold];
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsKgesASQImportForm.DataAfterScroll(DataSet: TDataSet);
+begin
+  if FGridData.Focused then
+    if not FDSData.IsEmpty then begin
+      FLastResultId:=FDSData.FieldByName('RESULT_ID').AsString;
+      FDSResult.Locate('RESULT_ID',FLastResultId,[loCaseInsensitive]);
+      UpdateByType;
+      FGridResult.UpdateRowNumber;
+      FGridData.Repaint;
+    end;
+end;
+
+procedure TSgtsKgesASQImportForm.ResultAfterScroll(DataSet: TDataSet);
+begin
+  if FGridResult.Focused then
+    if not FDSResult.IsEmpty then begin
+      FDSData.Locate('RESULT_ID',FDSResult.FieldByName('RESULT_ID').AsString,[loCaseInsensitive]);
+      UpdateByType;
+      FGridData.UpdateRowNumber;
+    end;
+end;
+
+function TSgtsKgesASQImportForm.GridDataGetBrushColor(Sender: TObject; Column: TColumn): TColor;
+var
+  ResultId: String;
+begin
+  Result:=FGridData.Canvas.Brush.Color;
+  ResultId:=FDSData.FieldByName('RESULT_ID').AsString;
+  if ResultId='' then begin
+    Result:=clSkyBlue;
+  end;
+end;
+
+function TSgtsKgesASQImportForm.GridDataGetFontColor(Sender: TObject;  Column: TColumn; var FontStyles: TFontStyles): TColor;
+begin
+  Result:=FGridData.Canvas.Font.Color;
+  if FLastResultId<>'' then
+    if AnsiSameText(FDSData.FieldByName('RESULT_ID').AsString,
+                    FDSResult.FieldByName('RESULT_ID').AsString) then begin
+      Result:=clRed;
+    end;
+end;
+
+procedure TSgtsKgesASQImportForm.GridResultPatternKeyDown(Sender: TObject;
+  var Key: Word; Shift: TShiftState);
+begin
+  if Key=VK_F3 then 
+    ViewPointInfo(true);
+    
+  if Key=VK_SPACE then
+    GridResultCellClick(FGridResult.Columns[8]);
+end;
+
+procedure TSgtsKgesASQImportForm.GridResultCellClick(Column: TColumn);
+var
+  Flag: Boolean;
+begin
+  if FDSResult.Active and
+     not FDSResult.IsEmpty and
+     (Column.Index=8) then begin
+    Flag:=Boolean(FDSResult.FieldByName('IS_BASE').AsInteger);
+    FDSResult.Edit;
+    FDSResult.FieldByName('IS_BASE').AsInteger:=Integer(not Flag);
+    FDSResult.Post;
+  end;
+end;
+
+procedure TSgtsKgesASQImportForm.ViewPointInfo(AsPoint: Boolean);
+var
+  AIface: TSgtsFunPointManagementIface;
+  Data: String;
+  AFilterGroups: TSgtsGetRecordsConfigFilterGroups;
+  AMeasureTypeId: Variant;
+begin
+  if not FDSResult.IsEmpty then begin
+    AIface:=TSgtsFunPointManagementIface.Create(CoreIntf);
+    AFilterGroups:=TSgtsGetRecordsConfigFilterGroups.Create;
+    try
+      AIface.IsCanSelect:=false;
+      AIface.FilterOnShow:=false;
+      AMeasureTypeId:=FDSResult.FieldByName('MEASURE_TYPE_ID').AsInteger;
+      AFilterGroups.Add.Filters.Add('MEASURE_TYPE_ID',fcEqual,AMeasureTypeId);
+      if AsPoint then begin
+        AIface.SelectByUnionType('UNION_ID;UNION_TYPE',VarArrayOf([FDSResult.FieldByName('POINT_ID').Value,utPoint]),Data,utPoint,AFilterGroups,false);
+      end else begin
+        AIface.SelectByUnionType('UNION_ID;UNION_TYPE',VarArrayOf([FDSResult.FieldByName('POINT_ID').Value,utConverter]),Data,utConverter,AFilterGroups,false);
+      end;
+    finally
+      AFilterGroups.Free;
+      AIface.Free;
+    end;
+  end;
+end;
+
+procedure TSgtsKgesASQImportForm.Import;
+var
+  GroupId: String;
+  Priority: Integer;
+
+  procedure InsertIntoJournalFields(ParamId: Integer; Value: Variant);
+  var
+    DS: TSgtsDatabaseCDS;
+  begin
+    DS:=TSgtsDatabaseCDS.Create(CoreIntf);
+    try
+      DS.ProviderName:='I_JOURNAL_FIELD';
+      with DS.ExecuteDefs do begin
+        AddKey('JOURNAL_FIELD_ID');
+        AddInvisible('JOURNAL_NUM').Value:='0';
+        AddInvisible('NOTE').Value:=Null;
+        AddInvisible('MEASURE_TYPE_ID').Value:=FDSResult.FieldByName('MEASURE_TYPE_ID').Value;
+        AddInvisible('CYCLE_ID').Value:=FCycleId;
+        AddInvisible('POINT_ID').Value:=FDSResult.FieldByName('POINT_ID').Value;
+        AddInvisible('PARAM_ID').Value:=ParamId;
+        AddInvisible('INSTRUMENT_ID').Value:=Null;
+        AddInvisible('MEASURE_UNIT_ID').Value:=Null;
+        AddInvisible('VALUE').Value:=Value;
+        AddInvisible('DATE_OBSERVATION').Value:=FDSResult.FieldByName('DATE_OBSERVATION').Value;
+        AddInvisible('WHO_ENTER').Value:=CoreIntf.DatabaseModules.Current.Database.PersonnelId;
+        AddInvisible('DATE_ENTER').Value:=Date;
+        AddInvisible('WHO_CONFIRM').Value:=Null;
+        AddInvisible('DATE_CONFIRM').Value:=Null;
+        AddInvisible('GROUP_ID').Value:=GroupId;
+        AddInvisible('PRIORITY').Value:=Priority;
+        AddInvisible('IS_BASE').Value:=FDSResult.FieldByName('IS_BASE').Value;
+        AddInvisible('IS_CHECK').Value:=1;
+      end;
+      DS.Execute;
+
+      Inc(Priority);
+    finally
+      DS.Free;
+    end;
+  end;
+
+var
+  OldCursor: TCursor;
+  Position: Integer;
+begin
+  if FDSResult.Active and not FDSResult.IsEmpty then begin
+    OldCursor:=Screen.Cursor;
+    Screen.Cursor:=crHourGlass;
+    CoreIntf.MainForm.Progress(0,0,0);
+    try
+      Position:=0;
+      FDSResult.First;
+      while not FDSResult.Eof do begin
+
+        Priority:=1;
+        GroupId:=CreateUniqueId;
+        
+        InsertIntoJournalFields(60001,FDSResult.FieldByName('RESISTANCE_LINE').Value);
+        InsertIntoJournalFields(60002,FDSResult.FieldByName('RESISTANCE').Value);
+        InsertIntoJournalFields(60003,FDSResult.FieldByName('FREQUENCY').Value);
+        InsertIntoJournalFields(60004,FDSResult.FieldByName('PERIOD').Value);
+        InsertIntoJournalFields(60005,FDSResult.FieldByName('STATE').Value);
+
+        Inc(Position);
+        CoreIntf.MainForm.Progress(0,FDSResult.RecordCount,Position);
+        FDSResult.Next;
+        FGridResult.UpdateRowNumber;
+      end;
+    finally
+      CoreIntf.MainForm.Progress(0,0,0);
+      Screen.Cursor:=OldCursor;
+    end;
+  end;
+end;
+
+
+end.

@@ -1,0 +1,15 @@
+inherited SgtsRbkPersonnelsForm: TSgtsRbkPersonnelsForm
+  Left = 511
+  Top = 235
+  Caption = #1055#1077#1088#1089#1086#1085#1072#1083
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited PanelButton: TPanel
+    inherited ButtonCancel: TButton
+      Left = 411
+    end
+    inherited ButtonOk: TButton
+      Left = 329
+    end
+  end
+end

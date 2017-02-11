@@ -1,0 +1,719 @@
+unit SgtsConsts;
+
+interface
+
+const
+  FilerPageSize=4096;
+  DSleepSplashStart=1000;
+  FirstOpenPacketRecords=100;
+  ReportPreviewDelta=1;
+  CDateValidChars=['.','0'..'9'];
+  NullDate=0.0;
+
+resourcestring
+  SDb_Text='TEXT';
+  SDb_Params='PARAMS';
+  SDb_Name='NAME';
+  SDb_Value='VALUE';
+  SDb_Description='DESCRIPTION';
+  SDb_Info='INFO';
+  SDb_Flag='FLAG';
+  SDb_Flag_Ex='FLAG_EX';
+  SDb_FileReportId='FILE_REPORT_ID';
+  SDb_ModuleName='MODULE_NAME';
+  SDb_FileName='FILE_NAME';
+  SDb_Menu='MENU';
+  SDb_ReportExists='REPORT_EXISTS';
+  SDb_Priority='PRIORITY';
+  SDb_BaseReportId='BASE_REPORT_ID';
+  SDb_Code='CODE';
+  SDb_Result='RESULT';
+  SDb_Operation='OPERATION';
+  SDb_Type='TYPE';
+  SDb_Report='REPORT';
+  SDb_Interface='INTERFACE';
+  SDb_ProcName='PROC_NAME';
+  SDb_GraphId='GRAPH_ID';
+  SDb_GraphType='GRAPH_TYPE';
+  SDb_Determination='DETERMINATION';
+  SDb_CutDetermination='CUT_DETERMINATION';
+  SDb_ViewName='VIEW_NAME';
+  SDb_Condition='CONDITION';
+
+  STrue='true';
+  SFalse='false';
+  
+  SParamConfig='config';
+  SParamInstallSql='install_sql';
+  SParamUnInstallSql='uninstall_sql';
+  SParamNoProfile='noprofile';
+
+  SExcelSheetOle='Excel.Application';
+
+  SExtensionIni='.ini';
+
+  SFilterIni='Конфигурационные файлы (*.ini)|*.ini';
+  SFilterReports='Файлы отчетов (*.*)|*.*';
+  SFilterDocuments='Файлы документов (*.doc)|*.doc';
+  SFilterDrawings='Файлы чертежей (*.cdw)|*.cdw';
+
+  STitleCaptionConfirmation='Подтвержение';
+  STitleCaptionWarning='Предупреждение';
+  STitleCaptionError='Ошибка';
+  STitleCaptionInformation='Информация';
+
+  SButtonNameYes='Yes';
+  SButtonNameNo='No';
+  SButtonNameOK='OK';
+  SButtonNameCancel='Cancel';
+  SButtonNameAbort='Abort';
+  SButtonNameRetry='Retry';
+  SButtonNameIgnore='Ignore';
+  SButtonNameAll='All';
+  SButtonNameNoToAll='NoToAll';
+  SButtonNameYesToAll='YesToAll';
+  SButtonNameHelp='Help';
+
+  SButtonCaptionYes='Да';
+  SButtonCaptionNo='Нет';
+  SButtonCaptionOK='ОК';
+  SButtonCaptionCancel='Отмена';
+  SButtonCaptionAbort='Прервать';
+  SButtonCaptionRetry='Повторить';
+  SButtonCaptionIgnore='Игнорировать';
+  SButtonCaptionAll='Все';
+  SButtonCaptionNoToAll='Нет для всех';
+  SButtonCaptionYesToAll='Да для всех';
+  SButtonCaptionHelp='Помощь';
+  SButtonCaptionParamsOff='Параметры >>';
+  SButtonCaptionParamsOn='Параметры <<';
+  SButtonCaptionPrior='< Назад';
+  SButtonCaptionNext='Далее >';
+  SButtonCaptionReady='Готово';
+  SButtonCaptionInstall='Установить';
+  SButtonCaptionUnInstall='Удалить';
+  SButtonCaptionOptionOff='Настройка >>';
+  SButtonCaptionOptionOn='Настройка <<';
+
+  SQuestionFindConfig='Конфигурационный файл %s не найден.'+#13#10+'Желаете выбрать его вручную?';
+  SSuspendTimer='Приостановить таймер';
+  SResumeTimer='Запустить таймер';
+  SApplicationAlreadyExists='Приложение %s уже запущено.';
+  SCheckPermission='Проверка прав: %s';
+  SLoadModules='Загрузка модулей ...';
+  SAuthentification='Аутентификация ...';
+  SNearlyAllReady='Почти все готово ...';
+  SSaveChanges='Сохранить изменения?';
+  SNeedElementValue='Необходимо ввести значение в поле (%s).';
+  SFieldValueNotChecking='Значение в поле (%s) не прошло контроль. Игнорировать контроль?';
+  SParamValueNotChecking='Значение параметра (%s) не прошло контроль. Игнорировать контроль?';
+  SNeedElementValueCheck='Необходимо выбрать значения в поле (%s).';
+  SDeleteCurrentRecord='Удалить текущую запись?';
+  SInsertRecordSuccess='Запись успешно создана.';
+  SOnlyOneInit='Возможна только одна инициализация.';
+  SWhole='всего: %d';
+  SReceive='получено: %d';
+  SPageFromPages='страница %d из %d';
+  SScale='масштаб: %s';
+  SCancelWizard='Отменить помощник?';
+  SInstallScriptSuccess='Скрипты установлены успешно.';
+  SInstallScriptFailed='Скрипты установлены с ошибками.';
+  SInstallSqlScript='Установка SQL скриптов';
+  SUnInstallSqlScript='Удаление SQL скриптов';
+  SUnInstallScriptSuccess='Скрипты удалены успешно.';
+  SUnInstallScriptFailed='Скрипты удалены с ошибками.';
+  SActionBreaked='Действие прервано.';
+  SProviderNotFound='Провайдер %s не найден.';
+  SSourceDataFieldFormat='%s_%d';
+  SMeasureTypeDidNotLinkedToSelf='Вид измерения не может ссылаться сам на себя.';
+  SSelectDirectory='Выбрать директорию';
+  SCycleFormat='%d [%s %d г.]';
+  SExportdDataSuccess='Данные успешно экспортированы.';
+  SRefreshCutsSuccess='Срезы успешно обновлены.';
+  SFileExportFormat='ddmmyyhhnnsszzz';
+  SValueElementMustNotComply='Значение в поле (%s) не должно совпадать со значением в поле (%s).';
+  SValueElementMustNotLess='Значение в поле (%s) не должно быть меньше значения в поле (%s).';
+  SErrorInstallFormat='%s'+#13#10+#13#10+'%s';
+  SKvartal='квартал';
+  SCheckingWasNotYet='Контроля ещё не было';
+  SDateEndCanNotLessDateBegin='Дата окончания не может быть меньше, чем дата начала.';
+  SNeedSelectMeasureType='Необходимо выбрать вид измерения.';
+  SNeedCheckedCycle='Необходимо выбрать цикл.';
+  SNeedJournalNumber='Необходимо ввести номер журнала.';
+  SOrderOn='сортировка: Включена';
+  SOrderOff='сортировка: Выключена';
+  SFilterOn='фильтр: Включен';
+  SFilterOff='фильтр: Выключен';
+
+{  SSourceDataCycleNum='цикл: %s';
+  SSourceDataMeasureTypeName='вид измерения: %s';
+  SSourceDataRouteName='маршрут: %s';
+  SSourceDataObjectName='объект: %s';}
+
+  SSourceDataCycleNum='%s';
+  SSourceDataMeasureTypeName='%s';
+  SSourceDataRouteName='%s';
+  SSourceDataObjectName='%s';
+
+  SLeftAxisValue='левая ось Yл: %s';
+  SBottomAxisValue='нижняя ось Xн: %s';
+  SRightAxisValue='правая ось Yп: %s';
+  STopAxisValue='верхняя ось Xв: %s';
+
+  SFileMenu='Файл\%s';
+  SFunctionsMenu='Функции\%s';
+  SJournalsMenu='Журналы\%s';
+  SHandBooksMenu='Справочники\%s';
+  SReportsMenu='Отчеты\%s';
+  SGraphsMenu='Графики\%s';
+  SServiceMenu='Сервис\%s';
+  SWindowsMenu='Окна\%s';
+  SHelpMenu='Помощь\%s';
+
+  SGraphAdjustCaption='Настройка: %s';
+  SSeriesInfo='Информация по графику %s';
+  SInterfaceShow='Show';
+  SInterfaceFormCreate='Form create';
+  SInterfaceFormDestroy='Form destroy';
+  SInputAxisStep='Введите шаг оси';
+  SAxisStep='Шаг оси';
+  SCaptionColumn='Колонка';
+  SInputColumn='Введите наименование колонки';
+  SColumnNameNotEmpty='Наименование колонки не может быть пустым';
+  SGraphTypeDefault='Стандартный график';
+  SNeedParamsToLeftAxis='Необходимо выбрать параметры для левой оси Yл';
+  SNeedParamsToBottomAxis='Необходимо выбрать параметры для нижней оси Yл';
+  SNeedSelectPoints='Необходимо выбрать измерительные точки';
+  SAllPeriod='за весь период';
+  SFromDate='по дате: с %s';
+  SToDate='по дате: с начала по %s';
+  SFromToDate='по дате: с %s по %s';
+  SFromCycle='по циклу: с %s';
+  SToCycle='по циклу: с начала по %s';
+  SFromToCycle='по циклу: с %s по %s';
+  SHistoryAllPeriod='Предыстория за весь период';
+  SHistoryFromDate='Предыстория по дате: с %s';
+  SHistoryToDate='Предыстория по дате: с начала по %s';
+  SHistoryFromToDate='Предыстория по дате: с %s по %s';
+  SHistoryFromCycle='Предыстория по циклу: с %s';
+  SHistoryToCycle='Предыстория по циклу: с начала по %s';
+  SHistoryFromToCycle='Предыстория по циклу: с %s по %s';
+  SCaptionAxisParam='Параметр';
+  SParamNameNotEmpty='Наименование параметра не может быть пустым.';
+  SInputAxisParam='Введите наименование параметра';
+  SCaptionHistory='История';
+  SInputCaptionHistory='Введите заголок истории';
+  SHistoryCaptionNotEmpty='Заголовок истории не может быть пустым.';
+  SCaptionPoint='Измерительная точка';
+  SInputCaptionPoint='Введите заголовок точки';
+  SPointCaptionNotEmpty='Заголовок точки не может быть пустым.';
+  SSeriesDefName='№%d';
+  SChartFootTitleEmpty='%s. %s';
+  SChartFootTitle='%s. %s. %s';
+  SPropertyDisplayFormat='DisplayFormat';
+  SThrowAdjustmentGraphics='Сбросить настройки графика?';
+  SThrowAdjustmentColumns='Сбросить настройки колонок?';
+  SThrowAdjustmentOrders='Сбросить сортировку?';
+  SThrowAdjustmentFilters='Сбросить фильтр?';
+  SNeedSelectGroupObjects='Выберите группу объектов.';
+  SInvalidValue='Неверное значение.';
+
+  SReport='Report';
+  SReportNameFormat='Report%s';
+  SDataSetDesc='Набор данных SgtsDataSet';
+  SDataSet='DataSet';
+  SDataSetName='DataSetName';
+  SSDataSet='%sDataSet';
+  SProvider='Provider';
+  SProviderDesc='Провайдер SgtsProvider';
+  SBreakProcess='Прервать процесс?';
+  SGeneralPresent='Основное';
+  SDetailPresent='Детальное';
+  SVisualPresent='Осмотр';
+  SMutexFormat='%s';
+  SDateEditDesc='Элемент управления SgtsDateEdit';
+  SDateEdit='DateEdit';
+  SLabel='Label';
+  SLabelDecs='Элемент управления SgtsLabel';
+  SEdit='Edit';
+  SEditDesc='Элемент управления SgtsEdit';
+  SMemo='Memo';
+  SMemoDesc='Элемент управления SgtsEdit';
+  SRadioButton='RadioButton';
+  SRadioButtonDesc='Элемент управления SgtsRadioButton';
+  SChartPicture='ChartPicture';
+  SGridPageHeader='GridPageHeader';
+  SGridMasterData='GridMasterData';
+  SGridMemoReportTitle='GridMemoReportTitle';
+
+  SCutDeterminationColumns='Колонки';
+  SCutDeterminationField='Поле';
+  SCutDeterminationWidth='Ширина';
+  SCutDeterminationFormat='Формат';
+  SCutDeterminationGroup='Группа';
+  SCutDeterminationFilter='Фильтр';
+  SCutDeterminationGraph='График';
+  SCutDeterminationLeftAxis='Левая ось';
+  SCutDeterminationRightAxis='Правая ось';
+  SCutDeterminationBottomAxis='Нижняя ось';
+  SCutDeterminationXMerging='Слияние нижней оси';
+  SCutDeterminationGraphType='Тип графика';
+  SCutDeterminationGraphField='Поле графика';
+  SCutDeterminationFuncType='Тип функции';
+  SCutDeterminationTableName='Таблица';
+  SCutDeterminationRelationship='Связь';
+
+  SGraphDeterminationMeasureTypes='Виды измерения';
+  SGraphDeterminationGroupObjects='Группы объектов';
+  SGraphDeterminationFilters='Фильтр';
+  SGraphDeterminationField='Поле';
+  SGraphDeterminationValue='Значение';
+
+  SParamDeterminationList='Список';
+
+  SConfigParamTitle='Title';
+  SConfigParamSplash='Splash';
+  SConfigParamCaption='Caption';
+  SConfigParamMaximized='Maximized';
+  SConfigParamWindowOpen='WindowOpen';
+  SConfigParamOpenFunSourceData='OpenFunSourceData';
+  SConfigParamOpenEditFormAsDialog='OpenEditFormAsDialog';
+  SConfigParamFileName='FileName';
+  SConfigParamLastDatabase='LastDatabase';
+  SConfigParamUserName='UserName';
+  SConfigParamPassword='Password';
+  SConfigParamAutoLogon='AutoLogon';
+  SConfigParamMode='Mode';
+  SConfigParamDocumentCatalog='DocumentCatalog';
+  SConfigParamDrawingCatalog='DrawingCatalog';
+  SConfigParamReportCatalog='ReportCatalog';
+  SConfigParamFilter='Filter';
+  SConfigParamIniFile='IniFile';
+  SConfigParamColumns='Columns';
+  SConfigParamAutoFit='AutoFit';
+  SConfigParamOrders='Orders';
+  SConfigParamFilters='Filters';
+  SConfigParamLeft='Left';
+  SConfigParamTop='Top';
+  SConfigParamWidth='Width';
+  SConfigParamHeight='Height';
+  SConfigParamWindowState='WindowState';
+  SConfigParamSaveSizes='SaveSizes';
+  SConfigParamMeasureTypeId='MeasureTypeId';
+  SConfigParamMeasureTypeName='MeasureTypeName';
+  SConfigParamCutType='CutType';
+  SConfigParamCutId='CutId';
+  SConfigParamPeriodChecked='PeriodChecked';
+  SConfigParamDateBegin='DateBegin';
+  SConfigParamDateEnd='DateEnd';
+  SConfigParamCycleChecked='CycleChecked';
+  SConfigParamCycleBegin='CycleBegin';
+  SConfigParamCycleEnd='CycleEnd';
+  SConfigParamPeriodType='PeriodType';
+  SConfigParamLeftAxisParams='LeftAxisParams';
+  SConfigParamRightAxisParams='RightAxisParams';
+  SConfigParamBottomAxisParams='BottomAxisParams';
+  SConfigParamGraphName='GraphName';
+  SConfigParamPoints='Points';
+  SConfigParamChartComponent='ChartComponent';
+  SConfigParamHistories='Histories';
+  SConfigParamGroupId='GroupId';
+
+  SConfigSectionReportDesigner='ReportDesigner';
+
+  SLogUnknown='Unknown';
+  SLogInformation='Info';
+  SLogWarning='Warn';
+  SLogError='Error';
+  SLogFormatMessage='%s [%s]: %s';
+  SLogFormatDateTime='dd.mm.yy hh:nn:ss.zzz';
+  SLogReturn=#13#10;
+  SLogNameFormat='[%s]: %s';
+
+  SDateMask='!99/99/0000;1;_';
+  SMenuDelim='\';
+
+  SAsterisk='*';
+
+  STitleDefault='СГТС';
+  SCaptionDefault='СГТС';
+
+  SInitDatabaseProcName='InitDatabase';
+  SInitReportProcName='InitReport';
+  SInitInterfaceProcName='InitInterface';
+
+  SMidasDll='midas.dll';
+  SObjectsBpl='objects.bpl';
+  SReportBpl='report.bpl';
+  SRtlBpl='rtl100.bpl';
+  SVclBpl='vcl100.bpl';
+  SDsnapBpl='dsnap100.bpl';
+  SDbrtlBpl='dbrtl100.bpl';
+  SVcldbBpl='vcldb100.bpl';
+  SVclxBpl='vclx100.bpl';
+  SVclsmpBpl='vclsmp100.bpl';
+  SVcljpgBpl='vcljpg100.bpl';
+  STeeBpl='tee7100.bpl';
+  STeedbBpl='teedb7100.bpl';
+  STeeuiBpl='teeui7100.bpl';
+{  SRtl70Rus='rtl70.rus';
+  SVcl70Rus='vcl70.rus';
+  SVcldb70Rus='vcldb70.rus';}
+
+  SCoreStartDir='Dir=%s';
+  SCoreStartCmd='Command line=%s';
+  SCoreStartMode='Mode=%s';
+  SCoreStartFileVersionSize='Module=%s version=%s size=%d';
+  SCoreStartConfigText='Config text='+#13#10+'%s';
+  SCoreException='Exception=%s';
+
+  SModuleLoadStart='Load module=%s start...';
+  SModuleLoadSucess='Load module=%s version=%s size=%d success';
+  SModuleLoadInitSuccess='Load module=%s init success';
+  SModuleLoadInitFailed='Load module=%s init failed=%s';
+  SModuleLoadFailed='Load module=%s failed=%s';
+
+  SModuleUnLoadStart='Unload module=%s start...';
+  SModuleUnLoadSuccess='Unload module=%s success';
+  SModuleUnloadFailed='Unload module=%s failed=%s';
+
+  SExportSqlLoadFromFileStart='LoadFromFile file=%s size=%d start...';
+  SExportSqlLoadFromFileSuccess='LoadFromFile file=%s success';
+  SExportSqlLoadFromFileFailed='LoadFromFile file=%s failed=%s';
+
+  SExportSqlExportToFileStart='ExportToFile file=%s start...';
+  SExportSqlExportToFileSuccess='ExportToFile file=%s size=%d success';
+  SExportSqlExportToFileCurrentStart='ExportToFile position=%d enabled=%s description=%s start...';
+  SExportSqlExportToFileCurrentSuccess='ExportToFile position=%d description=%s success';
+  SExportSqlExportToFileCurrentFailed='ExportToFile position=%d description=%s failed=%s';
+
+  SInstallSqlInstallScriptStart='InstallScript database module=%s start...';
+  SInstallSqlInstallScriptCurrentStart='InstallScript position=%d description=%s start...';
+  SInstallSqlInstallScriptCurrentSuccess='InstallScript position=%d description=%s success';
+  SInstallSqlInstallScriptCurrentFailed='InstallScript position=%d description=%s failed=%s';
+  SInstallSqlInstallScriptCurrentAsFileStart='InstallScript file=%s start...';
+  SInstallSqlInstallScriptCurrentAsFileCurrentStart='InstallScript file=%s position=%d description=%s start...';
+  SInstallSqlInstallScriptCurrentAsFileCurrentSuccess='InstallScript file=%s position=%d description=%s success';
+  SInstallSqlInstallScriptCurrentAsFileCurrentFailed='InstallScript file=%s position=%d description=%s failed=%s';
+
+  SPermissionNameShow='Просмотр';
+  SPermissionNameInsert='Вставка';
+  SPermissionNameUpdate='Изменение';
+  SPermissionNameDelete='Удаление';
+  SPermissionNameDetail='Подробнее';
+  SPermissionNameInfo='Информация';
+  SPermissionNameConfirm='Утверждение';
+  SPermissionNameCheck='Проверка';
+  SPermissionNameShowParams='Просмотр параметров';
+  SPermissionNameSetCatalog='Установка каталогов';
+  SPermissionNameSelect='Выбор';
+  SPermissionNameOpenCloseCycle='Открытие/Закрытие цикла';
+
+  SPermissionValueOpen='Открыт';
+  SPermissionValueClose='Закрыт';
+
+  SInterfaceOptions='Параметры программы';
+
+  SInterfaceAccounts='Учетные записи';
+  SInterfaceAccountInsert='Создать учетную запись';
+  SInterfaceAccountUpdate='Изменить учетную запись';
+  SInterfaceAccountDelete='Удалить учетную запись';
+
+  SInterfaceRoles='Роли';
+  SInterfaceRoleInsert='Создать роль';
+  SInterfaceRoleUpdate='Изменить роль';
+  SInterfaceRoleDelete='Удалить роль';
+
+  SInterfacePersonnel='Персонал';
+  SInterfacePersonnelInsert='Создать персону';
+  SInterfacePersonnelUpdate='Изменить персону';
+  SInterfacePersonnelDelete='Удалить персону';
+
+  SInterfacePermission='Права доступа';
+  SInterfacePermissionInsert='Создать право';
+  SInterfacePermissionUpdate='Изменить право';
+  SInterfacePermissionDelete='Удалить право';
+
+  SInterfaceRolesAndAccounts='Роли и учетные записи';
+
+  SInterfaceAccountsRoles='Доступ к ролям';
+  SInterfaceAccountRoleInsert='Создать доступ к роли';
+  SInterfaceAccountRoleUpdate='Изменить доступ к роли';
+  SInterfaceAccountRoleDelete='Удалить доступ к роли';
+
+  SInterfaceDivisions='Отделы';
+  SInterfaceDivisionInsert='Создать отдел';
+  SInterfaceDivisionInsertChild='Создать дочерний отдел';
+  SInterfaceDivisionUpdate='Изменить отдел';
+  SInterfaceDivisionDelete='Удалить отдел';
+
+  SInterfaceObjects='Объекты наблюдений';
+  SInterfaceObjectInsert='Создать объект';
+  SInterfaceObjectUpdate='Изменить объект';
+  SInterfaceObjectDelete='Удалить объект';
+
+  SInterfaceObjectTrees='Дерево объектов';
+  SInterfaceObjectTreeInsert='Создать узел дерева объектов';
+  SInterfaceObjectTreeInsertChild='Создать дочерний узел дерева объектов';
+  SInterfaceObjectTreeUpdate='Изменить узел дерева объектов';
+  SInterfaceObjectTreeDelete='Удалить узел дерева объектов';
+  SInterfaceObjectTreeDetail='Подробнее';
+
+  SInterfacePointTypes='Типы точек';
+  SInterfacePointTypeInsert='Создать тип точки';
+  SInterfacePointTypeUpdate='Изменить тип точки';
+  SInterfacePointTypeDelete='Удалить тип точки';
+
+  SInterfacePoints='Измерительные точки';
+  SInterfacePointInsert='Создать точку';
+  SInterfacePointUpdate='Изменить точку';
+  SInterfacePointDelete='Удалить точку';
+  SInterfacePointDetail='Подробнее о точке';
+
+  SInterfaceRoutes='Маршруты';
+  SInterfaceRouteInsert='Создать маршрут';
+  SInterfaceRouteUpdate='Изменить маршрут';
+  SInterfaceRouteDelete='Удалить маршрут';
+
+  SInterfaceMeasureTypes='Виды измерения';
+  SInterfaceMeasureTypeInsert='Создать вид измерения';
+  SInterfaceMeasureTypeInsertChild='Создать дочерний вид измерения';
+  SInterfaceMeasureTypeUpdate='Изменить вид измерения';
+  SInterfaceMeasureTypeDelete='Удалить вид измерения';
+
+  SInterfaceInstrumentTypes='Типы приборов';
+  SInterfaceInstrumentTypeInsert='Создать тип прибора';
+  SInterfaceInstrumentTypeUpdate='Изменить тип прибора';
+  SInterfaceInstrumentTypeDelete='Удалить тип прибора';
+
+  SInterfaceInstruments='Приборы';
+  SInterfaceInstrumentInsert='Создать прибор';
+  SInterfaceInstrumentUpdate='Изменить прибор';
+  SInterfaceInstrumentDelete='Удалить прибор';
+  SInterfaceInstrumentDetail='Подробнее о приборе';
+
+  SInterfaceMeasureUnits='Единицы измерения';
+  SInterfaceMeasureUnitInsert='Создать единицу измерения';
+  SInterfaceMeasureUnitUpdate='Изменить единицу измерения';
+  SInterfaceMeasureUnitDelete='Удалить единицу измерения';
+  SInterfaceMeasureUnitDetail='Подробнее о единице измерения';
+
+  SInterfaceInstrumentUnits='Связь между единицами и приборами';
+  SInterfaceInstrumentUnitInsert='Добавить единицу прибору';
+  SInterfaceInstrumentUnitUpdate='Изменить единицу прибора';
+  SInterfaceInstrumentUnitDelete='Удалить единицу прибора';
+
+  SInterfaceRoutePoints='Связь между точками и маршрутами';
+  SInterfaceRoutePointInsert='Добавить точку маршруту';
+  SInterfaceRoutePointUpdate='Изменить точку маршрута';
+  SInterfaceRoutePointDelete='Удалить точку маршрута';
+
+  SInterfaceMeasureTypeRoutes='Связь между видами измерения и маршрутами';
+  SInterfaceMeasureTypeRouteInsert='Добавить маршрут к виду измерения';
+  SInterfaceMeasureTypeRouteUpdate='Изменить маршрут у вида измерения';
+  SInterfaceMeasureTypeRouteDelete='Удалить маршрут у вида измерения';
+
+  SInterfacePersonnelRoutes='Связь между маршрутом и персоналом';
+  SInterfacePersonnelRouteInsert='Добавить маршрут персоне';
+  SInterfacePersonnelRouteUpdate='Изменить маршрут персоны';
+  SInterfacePersonnelRouteDelete='Удалить маршрут персоны';
+
+  SInterfaceCycles='Циклы';
+  SInterfaceCycleInsert='Создать цикл';
+  SInterfaceCycleUpdate='Изменить цикл';
+  SInterfaceCycleDelete='Удалить цикл';
+
+  SInterfacePlans='Календарный план';
+  SInterfacePlanInsert='Создать план';
+  SInterfacePlanUpdate='Изменить план';
+  SInterfacePlanDelete='Удалить план';
+
+  SInterfaceGraphs='Графики';
+  SInterfaceGraphInsert='Создать график';
+  SInterfaceGraphUpdate='Изменить график';
+  SInterfaceGraphDelete='Удалить график';
+
+
+  SInterfacePersonnelManagement='Управление персоналом';
+  SInterfaceFunPointManagement='Ввод измерительных точек';
+
+  SInterfaceAlgorithms='Алгоритмы';
+  SInterfaceAlgorithmInsert='Создать алгоритм';
+  SInterfaceAlgorithmUpdate='Изменить алгоритм';
+  SInterfaceAlgorithmDelete='Удалить алгоритм';
+
+  SInterfaceMeasureTypeAlgorithms='Связь между алгоритмами и видами измерения';
+  SInterfaceMeasureTypeAlgorithmInsert='Добавить алгоритм виду измерения';
+  SInterfaceMeasureTypeAlgorithmUpdate='Изменить алгоритм вида измерения';
+  SInterfaceMeasureTypeAlgorithmDelete='Удалить алгоритм вида измерения';
+
+  SInterfaceLevels='Уровни';
+  SInterfaceLevelInsert='Создать уровень';
+  SInterfaceLevelUpdate='Изменить уровень';
+  SInterfaceLevelDelete='Удалить уровень';
+
+  SInterfaceParams='Параметры';
+  SInterfaceParamInsert='Создать параметр';
+  SInterfaceParamUpdate='Изменить параметр';
+  SInterfaceParamDelete='Удалить параметр';
+  SInterfaceParamDetail='Подробнее о параметре';
+
+  SInterfaceMeasureTypeParams='Связь между параметрами и видами измерения';
+  SInterfaceMeasureTypeParamInsert='Добавить параметр виду измерения';
+  SInterfaceMeasureTypeParamUpdate='Изменить параметр вида измерения';
+  SInterfaceMeasureTypeParamDelete='Удалить параметр вида измерения';
+
+  SInterfaceParamLevels='Связь между уровнями и параметрами';
+  SInterfaceParamLevelInsert='Добавить уровень параметру';
+  SInterfaceParamLevelUpdate='Изменить уровень параметра';
+  SInterfaceParamLevelDelete='Удалить уровень параметра';
+
+  SInterfaceJournalFields='Полевой журнал';
+  SInterfaceJournalFieldInsert='Добавить запись в полевой журнал';
+  SInterfaceJournalFieldUpdate='Изменить запись в полевом журнале';
+  SInterfaceJournalFieldDelete='Удалить запись в полевом журнале';
+
+  SInterfaceJournalObservations='Журнал наблюдений';
+  SInterfaceJournalObservationInsert='Добавить запись в журнал наблюдений';
+  SInterfaceJournalObservationUpdate='Изменить запись в журнале наблюдений';
+  SInterfaceJournalObservationDelete='Удалить запись в журнале наблюдений';
+
+  SInterfaceJournals='Журнал измерений';
+
+  SInterfaceFunSourceData='Ввод данных';
+  SInterfaceFunPoints='Ввод измерительных точек';
+
+  SInterfaceFileReports='Файловые отчеты';
+  SInterfaceFileReportInsert='Создать файловый отчет';
+  SInterfaceFileReportUpdate='Изменить файловый отчет';
+  SInterfaceFileReportDelete='Удалить файловый отчет';
+
+  SInterfaceBaseReports='Базовые отчеты';
+  SInterfaceBaseReportInsert='Создать базовый отчет';
+  SInterfaceBaseReportUpdate='Изменить базовый отчет';
+  SInterfaceBaseReportDelete='Удалить базовый отчет';
+
+  SInterfaceParamInstruments='Связь между приборами и параметрами';
+  SInterfaceParamInstrumentInsert='Добавить прибор параметру';
+  SInterfaceParamInstrumentUpdate='Изменить прибор у параметра';
+  SInterfaceParamInstrumentDelete='Удалить прибор у параметра';
+
+  SInterfaceDocuments='Документы';
+  SInterfaceDocumentInsert='Создать документ';
+  SInterfaceDocumentUpdate='Изменить документ';
+  SInterfaceDocumentDelete='Удалить документ';
+
+  SInterfacePointDocuments='Связь между документами и точками';
+  SInterfacePointDocumentInsert='Добавить документ точке';
+  SInterfacePointDocumentUpdate='Изменить документ у точки';
+  SInterfacePointDocumentDelete='Удалить документ у точки';
+
+  SInterfaceConverters='Преобразователи';
+  SInterfaceConverterInsert='Создать преобразователь';
+  SInterfaceConverterUpdate='Изменить преобразователь';
+  SInterfaceConverterDelete='Удалить преобразователь';
+
+  SInterfaceComponents='Компоненты преобразователей';
+  SInterfaceComponentInsert='Создать компонент';
+  SInterfaceComponentUpdate='Изменить компонент';
+  SInterfaceComponentDelete='Удалить компонент';
+
+  SInterfaceDevices='Измерительные устройства';
+  SInterfaceDeviceInsert='Создать устройство';
+  SInterfaceDeviceUpdate='Изменить устройство';
+  SInterfaceDeviceDelete='Удалить устройство';
+
+  SInterfaceDevicePoints='Связь между точками и устройствами';
+  SInterfaceDevicePointInsert='Добавить точку устройству';
+  SInterfaceDevicePointUpdate='Изменить точку у устройства';
+  SInterfaceDevicePointDelete='Удалить точку у устройства';
+
+  SInterfaceDrawings='Чертежи';
+  SInterfaceDrawingInsert='Создать чертеж';
+  SInterfaceDrawingUpdate='Изменить чертеж';
+  SInterfaceDrawingDelete='Удалить чертеж';
+
+  SInterfaceObjectDrawings='Связь между чертежами и объектами';
+  SInterfaceObjectDrawingInsert='Добавить чертеж объекту';
+  SInterfaceObjectDrawingUpdate='Изменить чертеж у объекта';
+  SInterfaceObjectDrawingDelete='Удалить чертеж у объекта';
+
+  SInterfaceObjectDocuments='Связь между документами и объектами';
+  SInterfaceObjectDocumentInsert='Добавить документ объекту';
+  SInterfaceObjectDocumentUpdate='Изменить документ у объекта';
+  SInterfaceObjectDocumentDelete='Удалить документ у объекта';
+
+  SInterfaceConverterPassports='Паспорта преобразователей';
+  SInterfaceConverterPassportInsert='Создать паспорт преобразователя';
+  SInterfaceConverterPassportUpdate='Изменить паспорт преобразователя';
+  SInterfaceConverterPassportDelete='Удалить паспорт преобразователя';
+
+  SInterfaceInstrumentPassports='Паспорта приборов';
+  SInterfaceInstrumentPassportInsert='Создать паспорт прибора';
+  SInterfaceInstrumentPassportUpdate='Изменить паспорт прибора';
+  SInterfaceInstrumentPassportDelete='Удалить паспорт прибора';
+
+  SInterfacePointPassports='Паспорта точек';
+  SInterfacePointPassportInsert='Создать паспорт точки';
+  SInterfacePointPassportUpdate='Изменить паспорт точки';
+  SInterfacePointPassportDelete='Удалить паспорт точки';
+
+  SInterfaceObjectPassports='Паспорта объектов';
+  SInterfaceObjectPassportInsert='Создать паспорт объекта';
+  SInterfaceObjectPassportUpdate='Изменить паспорт объекта';
+  SInterfaceObjectPassportDelete='Удалить паспорт объекта';
+
+  SInterfaceReportPoints='Отчет по измерительной точке';
+  SInterfaceReportRoutes='Отчет по маршруту измерения';
+
+  SInterfaceJournalActions='Журнал действий';
+
+  SInterfaceExportSql='Экспорт данных';
+
+  SInterfaceInterfaceReports='Отчеты интерфейсов';
+  SInterfaceInterfaceReportInsert='Создать отчет интерфейса';
+  SInterfaceInterfaceReportUpdate='Изменить отчет интерфейса';
+  SInterfaceInterfaceReportDelete='Удалить отчет интерфейса';
+
+  SInterfaceCheckings='Контроль';
+  SInterfaceCheckingInsert='Создать контроль';
+  SInterfaceCheckingUpdate='Изменить контроль';
+  SInterfaceCheckingDelete='Удалить контроль';
+
+  SInterfaceCuts='Срезы';
+  SInterfaceCutInsert='Создать срез';
+  SInterfaceCutUpdate='Изменить срез';
+  SInterfaceCutDelete='Удалить срез';
+
+  SInterfacePointInstruments='Связь между приборами и точками';
+  SInterfacePointInstrumentInsert='Добавить прибор точке';
+  SInterfacePointInstrumentUpdate='Изменить прибор у точки';
+  SInterfacePointInstrumentDelete='Удалить прибор у точки';
+
+  SInterfaceRefreshCuts='Обновление срезов';
+
+  SInterfaceGrpJournal='График для журнала измерений';
+
+  SInterfaceGroups='Группы объектов';
+  SInterfaceGroupInsert='Создать группу';
+  SInterfaceGroupUpdate='Изменить группу';
+  SInterfaceGroupDelete='Удалить группу';
+
+  SInterfaceGroupObjects='Связь между группами и объектами';
+  SInterfaceGroupObjectInsert='Добавить объект группе';
+  SInterfaceGroupObjectUpdate='Изменить объект у группы';
+  SInterfaceGroupObjectDelete='Удалить объект у группы';
+
+  SInterfaceDefectViews='Виды дефектов';
+  SInterfaceDefectViewInsert='Создать вид дефекта';
+  SInterfaceDefectViewUpdate='Изменить вид дефекта';
+  SInterfaceDefectViewDelete='Удалить вид дефекта';
+
+  SInterfaceCriterias='Критерии безопасности';
+  SInterfaceCriteriaInsert='Создать критерий';
+  SInterfaceCriteriaUpdate='Изменить критерий';
+  SInterfaceCriteriaDelete='Удалить критерий';
+
+implementation
+
+end.

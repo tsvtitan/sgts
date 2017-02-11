@@ -1,0 +1,275 @@
+unit SgtsProviders;
+
+interface
+
+uses Contnrs,
+     SgtsGetRecordsConfig;
+
+type
+  TSgtsProvider=class(TObject)
+  private
+    FName: String;
+    FAlias: String;
+  public
+    constructor Create; virtual;
+    property Name: String read FName write FName;
+    property Alias: String read FAlias write FAlias;
+  end;
+
+  TSgtsProviderClass = class of TSgtsProvider;
+
+  TSgtsProviders=class(TObjectList)
+  private
+    function GetItem(Index: Integer): TSgtsProvider;
+    procedure SetItem(Index: Integer; Value: TSgtsProvider);
+  protected
+    function GetProviderClass: TSgtsProviderClass; virtual;
+  public
+    function Add(const Provider, Alias: String): TSgtsProvider;
+    function AddClass(AClass: TSgtsProviderClass): TSgtsProvider;
+    function Find(const Provider: String): TSgtsProvider;
+    property Items[Index: Integer]: TSgtsProvider read GetItem write SetItem;
+  end;
+
+  TSgtsGetRecordsProvider=class;
+
+  TSgtsProviderProgressProc=procedure(Min,Max,Position: Integer; var Breaked: Boolean) of object;
+
+  TSgtsGetRecordsProviderProc=function (Provider: TSgtsGetRecordsProvider; Config: TSgtsGetRecordsConfig;
+                                        ProgressProc: TSgtsProviderProgressProc=nil): OleVariant of object;
+
+  TSgtsGetRecordsProviderType=(rptGetRecords,rptExecute);
+
+  TSgtsGetRecordsProvider=class(TSgtsProvider)
+  private
+    FProc: TSgtsGetRecordsProviderProc;
+    FProviderType: TSgtsGetRecordsProviderType;
+  public
+    property Proc: TSgtsGetRecordsProviderProc read FProc write FProc;
+    property ProviderType: TSgtsGetRecordsProviderType read FProviderType write FProviderType;
+  end;
+
+  TSgtsGetRecordsProviders=class(TSgtsProviders)
+  private
+    function GetItem(Index: Integer): TSgtsGetRecordsProvider;
+    procedure SetItem(Index: Integer; Value: TSgtsGetRecordsProvider);
+  protected
+    function GetProviderClass: TSgtsProviderClass; override;
+  public
+    function Add(const Provider, Alias: String; ProviderType: TSgtsGetRecordsProviderType;
+                 Proc: TSgtsGetRecordsProviderProc=nil): TSgtsGetRecordsProvider; reintroduce;
+    function AddGetRecords(const Provider, Alias: String; Proc: TSgtsGetRecordsProviderProc=nil): TSgtsGetRecordsProvider;
+    function AddExecute(const Provider, Alias: String; Proc: TSgtsGetRecordsProviderProc=nil): TSgtsGetRecordsProvider;
+    function AddDefault(const Provider: String): TSgtsGetRecordsProvider;
+    function Find(const Provider: String): TSgtsGetRecordsProvider; reintroduce;
+
+    property Items[Index: Integer]: TSgtsGetRecordsProvider read GetItem write SetItem;
+  end;
+
+  TSgtsGetRecordsProvidersClass=class of TSgtsGetRecordsProviders;
+
+  TSgtsExecuteProviderType=(eptDefault,eptInsert,eptUpdate,eptDelete);
+
+  TSgtsExecuteProvider=class(TSgtsProvider)
+  private
+    FKeyQuery: string;
+    FKeyField: String;
+    FProviderType: TSgtsExecuteProviderType;
+  public
+    property KeyQuery: String read FKeyQuery write FKeyQuery;
+    property KeyField: String read FKeyField write FKeyField;
+    property ProviderType: TSgtsExecuteProviderType read FProviderType write FProviderType;
+  end;
+
+  TSgtsExecuteProviders=class(TSgtsProviders)
+  private
+    function GetItem(Index: Integer): TSgtsExecuteProvider;
+    procedure SetItem(Index: Integer; Value: TSgtsExecuteProvider);
+  protected
+    function GetProviderClass: TSgtsProviderClass; override;
+  public
+    function Add(const Provider, Alias, KeyQuery, KeyField: String): TSgtsExecuteProvider; reintroduce;
+    function AddDefault(const Provider: string): TSgtsExecuteProvider;
+    function AddInsert(const Provider, Alias: string; const KeyQuery: String=''; const KeyField: String=''): TSgtsExecuteProvider;
+    function AddUpdate(const Provider, Alias: String): TSgtsExecuteProvider;
+    function AddDelete(const Provider, Alias: String): TSgtsExecuteProvider;
+    function Find(const Provider: String): TSgtsExecuteProvider; reintroduce;
+
+    property Items[Index: Integer]: TSgtsExecuteProvider read GetItem write SetItem;
+  end;
+
+  TSgtsExecuteProvidersClass=class of TSgtsExecuteProviders;
+
+implementation
+
+uses Classes, SysUtils;
+
+{ TSgtsProvider }
+
+constructor TSgtsProvider.Create;
+begin
+  inherited Create;
+end;
+
+{ TSgtsProviders }
+
+function TSgtsProviders.GetProviderClass: TSgtsProviderClass;
+begin
+  Result:=TSgtsProvider;
+end;
+
+function TSgtsProviders.GetItem(Index: Integer): TSgtsProvider;
+begin
+  Result:=TSgtsProvider(inherited Items[Index]);
+end;
+
+procedure TSgtsProviders.SetItem(Index: Integer; Value: TSgtsProvider);
+begin
+  inherited Items[Index]:=Value;
+end;
+
+function TSgtsProviders.Find(const Provider: String): TSgtsProvider;
+var
+  i: Integer;
+begin
+  Result:=nil;
+  for i:=0 to Count-1 do begin
+    if AnsiSameText(Items[i].Name,Provider) then begin
+      Result:=Items[i];
+      exit;
+    end;
+  end;
+end;
+
+function TSgtsProviders.Add(const Provider, Alias: String): TSgtsProvider;
+begin
+  Result:=nil;
+  if not Assigned(Find(Provider)) then begin
+    Result:=GetProviderClass.Create;
+    Result.Name:=Provider;
+    Result.Alias:=Alias;
+    inherited Add(Result);
+  end;
+end;
+
+function TSgtsProviders.AddClass(AClass: TSgtsProviderClass): TSgtsProvider;
+begin
+  Result:=nil;
+  if Assigned(AClass) then begin
+    Result:=AClass.Create;
+    if not Assigned(Find(Result.Name)) then begin
+      inherited Add(Result);
+    end else begin
+      Result.Free;
+      Result:=nil;
+    end;
+  end;
+end;
+
+{ TSgtsGetRecordsProviders }
+
+function TSgtsGetRecordsProviders.GetProviderClass: TSgtsProviderClass;
+begin
+  Result:=TSgtsGetRecordsProvider;
+end;
+
+function TSgtsGetRecordsProviders.GetItem(Index: Integer): TSgtsGetRecordsProvider;
+begin
+  Result:=TSgtsGetRecordsProvider(inherited Items[Index]);
+end;
+
+procedure TSgtsGetRecordsProviders.SetItem(Index: Integer; Value: TSgtsGetRecordsProvider);
+begin
+  inherited Items[Index]:=Value;
+end;
+
+function TSgtsGetRecordsProviders.Find(const Provider: String): TSgtsGetRecordsProvider;
+begin
+  Result:=TSgtsGetRecordsProvider(inherited Find(Provider));
+end;
+
+function TSgtsGetRecordsProviders.Add(const Provider, Alias: String; ProviderType: TSgtsGetRecordsProviderType;
+                                      Proc: TSgtsGetRecordsProviderProc=nil): TSgtsGetRecordsProvider;
+begin
+  Result:=TSgtsGetRecordsProvider(inherited Add(Provider,Alias));
+  if Assigned(Result) then begin
+    Result.ProviderType:=ProviderType;
+    Result.Proc:=Proc;
+  end;  
+end;
+
+function TSgtsGetRecordsProviders.AddGetRecords(const Provider, Alias: String; Proc: TSgtsGetRecordsProviderProc=nil): TSgtsGetRecordsProvider;
+begin
+  Result:=Add(Provider,Alias,rptGetRecords,Proc);
+end;
+
+function TSgtsGetRecordsProviders.AddExecute(const Provider, Alias: String; Proc: TSgtsGetRecordsProviderProc=nil): TSgtsGetRecordsProvider;
+begin
+  Result:=Add(Provider,Alias,rptExecute,Proc);
+end;
+
+function TSgtsGetRecordsProviders.AddDefault(const Provider: String): TSgtsGetRecordsProvider;
+begin
+  Result:=Add(Provider,Provider,rptGetRecords,nil);
+end;
+
+{ TSgtsExecuteProviders }
+
+function TSgtsExecuteProviders.GetProviderClass: TSgtsProviderClass;
+begin
+  Result:=TSgtsExecuteProvider;
+end;
+
+function TSgtsExecuteProviders.GetItem(Index: Integer): TSgtsExecuteProvider;
+begin
+  Result:=TSgtsExecuteProvider(inherited Items[Index]);
+end;
+
+procedure TSgtsExecuteProviders.SetItem(Index: Integer; Value: TSgtsExecuteProvider);
+begin
+  inherited Items[Index]:=Value;
+end;
+
+function TSgtsExecuteProviders.Find(const Provider: String): TSgtsExecuteProvider;
+begin
+  Result:=TSgtsExecuteProvider(inherited Find(Provider));
+end;
+
+function TSgtsExecuteProviders.Add(const Provider, Alias, KeyQuery, KeyField: String): TSgtsExecuteProvider;
+begin
+  Result:=TSgtsExecuteProvider(inherited Add(Provider,Alias));
+  if Assigned(Result) then begin
+    Result.KeyField:=KeyField;
+    Result.KeyQuery:=KeyQuery;
+  end;
+end;
+
+function TSgtsExecuteProviders.AddDefault(const Provider: string): TSgtsExecuteProvider;
+begin
+  Result:=Add(Provider,'','','');
+  if Assigned(Result) then
+    Result.ProviderType:=eptDefault;
+end;
+
+function TSgtsExecuteProviders.AddInsert(const Provider, Alias: string; const KeyQuery: String=''; const KeyField: String=''): TSgtsExecuteProvider;
+begin
+  Result:=Add(Provider,Alias,KeyQuery,KeyField);
+  if Assigned(Result) then
+    Result.ProviderType:=eptInsert;
+end;
+
+function TSgtsExecuteProviders.AddUpdate(const Provider, Alias: String): TSgtsExecuteProvider;
+begin
+  Result:=Add(Provider,Alias,'','');
+  if Assigned(Result) then
+    Result.ProviderType:=eptUpdate;
+end;
+
+function TSgtsExecuteProviders.AddDelete(const Provider, Alias: String): TSgtsExecuteProvider;
+begin
+  Result:=Add(Provider,Alias,'','');
+  if Assigned(Result) then
+    Result.ProviderType:=eptDelete;
+end;
+
+end.

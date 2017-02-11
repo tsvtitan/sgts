@@ -1,0 +1,26 @@
+/* Создание просмотра маршрутов персонала */
+
+CREATE OR REPLACE VIEW S_PERSONNEL_ROUTES
+AS 
+SELECT PR.PERSONNEL_ID,
+       PR.ROUTE_ID,
+       PR.DEPUTY_ID,
+       PR.DATE_PURPOSE,
+       P1.FNAME || ' ' || P1.NAME || ' ' || P1.SNAME AS PERSONNEL_NAME,
+       R.NAME AS ROUTE_NAME,
+       P2.FNAME || ' ' || P2.NAME || ' ' || P2.SNAME AS DEPUTY_NAME
+  FROM PERSONNEL_ROUTES PR,
+       PERSONNELS P1,
+       ROUTES R,
+       PERSONNELS P2
+ WHERE P1.PERSONNEL_ID = PR.PERSONNEL_ID
+   AND R.ROUTE_ID = PR.ROUTE_ID
+   AND PR.DEPUTY_ID = P2.PERSONNEL_ID(+)
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

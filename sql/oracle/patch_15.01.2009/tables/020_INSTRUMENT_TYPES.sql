@@ -1,0 +1,15 @@
+/* Создание таблицы типов приборов */
+
+CREATE TABLE INSTRUMENT_TYPES
+(
+  INSTRUMENT_TYPE_ID INTEGER NOT NULL, 
+  NAME VARCHAR2(100) NOT NULL,
+  DESCRIPTION VARCHAR2(250),
+  PRIMARY KEY (INSTRUMENT_TYPE_ID)
+)
+
+--
+
+/* Фиксация изменений */
+
+COMMIT

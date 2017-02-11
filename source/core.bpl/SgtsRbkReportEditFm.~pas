@@ -1,0 +1,213 @@
+unit SgtsRbkReportEditFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, ToolWin, ImgList, Menus, ExtCtrls, StdCtrls, DB,
+  SgtsDataEditFm, SgtsDataInsertFm, SgtsDataUpdateFm, SgtsDataDelete,
+  SgtsFm, SgtsControls, SgtsCoreIntf, SgtsExecuteDefs;
+
+type
+  TSgtsRbkReportEditForm = class(TSgtsDataEditForm)
+    LabelName: TLabel;
+    EditName: TEdit;
+    MemoNote: TMemo;
+    LabelNote: TLabel;
+    LabelFileName: TLabel;
+    EditFileName: TEdit;
+    ButtonFileName: TButton;
+    LabelPriority: TLabel;
+    EditPriority: TEdit;
+    LabelModule: TLabel;
+    ComboBoxModule: TComboBox;
+    LabelMenu: TLabel;
+    EditMenu: TEdit;
+    procedure ComboBoxModuleChange(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    procedure InitByIface(AIface: TSgtsFormIface); override;
+  end;
+
+  TSgtsRbkReportInsertIface=class(TSgtsDataInsertIface)
+  private
+    FFileNameDef: TSgtsExecuteDefFileName;
+    procedure FileNameCheckValue(Def: TSgtsExecuteDef; var NewValue: Variant; var CanSet: Boolean);
+  protected
+    property FileNameDef: TSgtsExecuteDefFileName read FFileNameDef;
+  public
+    procedure Init; override;
+  end;
+
+  TSgtsRbkReportUpdateIface=class(TSgtsDataUpdateIface)
+  private
+    FFileNameDef: TSgtsExecuteDefFileName;
+    procedure FileNameCheckValue(Def: TSgtsExecuteDef; var NewValue: Variant; var CanSet: Boolean);
+  protected
+    property FileNameDef: TSgtsExecuteDefFileName read FFileNameDef;
+  public
+    procedure Init; override;
+  end;
+
+  TSgtsRbkReportDeleteIface=class(TSgtsDataDeleteIface)
+  public
+    procedure Init; override;
+  end;
+  
+var
+  SgtsRbkReportEditForm: TSgtsRbkReportEditForm;
+
+implementation
+
+uses DBClient,
+     SgtsIface, SgtsConsts, SgtsProviderConsts,
+     SgtsDatabaseCDS, SgtsDialogs, SgtsReportModules, SgtsOptionsFmIntf;
+
+{$R *.dfm}
+
+{ TSgtsRbkReportInsertIface }
+
+procedure TSgtsRbkReportInsertIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkReportEditForm;
+  InterfaceName:=SInterfaceFileReportInsert;
+  with DataSet do begin
+    ProviderName:=SProviderInsertReport;
+    with ExecuteDefs do begin
+      AddKey('REPORT_ID');
+      AddEdit('NAME','EditName','LabelName',true);
+      AddMemo('DESCRIPTION','MemoNote','LabelNote',false);
+      AddCombo('MODULE_NAME','ComboBoxModule','LabelModule',true);
+      FFileNameDef:=AddFileName('FILE_NAME','EditFileName','LabelFileName','ButtonFileName',SFilterReports,true);
+      FFileNameDef.InitialDir:=CoreIntf.OptionsForm.ReportCatalog;
+      FFileNameDef.OnCheckValue:=FileNameCheckValue;
+      AddEditInteger('PRIORITY','EditPriority','LabelPriority',true);
+    end;
+  end;
+end;
+
+procedure TSgtsRbkReportInsertIface.FileNameCheckValue(Def: TSgtsExecuteDef; var NewValue: Variant; var CanSet: Boolean);
+var
+  FileName: String;
+  Catalog: String;
+  APos: Integer;
+begin
+  FileName:=VarToStrDef(NewValue,'');
+  Catalog:=Trim(CoreIntf.OptionsForm.ReportCatalog);
+  APos:=AnsiPos(Catalog,FileName);
+  if APos=1 then begin
+    FileName:=Copy(FileName,APos+Length(Catalog)+Length(PathDelim),Length(FileName));
+  end;
+  NewValue:=FileName;
+end;
+
+{ TSgtsRbkReportUpdateIface }
+
+procedure TSgtsRbkReportUpdateIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkReportEditForm;
+  InterfaceName:=SInterfaceReportUpdate;
+  with DataSet do begin
+    ProviderName:=SProviderUpdateReport;
+    with ExecuteDefs do begin
+      AddKeyLink('REPORT_ID');
+      AddEdit('NAME','EditName','LabelName',true);
+      AddMemo('DESCRIPTION','MemoNote','LabelNote',false);
+      AddCombo('MODULE_NAME','ComboBoxModule','LabelModule',true);                  
+      FFileNameDef:=AddFileName('FILE_NAME','EditFileName','LabelFileName','ButtonFileName',SFilterReports,true);
+      FFileNameDef.InitialDir:=CoreIntf.OptionsForm.ReportCatalog;
+      FFileNameDef.OnCheckValue:=FileNameCheckValue;
+      AddEditInteger('PRIORITY','EditPriority','LabelPriority',true);
+    end;
+  end;
+end;
+
+procedure TSgtsRbkReportUpdateIface.FileNameCheckValue(Def: TSgtsExecuteDef; var NewValue: Variant; var CanSet: Boolean);
+var
+  FileName: String;
+  Catalog: String;
+  APos: Integer;
+begin
+  FileName:=VarToStrDef(NewValue,'');
+  Catalog:=Trim(CoreIntf.OptionsForm.ReportCatalog);
+  APos:=AnsiPos(Catalog,FileName);
+  if APos=1 then begin
+    FileName:=Copy(FileName,APos+Length(Catalog)+Length(PathDelim),Length(FileName));
+  end;
+  NewValue:=FileName;
+end;
+
+{ TSgtsRbkReportDeleteIface }
+
+procedure TSgtsRbkReportDeleteIface.Init;
+begin
+  inherited Init;
+  InterfaceName:=SInterfaceReportDelete;
+  DeleteQuestion:='Удалить отчет %NAME?';
+  with DataSet do begin
+    ProviderName:=SProviderDeleteReport;
+    with ExecuteDefs do begin
+      AddKeyLink('REPORT_ID');
+      AddInvisible('NAME');
+    end;
+  end;
+end;
+
+{ TSgtsRbkReportEditForm }
+
+constructor TSgtsRbkReportEditForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  with ACoreIntf do begin
+    GetReportModules(ComboBoxModule.Items);
+  end;
+end;
+
+procedure TSgtsRbkReportEditForm.InitByIface(AIface: TSgtsFormIface);
+begin
+  inherited InitByIface(AIface);
+  if ComboBoxModule.Items.Count>0 then begin
+    ComboBoxModule.ItemIndex:=0;
+    ComboBoxModuleChange(ComboBoxModule);
+  end;
+end;
+
+procedure TSgtsRbkReportEditForm.ComboBoxModuleChange(Sender: TObject);
+var
+  Index: Integer;
+  Module: TSgtsReportModule;
+begin
+  Index:=ComboBoxModule.ItemIndex;
+  if Index<>-1 then begin
+    Module:=TSgtsReportModule(ComboBoxModule.Items.Objects[Index]);
+    if Assigned(Module) then begin
+      if Iface is TSgtsRbkReportInsertIface then begin
+        with TSgtsRbkReportInsertIface(Iface) do begin
+          FileNameDef.Filter:=Module.Filter;
+        end;
+      end;
+      if Iface is TSgtsRbkReportUpdateIface then begin
+        with TSgtsRbkReportUpdateIface(Iface) do begin
+          FileNameDef.Filter:=Module.Filter;
+        end;
+      end;
+    end;
+  end else begin
+    if Iface is TSgtsRbkReportInsertIface then begin
+      with TSgtsRbkReportInsertIface(Iface) do begin
+        FileNameDef.Filter:=SFilterReports;
+      end;
+    end;
+    if Iface is TSgtsRbkReportUpdateIface then begin
+      with TSgtsRbkReportUpdateIface(Iface) do begin
+        FileNameDef.Filter:=SFilterReports;
+      end;
+    end;
+  end;
+end;
+
+end.

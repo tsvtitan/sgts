@@ -1,0 +1,337 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{34490892-99f1-41db-b190-fe28f0ca2625}</ProjectGuid>
+    <MainSource>report.dpk</MainSource>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+    <DCC_DependencyCheckOutputName>U:\bin\report.bpl</DCC_DependencyCheckOutputName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_DebugInformation>False</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+    <DCC_BplOutput>U:\bin</DCC_BplOutput>
+    <DCC_DcpOutput>U:\source\dcp</DCC_DcpOutput>
+    <DCC_UnitSearchPath>U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_UnitSearchPath>
+    <DCC_ResourcePath>U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_ResourcePath>
+    <DCC_ObjPath>U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_ObjPath>
+    <DCC_IncludePath>U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_IncludePath>
+    <DCC_Define>RELEASE</DCC_Define>
+    <DCC_SYMBOL_DEPRECATED>False</DCC_SYMBOL_DEPRECATED>
+    <DCC_SYMBOL_LIBRARY>False</DCC_SYMBOL_LIBRARY>
+    <DCC_SYMBOL_PLATFORM>False</DCC_SYMBOL_PLATFORM>
+    <DCC_UNIT_LIBRARY>False</DCC_UNIT_LIBRARY>
+    <DCC_UNIT_PLATFORM>False</DCC_UNIT_PLATFORM>
+    <DCC_UNIT_DEPRECATED>False</DCC_UNIT_DEPRECATED>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_BplOutput>U:\bin</DCC_BplOutput>
+    <DCC_DcpOutput>U:\source\dcp</DCC_DcpOutput>
+    <DCC_UnitSearchPath>U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_UnitSearchPath>
+    <DCC_ResourcePath>U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_ResourcePath>
+    <DCC_ObjPath>U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_ObjPath>
+    <DCC_IncludePath>U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_IncludePath>
+    <DCC_SYMBOL_DEPRECATED>False</DCC_SYMBOL_DEPRECATED>
+    <DCC_SYMBOL_LIBRARY>False</DCC_SYMBOL_LIBRARY>
+    <DCC_SYMBOL_PLATFORM>False</DCC_SYMBOL_PLATFORM>
+    <DCC_UNIT_LIBRARY>False</DCC_UNIT_LIBRARY>
+    <DCC_UNIT_PLATFORM>False</DCC_UNIT_PLATFORM>
+    <DCC_UNIT_DEPRECATED>False</DCC_UNIT_DEPRECATED>
+  </PropertyGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Delphi.Personality</Borland.Personality>
+    <Borland.ProjectType>Package</Borland.ProjectType>
+    <BorlandProject>
+<BorlandProject><Delphi.Personality><Parameters><Parameters Name="HostApplication">U:\bin\sgts.exe</Parameters><Parameters Name="UseLauncher">False</Parameters><Parameters Name="LoadAllSymbols">True</Parameters><Parameters Name="LoadUnspecifiedSymbols">False</Parameters></Parameters><Package_Options><Package_Options Name="ImplicitBuild">False</Package_Options><Package_Options Name="DesigntimeOnly">False</Package_Options><Package_Options Name="RuntimeOnly">True</Package_Options></Package_Options><VersionInfo><VersionInfo Name="IncludeVerInfo">True</VersionInfo><VersionInfo Name="AutoIncBuild">True</VersionInfo><VersionInfo Name="MajorVer">1</VersionInfo><VersionInfo Name="MinorVer">2</VersionInfo><VersionInfo Name="Release">0</VersionInfo><VersionInfo Name="Build">2</VersionInfo><VersionInfo Name="Debug">False</VersionInfo><VersionInfo Name="PreRelease">False</VersionInfo><VersionInfo Name="Special">False</VersionInfo><VersionInfo Name="Private">False</VersionInfo><VersionInfo Name="DLL">False</VersionInfo><VersionInfo Name="Locale">1049</VersionInfo><VersionInfo Name="CodePage">1251</VersionInfo></VersionInfo><VersionInfoKeys><VersionInfoKeys Name="CompanyName"></VersionInfoKeys><VersionInfoKeys Name="FileDescription"></VersionInfoKeys><VersionInfoKeys Name="FileVersion">1.2.0.2</VersionInfoKeys><VersionInfoKeys Name="InternalName"></VersionInfoKeys><VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys><VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys><VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys><VersionInfoKeys Name="ProductName"></VersionInfoKeys><VersionInfoKeys Name="ProductVersion">1.2</VersionInfoKeys><VersionInfoKeys Name="Comments"></VersionInfoKeys></VersionInfoKeys><Source><Source Name="MainSource">report.dpk</Source></Source></Delphi.Personality></BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
+  <ItemGroup>
+    <DelphiCompile Include="report.dpk">
+      <MainSource>MainSource</MainSource>
+    </DelphiCompile>
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_ibasic.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_ichartrtti.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_iclassesrtti.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_iconst.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_icpp.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_idbctrlsrtti.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_idbrtti.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_idialogsrtti.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_idisp.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_ievents.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_iexpression.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_iextctrlsrtti.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_iformsrtti.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_igraphicsrtti.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_iilparser.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_iinirtti.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_iinterpreter.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_ijs.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_iparser.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_ipascal.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_isysrtti.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_itools.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_synmemo.pas">
+      <Form>fsSynMemoSearch</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_tree.pas" />
+    <DCCReference Include="..\imports\FastReport\FastScript\fs_xml.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxExportCSV.pas">
+      <Form>frxCSVExportDialog</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxExportHTML.pas">
+      <Form>frxHTMLExportDialog</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxExportImage.pas">
+      <Form>frxIMGExportDialog</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxExportMail.pas">
+      <Form>frxMailExportDialog</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxExportMatrix.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxExportODF.pas">
+      <Form>frxODFExportDialog</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxExportPDF.pas">
+      <Form>frxPDFExportDialog</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxExportRTF.pas">
+      <Form>frxRTFExportDialog</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxExportText.pas">
+      <Form>frxSimpleTextExportDialog</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxExportTXT.pas">
+      <Form>frxTXTExportDialog</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxExportTxtPrn.pas">
+      <Form>frxPrnInit</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxExportXLS.pas">
+      <Form>frxXLSExportDialog</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxExportXML.pas">
+      <Form>frxXMLExportDialog</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxFileUtils.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxNetUtils.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxPDFFile.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxSMTP.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\ExportPack\frxZip.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxAbout.pas">
+      <Form>frxAboutForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxAggregate.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxBarcod.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxBarcode.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxBarcodeEditor.pas">
+      <Form>frxBarcodeEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxBarcodeRTTI.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxChart.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxChartEditor.pas">
+      <Form>frxChartEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxChartHelpers.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxChartRTTI.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxChBox.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxChBoxRTTI.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxChm.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxClass.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxClassRTTI.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxCodeUtils.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxConnEditor.pas">
+      <Form>frxConnEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxConnWizard.pas">
+      <Form>frxConnectionWizardForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxCross.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxCrossEditor.pas">
+      <Form>frxCrossEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxCrossRTTI.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxCrypt.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxCtrls.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxCustomDB.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxCustomDBEditor.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxCustomDBRTTI.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxCustomEditors.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxDataTree.pas">
+      <Form>frxDataTreeForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxDBSet.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxDCtrl.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxDCtrlRTTI.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxDesgn.pas">
+      <Form>frxDesignerForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxDesgnCtrls.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxDesgnEditors.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxDesgnWorkspace.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxDesgnWorkspace1.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxDialogForm.pas">
+      <Form>frxDialogForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxDMPClass.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxDMPExport.pas">
+      <Form>frxDMPExportDialog</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxDock.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxDsgnIntf.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxEditAliases.pas">
+      <Form>frxAliasesEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditDataBand.pas">
+      <Form>frxDataBandEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditExpr.pas">
+      <Form>frxExprEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditFormat.pas">
+      <Form>frxFormatEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditFrame.pas">
+      <Form>frxFrameEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditGroup.pas">
+      <Form>frxGroupEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditHighlight.pas">
+      <Form>frxHighlightEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditMD.pas">
+      <Form>frxMDEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditMemo.pas">
+      <Form>frxMemoEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditOptions.pas">
+      <Form>frxOptionsEditor</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditPage.pas">
+      <Form>frxPageEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditPicture.pas">
+      <Form>frxPictureEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditQueryParams.pas">
+      <Form>frxParamsEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditReport.pas">
+      <Form>frxReportEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditReportData.pas">
+      <Form>frxReportDataForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditSQL.pas">
+      <Form>frxSQLEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditStrings.pas">
+      <Form>frxStringsEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditStyle.pas">
+      <Form>frxStyleEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditSysMemo.pas">
+      <Form>frxSysMemoEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditTabOrder.pas">
+      <Form>frxTabOrderEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEditVar.pas">
+      <Form>frxVarEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxEngine.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxEvaluateForm.pas">
+      <Form>frxEvaluateForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxGradient.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxGradientRTTI.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxGraphicUtils.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxGZip.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxInheritError.pas">
+      <Form>frxInheritErrorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxInsp.pas">
+      <Form>frxObjectInspector</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxNewItem.pas">
+      <Form>frxNewItemForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxOLE.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxOLEEditor.pas">
+      <Form>frxOleEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxOLERTTI.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxPassw.pas">
+      <Form>frxPasswordForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxPictureCache.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxPopupForm.pas">
+      <Form>frxPopupForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxPreview.pas">
+      <Form>frxPreviewForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxPreviewPages.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxPreviewPageSettings.pas">
+      <Form>frxPageSettingsForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxPrintDialog.pas">
+      <Form>frxPrintDialog</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxPrinter.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxProgress.pas">
+      <Form>frxProgress</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxrcClass.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxrcDesgn.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxrcExports.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxrcInsp.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxReportTree.pas">
+      <Form>frxReportTreeForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxRes.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxRich.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxRichEdit.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxRichEditor.pas">
+      <Form>frxRichEditorForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxRichRTTI.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxSearchDialog.pas">
+      <Form>frxSearchDialog</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxStdWizard.pas">
+      <Form>frxStdWizardForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxSynMemo.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxUnicodeCtrls.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxUnicodeUtils.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxUtils.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxVariables.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxWatchForm.pas">
+      <Form>frxWatchForm</Form>
+    </DCCReference>
+    <DCCReference Include="..\imports\FastReport\Source\frxXML.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxXMLSerializer.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\frxZLib.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\pngimage.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\pnglang.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\rc_AlgRef.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\rc_ApiRef.pas" />
+    <DCCReference Include="..\imports\FastReport\Source\rc_Crypt.pas" />
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\dbrtl.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\rtl.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\tee.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\teedb.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\teeui.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\vcl.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\vcldb.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\vcljpg.dcp" />
+    <DCCReference Include="C:\Documents and Settings\Администратор.S1.000\vclx.dcp" />
+  </ItemGroup>
+</Project>

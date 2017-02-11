@@ -1,0 +1,24 @@
+unit SgtsExportFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, SgtsChildFm;
+
+type
+  TSgtsChildForm1 = class(TSgtsChildForm)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  SgtsChildForm1: TSgtsChildForm1;
+
+implementation
+
+{$R *.dfm}
+
+end.

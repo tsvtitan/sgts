@@ -1,0 +1,14 @@
+/* Создание просмотра объектов */
+
+CREATE OR REPLACE VIEW S_OBJECTS
+AS 
+SELECT O1.OBJECT_ID,O1.NAME,O1.DESCRIPTION,O1.SHORT_NAME
+  FROM OBJECTS O1
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

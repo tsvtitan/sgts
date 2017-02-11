@@ -1,0 +1,68 @@
+unit SgtsRbkDefectViewsFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, Menus, ImgList, ExtCtrls, ComCtrls, ToolWin,
+  SgtsDataGridFm, SgtsDataFm, SgtsFm, SgtsCDS,
+  SgtsCoreIntf, StdCtrls, DBCtrls, Grids, DBGrids;
+
+type
+  TSgtsRbkDefectViewsForm = class(TSgtsDataGridForm)
+    PanelInfo: TPanel;
+    GroupBoxInfo: TGroupBox;
+    PanelNote: TPanel;
+    DBMemoNote: TDBMemo;
+    Splitter: TSplitter;
+  private
+    { Private declarations }
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+  end;
+
+  TSgtsRbkDefectViewsIface=class(TSgtsDataGridIface)
+  public
+    procedure Init; override;
+  end;
+
+var
+  SgtsRbkDefectViewsForm: TSgtsRbkDefectViewsForm;
+
+implementation
+
+uses SgtsProviderConsts, SgtsIface, SgtsConsts, SgtsRbkDefectViewEditFm,
+     SgtsSelectDefs;
+
+{$R *.dfm}
+
+{ TSgtsRbkDefectViewsIface }
+
+procedure TSgtsRbkDefectViewsIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkDefectViewsForm;
+  InterfaceName:=SInterfaceDefectViews;
+  InsertClass:=TSgtsRbkDefectViewInsertIface;
+  UpdateClass:=TSgtsRbkDefectViewUpdateIface;
+  DeleteClass:=TSgtsRbkDefectViewDeleteIface;
+  with DataSet do begin
+    ProviderName:=SProviderSelectDefectViews;
+    with SelectDefs do begin
+      AddKey('DEFECT_VIEW_ID');
+      Add('NAME','Наименование',200);
+      Add('NAME','Наименование');
+      AddInvisible('DESCRIPTION');
+    end;
+  end;
+end;
+
+{ TSgtsRbkDefectViewsForm }
+
+constructor TSgtsRbkDefectViewsForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+end;
+
+
+end.

@@ -1,0 +1,22 @@
+/* Создание просмотра преобразователей */
+
+CREATE OR REPLACE VIEW S_CONVERTERS
+AS 
+SELECT C.CONVERTER_ID,
+       C.NAME,
+       C.DESCRIPTION,
+       C.DATE_ENTER,
+       C.NOT_OPERATION,
+       P.NAME AS POINT_NAME,
+       P.DESCRIPTION AS POINT_DESCRIPTION
+  FROM CONVERTERS C,
+       POINTS P
+ WHERE C.CONVERTER_ID = P.POINT_ID
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

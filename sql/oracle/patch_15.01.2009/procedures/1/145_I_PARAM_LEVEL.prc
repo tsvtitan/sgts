@@ -1,0 +1,21 @@
+/* Создание процедуры добавления уровня параметра */
+
+CREATE OR REPLACE PROCEDURE I_PARAM_LEVEL
+( 
+  PARAM_ID IN INTEGER, 
+  LEVEL_ID IN INTEGER, 
+  LEVEL_MIN IN FLOAT, 
+  LEVEL_MAX IN FLOAT 
+) 
+AS 
+BEGIN 
+  INSERT INTO PARAM_LEVELS (PARAM_ID,LEVEL_ID,LEVEL_MIN,LEVEL_MAX) 
+       VALUES (PARAM_ID,LEVEL_ID,LEVEL_MIN,LEVEL_MAX); 
+  COMMIT; 
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT

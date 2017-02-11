@@ -1,0 +1,24 @@
+/* Создание просмотра чертежей объектов */
+
+CREATE OR REPLACE VIEW S_OBJECT_DRAWINGS
+AS 
+SELECT OD.OBJECT_ID,
+       OD.DRAWING_ID,
+       OD.PRIORITY,
+       O.NAME AS OBJECT_NAME,
+       D.NAME AS DRAWING_NAME,
+       D.DESCRIPTION AS DRAWING_DESCRIPTION,
+       D.FILE_NAME
+  FROM OBJECT_DRAWINGS OD,
+       OBJECTS O,
+       DRAWINGS D
+ WHERE O.OBJECT_ID = OD.OBJECT_ID
+   AND D.DRAWING_ID = OD.DRAWING_ID
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

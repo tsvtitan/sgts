@@ -1,0 +1,53 @@
+object SgtsMTScheduleFrame: TSgtsMTScheduleFrame
+  Left = 0
+  Top = 0
+  Width = 451
+  Height = 304
+  Align = alClient
+  TabOrder = 0
+  object Panel1: TPanel
+    Left = 0
+    Top = 170
+    Width = 451
+    Height = 134
+    Align = alBottom
+    BevelOuter = bvNone
+    Caption = 'Panel1'
+    TabOrder = 0
+    object GridPattern: TDBGrid
+      Left = 0
+      Top = 0
+      Width = 451
+      Height = 134
+      Align = alClient
+      TabOrder = 0
+      TitleFont.Charset = DEFAULT_CHARSET
+      TitleFont.Color = clWindowText
+      TitleFont.Height = -11
+      TitleFont.Name = 'Tahoma'
+      TitleFont.Style = []
+    end
+  end
+  object Panel2: TPanel
+    Left = 0
+    Top = 0
+    Width = 451
+    Height = 170
+    Align = alClient
+    BevelOuter = bvNone
+    Caption = 'Panel2'
+    TabOrder = 1
+    object Edit1: TEdit
+      Left = 128
+      Top = 32
+      Width = 201
+      Height = 21
+      TabOrder = 0
+      Text = 'Edit1'
+    end
+  end
+  object DataSource: TDataSource
+    Left = 192
+    Top = 144
+  end
+end

@@ -1,0 +1,122 @@
+unit SgtsJournalGraphRefreshFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Menus, StdCtrls, ComCtrls,
+  CheckLst, ExtCtrls, DBGrids, DB,
+  SgtsFm, SgtsDbGrid, SgtsDatabaseCDS,
+  SgtsCoreIntf,
+  SgtsBaseGraphRefreshFm, SgtsBaseGraphFm;
+
+type
+
+  TSgtsJournalGraphRefreshForm = class(TSgtsBaseGraphRefreshForm)
+    PanelFilter: TPanel;
+    GroupBoxFilter: TGroupBox;
+    PanelMemoFilters: TPanel;
+    MemoFilters: TMemo;
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+  TSgtsJournalGraphRefreshIface=class(TSgtsBaseGraphRefreshIface)
+  private
+    function GetForm: TSgtsJournalGraphRefreshForm;
+    procedure FillAxisParams;
+  protected
+    procedure AfterCreateForm(AForm: TSgtsForm); override;
+  public
+    procedure Init; override;
+
+    property Form: TSgtsJournalGraphRefreshForm read GetForm;
+  end;
+
+
+var
+  SgtsJournalGraphRefreshForm: TSgtsJournalGraphRefreshForm;
+
+implementation
+
+uses DBClient,
+     SgtsIface, SgtsGraphFm, SgtsGetRecordsConfig, SgtsConsts, SgtsObj,
+     SgtsUtils, SgtsJournalGraphFm;
+
+{$R *.dfm}
+
+{ TSgtsJournalGraphRefreshIface }
+
+function TSgtsJournalGraphRefreshIface.GetForm: TSgtsJournalGraphRefreshForm;
+begin
+  Result:=TSgtsJournalGraphRefreshForm(inherited Form);
+end;
+
+procedure TSgtsJournalGraphRefreshIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsJournalGraphRefreshForm;
+  if Assigned(ParentIface) then begin
+    SectionName:=Name+InttoStr(TSgtsJournalGraphIface(ParentIface).CutId);
+    GraphName:=ParentIface.Caption;
+    DefaultGraphName:=GraphName;
+    FillAxisParams;
+  end;
+end;
+
+procedure TSgtsJournalGraphRefreshIface.FillAxisParams;
+var
+  i: Integer;
+  Param: TSgtsBaseGraphAxisParam;
+  Column: TColumn;
+  FieldDef: TFieldDef;
+begin
+  if Assigned(ParentIface) then begin
+    LeftAxisParams.Clear;
+    with TSgtsJournalGraphIface(ParentIface) do begin
+      for i:=0 to Columns.Count-1 do begin
+        Column:=Columns.Items[i];
+        FieldDef:=DefaultDataSet.FindFieldDef(Column.FieldName);
+        if Assigned(FieldDef) then begin
+          if FieldDef.DataType in [ftSmallint,ftInteger,ftWord,ftFloat,ftCurrency,ftBCD,ftDate,ftTime,ftDateTime] then begin
+            Param:=LeftAxisParams.Add(Column.Title.Caption,Column.FieldName);
+            if Assigned(Param) then begin
+            end;
+          end;
+        end;
+      end;
+    end;  
+    DefaultLeftAxisParams.CopyFrom(LeftAxisParams);
+
+    BottomAxisParams.CopyFrom(LeftAxisParams);
+    DefaultBottomAxisParams.CopyFrom(BottomAxisParams);
+
+    RightAxisParams.CopyFrom(LeftAxisParams);
+    DefaultRightAxisParams.CopyFrom(RightAxisParams);
+  end;
+end;
+
+procedure TSgtsJournalGraphRefreshIface.AfterCreateForm(AForm: TSgtsForm);
+begin
+  inherited AfterCreateForm(AForm);
+  if Assigned(Form) and
+     Assigned(ParentIface) then begin
+    Form.MemoFilters.Lines.Text:=ParentIface.DefaultDataSet.FilterGroups.GetUserFilter;
+  end;
+end;
+
+{ TSgtsJournalGraphRefreshForm }
+
+procedure TSgtsJournalGraphRefreshForm.FormCloseQuery(Sender: TObject;
+  var CanClose: Boolean);
+begin
+  if CanClose then begin
+    Iface.BeforeWriteParams;
+    Iface.WriteParams;
+  end;
+end;
+
+end.

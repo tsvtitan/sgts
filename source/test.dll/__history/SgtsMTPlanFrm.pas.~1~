@@ -1,0 +1,45 @@
+unit SgtsMTPlanFrm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, ToolWin, ImgList, ExtCtrls, Grids, DBGrids, DB, Menus,
+  SgtsDbGrid, SgtsDatabaseCDS, SgtsCoreIntf, SgtsCDS,
+  SgtsDataInsertFm, SgtsDataUpdateFm, SgtsDataDelete, SgtsDataFmIntf,
+  SgtsDataFm, SgtsDataIfaceIntf, SgtsExecuteDefs, SgtsGetRecordsConfig, SgtsMenus,
+  SgtsConfigIntf, StdCtrls, CheckLst;
+
+type
+  TSgtsMTPlanFrame = class(TFrame)
+    Edit1: TEdit;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+  end;
+
+implementation
+
+{$R *.dfm}
+
+{ TSgtsMTPlanFrame }
+
+constructor TSgtsMTPlanFrame.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  {FEditMode:=false;
+  FDataSet:=TSgtsDatabaseCDS.Create(nil);
+  FDataSetPlan:=TSgtsDatabaseCDS.Create(nil);}
+end;
+
+destructor TSgtsMTPlanFrame.Destroy;
+begin
+  {FDataSet.Free;
+  FDataSetPlan.Free;}
+  inherited Destroy;
+end;
+
+end.

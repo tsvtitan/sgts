@@ -1,0 +1,25 @@
+/* Создание просмотра отчета полевого журнала гидронивелиров */
+
+CREATE OR REPLACE VIEW S_HDN_JOURNAL_FIELDS_REPORT
+AS 
+SELECT JF.HDN_NUMBER,
+       JF.JOURNAL_NUM,
+       JF.CYCLE_NUM,
+       JF.DATE_OBSERVATION AS DATE_MOTION_FORWARD,
+       JF.DATE_MOTION_BACK,
+       JF.POINT_NAME,
+       JF.CONVERTER_NAME,
+       TO_NUMBER (JF.POINT_NAME) AS POINT_PRIORITY,
+       JF.VALUE_MOTION_FORWARD,
+       JF.VALUE_MOTION_BACK,
+       JF.VALUE_AVERAGE,
+       JF.VALUE_ERROR
+  FROM S_HDN_JOURNAL_FIELDS JF
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

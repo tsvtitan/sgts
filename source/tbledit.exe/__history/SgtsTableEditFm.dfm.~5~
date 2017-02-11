@@ -1,0 +1,114 @@
+object SgtsTableEditForm: TSgtsTableEditForm
+  Left = 326
+  Top = 292
+  Caption = #1056#1077#1076#1072#1082#1090#1086#1088' XML '#1090#1072#1073#1083#1080#1094
+  ClientHeight = 453
+  ClientWidth = 632
+  Color = clBtnFace
+  Constraints.MinHeight = 480
+  Constraints.MinWidth = 640
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  Font.Style = []
+  OldCreateOrder = False
+  Position = poScreenCenter
+  PixelsPerInch = 96
+  TextHeight = 13
+  inline SgtsTableEditFrame1: TSgtsTableEditFrame
+    Left = 0
+    Top = 0
+    Width = 632
+    Height = 453
+    Align = alClient
+    TabOrder = 0
+    ExplicitWidth = 632
+    ExplicitHeight = 453
+    inherited Splitter: TSplitter
+      Top = 322
+      Width = 632
+      ExplicitTop = 322
+      ExplicitWidth = 632
+    end
+    inherited PanelTop: TPanel
+      Width = 632
+      ExplicitWidth = 632
+      inherited LabelTableName: TLabel
+        Left = 16
+        Width = 71
+        ExplicitLeft = 16
+        ExplicitWidth = 71
+      end
+    end
+    inherited PanelGrid: TPanel
+      Width = 632
+      Height = 263
+      ExplicitWidth = 632
+      ExplicitHeight = 263
+      inherited DBNavigator: TDBNavigator
+        Top = 235
+        Width = 626
+        Hints.Strings = ()
+        ExplicitTop = 235
+        ExplicitWidth = 626
+      end
+    end
+    inherited PanelBottom: TPanel
+      Top = 325
+      Width = 632
+      ExplicitTop = 325
+      ExplicitWidth = 632
+      inherited GroupBoxValue: TGroupBox
+        Width = 626
+        ExplicitWidth = 626
+        inherited PanelValue: TPanel
+          Width = 622
+          ExplicitWidth = 622
+          inherited PanelValueButton: TPanel
+            Left = 528
+            ExplicitLeft = 528
+            inherited ButtonGen: TButton
+              OnClick = SgtsTableEditFrame1ButtonGenClick
+            end
+          end
+          inherited PanelMemo: TPanel
+            Width = 523
+            ExplicitWidth = 523
+            inherited LabelFilter: TLabel
+              Width = 43
+              ExplicitWidth = 43
+            end
+            inherited DBMemoValue: TDBMemo
+              Width = 523
+              ExplicitWidth = 523
+            end
+          end
+        end
+      end
+    end
+    inherited DataSource: TDataSource
+      Left = 64
+      Top = 128
+    end
+    inherited OpenDialog: TOpenDialog
+      Left = 192
+    end
+    inherited SaveDialog: TSaveDialog
+      Left = 256
+    end
+  end
+  object XPManifest: TXPManifest
+    Left = 128
+    Top = 129
+  end
+  object PopupMenu: TPopupMenu
+    OnPopup = PopupMenuPopup
+    Left = 344
+    Top = 200
+    object N1: TMenuItem
+      Caption = #1059#1085#1080#1082#1072#1083#1100#1085#1099#1081' '#1080#1076#1077#1085#1090#1080#1092#1080#1082#1072#1090#1086#1088
+      OnClick = N1Click
+    end
+  end
+end

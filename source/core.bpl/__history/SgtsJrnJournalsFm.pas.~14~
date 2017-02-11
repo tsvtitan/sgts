@@ -1,0 +1,904 @@
+unit SgtsJrnJournalsFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, Menus, ImgList, ComCtrls, StdCtrls, Grids, Mask, DBCtrls, Contnrs,
+  CheckLst, DBGrids, ExtCtrls, ToolWin,
+  SgtsDataGridFm, SgtsSelectDefs, SgtsCoreIntf,
+  SgtsFm, SgtsConfig, SgtsDbGrid, SgtsDateEdit, SgtsJrnGridFm,
+  SgtsFunSourceDataConditionFm, SgtsPeriodFm, SgtsControls;
+
+type
+  TCutInfo=class(TObject)
+  private
+    FCutId: Integer;
+    FName: String;
+    FDescription: String;
+  public
+    property CutId: Integer read FCutId write FCutId;
+    property Name: String read FName write FName;
+    property Description: String read FDescription write FDescription;
+  end;
+
+  TSgtsJrnJournalsIface=class;
+  
+  TSgtsJrnJournalsForm = class(TSgtsDataGridForm)
+    PanelFilter: TPanel;
+    GroupBoxFiilter: TGroupBox;
+    BevelFilter: TBevel;
+    GroupBoxInfo: TGroupBox;
+    LabelPointCoordinateZ: TLabel;
+    LabelConverter: TLabel;
+    LabelPointObject: TLabel;
+    EditPointCoordinateZ: TEdit;
+    EditConverter: TEdit;
+    MemoPointObject: TMemo;
+    LabelCutType: TLabel;
+    ComboBoxCutType: TComboBox;
+    LabelCut: TLabel;
+    ComboBoxCut: TComboBox;
+    RadioButtonPeriod: TRadioButton;
+    LabelPeriodBegin: TLabel;
+    DateTimePickerPeriodBegin: TDateTimePicker;
+    LabelPeriodEnd: TLabel;
+    DateTimePickerPeriodEnd: TDateTimePicker;
+    ButtonPeriod: TButton;
+    RadioButtonCycle: TRadioButton;
+    LabelCycleBegin: TLabel;
+    EditCycleBegin: TEdit;
+    ButtonCycleBegin: TButton;
+    LabelCycleEnd: TLabel;
+    EditCycleEnd: TEdit;
+    ButtonCycleEnd: TButton;
+    ButtonApply: TButton;
+    ButtonCut: TButton;
+    ToolButtonGraph: TToolButton;
+    procedure ButtonApplyClick(Sender: TObject);
+    procedure ComboBoxCutTypeSelect(Sender: TObject);
+    procedure ButtonCutClick(Sender: TObject);
+    procedure ComboBoxCutChange(Sender: TObject);
+    procedure ButtonPeriodClick(Sender: TObject);
+    procedure ButtonCycleBeginClick(Sender: TObject);
+    procedure ButtonCycleEndClick(Sender: TObject);
+    procedure RadioButtonCycleClick(Sender: TObject);
+    procedure ToolButtonGraphClick(Sender: TObject);
+  private
+    FPointIdExists: Boolean;
+    FDateObservationExists: Boolean;
+    FCycleNumExists: Boolean;
+    FPeriodType: TSgtsPeriodType;
+    FOldIndexCutType: Integer;
+    FOldIndexCut: Integer;
+    FDatePeriodBegin: TSgtsDateEdit;
+    FDatePeriodEnd: TSgtsDateEdit;
+    FFlagRefresh: Boolean;
+    FDetermination: String;
+    function GetIface: TSgtsJrnJournalsIface;
+    procedure ApplyFilter(WithOpen: Boolean);
+    procedure SetDataSetByCutId(CutId: Integer);
+    procedure FillCutsByType(CutType: Integer);
+    function GetCutIndexById(CutId: Integer): Integer;
+    function SelectCycle(var CycleNum: Variant): Boolean;
+    procedure ReadParamsByCutId(CutId: Integer);
+    procedure WriteParamsByCutId(CutId: Integer);
+    procedure WriteParamsByCurrentCutId;
+    procedure EnableByDateObservation(AEnabled: Boolean);
+    procedure EnableByCycleNum(AEnabled: Boolean);
+    procedure DeleteInactiveFilters;
+  protected
+    property DatePeriodBegin: TSgtsDateEdit read FDatePeriodBegin;
+    property DatePeriodEnd: TSgtsDateEdit read FDatePeriodEnd;
+    property FlagRefresh: Boolean read FFlagRefresh write FFlagRefresh;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+    procedure InitByIface(AIface: TSgtsFormIface); override;
+
+    property Iface: TSgtsJrnJournalsIface read GetIface;
+    property Determination: String read FDetermination;
+  end;
+
+  TSgtsJrnJournalsIface=class(TSgtsDataGridIface)
+  private
+    FOldPointId: Variant;
+    FCutType: Integer;
+    FCutId: Integer;
+    FPeriodChecked: Boolean;
+    FDateBegin: String;
+    FDateEnd: String;
+    FCycleChecked: Boolean;
+    FCycleBegin: String;
+    FCycleEnd: String;
+    function GetForm: TSgtsJrnJournalsForm;
+  protected
+    procedure AfterCreateForm(AForm: TSgtsForm); override;
+    procedure DataSetAfterScroll(DataSet: TDataSet); override;
+
+    property CutType: Integer read FCutType write FCutType;
+    property CutId: Integer read FCutId write FCutId;
+    property PeriodChecked: Boolean read FPeriodChecked write FPeriodChecked;
+    property DateBegin: String read FDateBegin write FDateBegin;
+    property DateEnd: String read FDateEnd write FDateEnd; 
+    property CycleChecked: Boolean read FCycleChecked write FCycleChecked;
+    property CycleBegin: String read FCycleBegin write FCycleBegin;
+    property CycleEnd: String read FCycleEnd write FCycleEnd;
+  public
+    procedure Init; override;
+    procedure CloseData; override;
+    procedure OpenData; override;
+    procedure ReadParams(DatabaseConfig: Boolean=true); override;
+    procedure WriteParams(DatabaseConfig: Boolean=true); override;
+    function Adjust: Boolean; override;
+    function CanAdjust: Boolean; override;
+    function CanRefresh: Boolean; override;
+    procedure UpdateButtons; override;
+    procedure Graph;
+    function CanGraph: Boolean;
+
+    property Form: TSgtsJrnJournalsForm read GetForm;
+
+  end;
+
+var
+  SgtsJrnJournalsForm: TSgtsJrnJournalsForm;
+
+implementation
+
+uses DBClient, DateUtils, rxToolEdit,
+     SgtsCDS, SgtsProviderConsts, SgtsDatabaseCDS, SgtsUtils, SgtsConsts,
+     SgtsDataFm, SgtsGetRecordsConfig,
+     SgtsRbkCyclesFm, SgtsRbkCutsFm, SgtsDialogs,
+     SgtsProviders, SgtsIface, SgtsConfigIntf, SgtsGrpJournalFm;
+
+{$R *.dfm}
+
+{ TSgtsJrnJournalsIface }
+
+procedure TSgtsJrnJournalsIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsJrnJournalsForm ;
+  InterfaceName:=SInterfaceJournals;
+  FCutType:=0;
+  FCutId:=-1;
+  FPeriodChecked:=true;
+  FCycleChecked:=false;
+end;
+
+function TSgtsJrnJournalsIface.GetForm: TSgtsJrnJournalsForm;
+begin
+  Result:=TSgtsJrnJournalsForm(inherited Form);
+end;
+
+procedure TSgtsJrnJournalsIface.AfterCreateForm(AForm: TSgtsForm);
+begin
+  inherited AfterCreateForm(AForm);
+end;
+
+procedure TSgtsJrnJournalsIface.CloseData;
+begin
+  inherited CloseData;
+end;
+
+procedure TSgtsJrnJournalsIface.OpenData;
+begin
+  FOldPointId:=Null;
+  inherited OpenData;
+end;
+
+procedure TSgtsJrnJournalsIface.ReadParams(DatabaseConfig: Boolean=true);
+begin
+  inherited ReadParams(DatabaseConfig);
+  FCutType:=ReadParam(SConfigParamCutType,FCutType);
+  FCutId:=ReadParam(SConfigParamCutId,FCutId);
+  FPeriodChecked:=ReadParam(SConfigParamPeriodChecked,FPeriodChecked);
+  FDateBegin:=ReadParam(SConfigParamDateBegin,FDateBegin);
+  FDateEnd:=ReadParam(SConfigParamDateEnd,FDateEnd);
+  FCycleChecked:=ReadParam(SConfigParamCycleChecked,FCycleChecked);
+  FCycleBegin:=ReadParam(SConfigParamCycleBegin,FCycleBegin);
+  FCycleEnd:=ReadParam(SConfigParamCycleEnd,FCycleEnd);
+  Columns:='';
+  Orders:='';
+  Filters:='';
+end;
+
+procedure TSgtsJrnJournalsIface.WriteParams(DatabaseConfig: Boolean=true);
+begin
+  inherited WriteParams(DatabaseConfig);
+  WriteParam(SConfigParamCutType,FCutType);
+  WriteParam(SConfigParamCutId,FCutId);
+  WriteParam(SConfigParamPeriodChecked,FPeriodChecked);
+  WriteParam(SConfigParamDateBegin,FDateBegin);
+  WriteParam(SConfigParamDateEnd,FDateEnd);
+  WriteParam(SConfigParamCycleChecked,FCycleChecked);
+  WriteParam(SConfigParamCycleBegin,FCycleBegin);
+  WriteParam(SConfigParamCycleEnd,FCycleEnd);
+end;
+
+function TSgtsJrnJournalsIface.Adjust: Boolean;
+begin
+  FAdjustRefresh:=true;
+  try
+    Result:=inherited Adjust;
+  finally
+    FAdjustRefresh:=false;
+  end;
+end;
+
+function TSgtsJrnJournalsIface.CanAdjust: Boolean;
+begin
+  Result:=Assigned(Form) and
+          Assigned(Form.Grid);
+end;
+
+function TSgtsJrnJournalsIface.CanRefresh: Boolean;
+begin
+  Result:=inherited CanRefresh and
+          ((Form.FlagRefresh) or FAdjustRefresh);
+end;
+
+procedure TSgtsJrnJournalsIface.UpdateButtons; 
+begin
+  if Assigned(Form) then begin
+    Form.ToolButtonGraph.Enabled:=CanGraph;
+  end;
+  inherited UpdateButtons;
+end;
+
+procedure TSgtsJrnJournalsIface.Graph;
+var
+  AIface: TSgtsGrpJournalIface;
+  Info: TCutInfo;
+begin
+  if CanGraph then begin
+    AIface:=TSgtsGrpJournalIface.Create(CoreIntf);
+    Ifaces.Add(AIface);
+    Info:=TCutInfo(Form.ComboBoxCut.Items.Objects[Form.ComboBoxCut.ItemIndex]);
+    AIface.Show(Info.CutId,Form.Grid.Hint,DataSet,Form.Determination);
+  end;
+end;
+
+function TSgtsJrnJournalsIface.CanGraph: Boolean;
+begin
+  Result:=DataSet.Active and
+          Assigned(Form);
+end;
+
+procedure TSgtsJrnJournalsIface.DataSetAfterScroll(DataSet: TDataSet);
+var
+  OldCursor: TCursor;
+  DS: TSgtsDatabaseCDS;
+  FieldPointId: TField;
+begin
+  inherited DataSetAfterScroll(DataSet);
+  if Assigned(Form) then begin
+    if DataSet.Active and not DataSet.IsEmpty then begin
+      FieldPointId:=DataSet.FindField('POINT_ID');
+      if Assigned(FieldPointId) and Form.GroupBoxInfo.Visible then begin
+        if (FOldPointId<>FieldPointId.Value) then begin
+          OldCursor:=Screen.Cursor;
+          Screen.Cursor:=crHourGlass;
+          try
+            DS:=TSgtsDatabaseCDS.Create(CoreIntf);
+            try
+              DS.ProviderName:=SProviderSelectRouteConverters;
+              with DS.SelectDefs do begin
+                AddInvisible('CONVERTER_NAME');
+                AddInvisible('COORDINATE_Z');
+                AddInvisible('OBJECT_PATHS');
+              end;
+              DS.FilterGroups.Add.Filters.Add('POINT_ID',fcEqual,FieldPointId.Value);
+              DS.Open;
+              if DS.Active and not DS.IsEmpty then begin
+                Form.EditConverter.Text:=DS.FieldByName('CONVERTER_NAME').AsString;
+                Form.EditPointCoordinateZ.Text:=DS.FieldByName('COORDINATE_Z').AsString;
+                Form.MemoPointObject.Lines.Text:=DS.FieldByName('OBJECT_PATHS').AsString;
+                FOldPointId:=FieldPointId.Value;
+              end;
+            finally
+              DS.Free;
+            end;
+          finally
+            Screen.Cursor:=OldCursor;
+          end;
+        end;
+      end else begin
+        Form.EditConverter.Text:='';
+        Form.EditPointCoordinateZ.Text:='';
+        Form.MemoPointObject.Lines.Clear;
+      end;
+    end else begin
+      Form.EditConverter.Text:='';
+      Form.EditPointCoordinateZ.Text:='';
+      Form.MemoPointObject.Lines.Clear;
+    end;
+  end;
+end;
+
+{ TSgtsJrnJournalObservationsForm }
+
+constructor TSgtsJrnJournalsForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+
+  ToolButtonGraph.Top:=ToolButtonReport.Top+ToolButtonReport.Height+1;
+
+  FOldIndexCutType:=0;
+  FOldIndexCut:=-1;
+  FPeriodType:=ptMonth;
+
+  FDatePeriodBegin:=TSgtsDateEdit.Create(Self);
+  FDatePeriodBegin.Parent:=DateTimePickerPeriodBegin.Parent;
+  FDatePeriodBegin.SetBounds(DateTimePickerPeriodBegin.Left,DateTimePickerPeriodBegin.Top,DateTimePickerPeriodBegin.Width,DateTimePickerPeriodBegin.Height);
+  FDatePeriodBegin.TabOrder:=DateTimePickerPeriodBegin.TabOrder;
+  LabelPeriodBegin.FocusControl:=FDatePeriodBegin;
+  DateTimePickerPeriodBegin.Free;
+
+  FDatePeriodEnd:=TSgtsDateEdit.Create(Self);
+  FDatePeriodEnd.Parent:=DateTimePickerPeriodEnd.Parent;
+  FDatePeriodEnd.SetBounds(DateTimePickerPeriodEnd.Left,DateTimePickerPeriodEnd.Top,DateTimePickerPeriodEnd.Width,DateTimePickerPeriodEnd.Height);
+  FDatePeriodEnd.TabOrder:=DateTimePickerPeriodEnd.TabOrder;
+  LabelPeriodEnd.FocusControl:=FDatePeriodEnd;
+  DateTimePickerPeriodEnd.Free;
+
+  EnableByDateObservation(false);
+  EnableByCycleNum(false);
+
+  FFlagRefresh:=false;
+end;
+
+destructor TSgtsJrnJournalsForm.Destroy;
+begin
+  DeleteInactiveFilters;
+  WriteParamsByCurrentCutId;
+  ClearStrings(ComboBoxCut.Items);
+  Grid.Parent:=nil;
+  FDatePeriodEnd.Free;
+  FDatePeriodBegin.Free;
+  inherited Destroy;
+end;
+
+procedure TSgtsJrnJournalsForm.InitByIface(AIface: TSgtsFormIface);
+begin
+  inherited InitByIface(AIface);
+  if Assigned(Iface) then begin
+    Iface.CloseData;
+    with Iface.DataSet do begin
+      IndexName:='';
+      SelectDefs.Clear;
+      FilterGroups.Clear;
+      Iface.DefaultFilterGroups.Clear;
+      Orders.Clear;
+      Iface.DefaultOrders.Clear;
+    end;
+  end;
+  ComboBoxCutType.ItemIndex:=Iface.CutType;
+  FOldIndexCutType:=ComboBoxCutType.ItemIndex;
+  FillCutsByType(FOldIndexCutType);
+  RadioButtonPeriod.Checked:=Iface.PeriodChecked;
+  FDatePeriodBegin.Text:=Iface.DateBegin;
+  FDatePeriodEnd.Text:=Iface.DateEnd;
+  RadioButtonCycle.Checked:=Iface.CycleChecked;
+  EditCycleBegin.Text:=Iface.CycleBegin;
+  EditCycleEnd.Text:=Iface.CycleEnd;
+  RadioButtonCycleClick(nil);
+end;
+
+function TSgtsJrnJournalsForm.GetIface: TSgtsJrnJournalsIface;
+begin
+  Result:=TSgtsJrnJournalsIface(inherited Iface);
+end;
+
+procedure TSgtsJrnJournalsForm.ButtonApplyClick(
+  Sender: TObject);
+begin
+  ApplyFilter(true);
+  if Iface.DataSet.Active then begin
+    FFlagRefresh:=true;
+    Iface.PeriodChecked:=RadioButtonPeriod.Checked;
+    Iface.DateBegin:=FDatePeriodBegin.Text;
+    Iface.DateEnd:=FDatePeriodEnd.Text;
+    Iface.CycleChecked:=RadioButtonCycle.Checked;
+    Iface.CycleBegin:=EditCycleBegin.Text;
+    Iface.CycleEnd:=EditCycleEnd.Text;
+    Iface.UpdateContents;
+  end;
+end;
+
+procedure TSgtsJrnJournalsForm.FillCutsByType(CutType: Integer);
+var
+  DS: TSgtsDatabaseCDS;
+  Info: TCutInfo;
+  OldCursor: TCursor;
+  Index: Integer;
+  NewIndex: Integer;
+begin
+  FOldIndexCut:=-1;
+  NewIndex:=FOldIndexCut;
+  OldCursor:=Screen.Cursor;
+  Screen.Cursor:=crHourGlass;
+  ComboBoxCut.Items.BeginUpdate;
+  DS:=TSgtsDatabaseCDS.Create(CoreIntf);
+  try
+    DeleteInactiveFilters;
+    WriteParamsByCurrentCutId;
+
+    ClearStrings(ComboBoxCut.Items);
+    DS.ProviderName:=SProviderSelectCuts;
+    with DS.SelectDefs do begin
+      AddInvisible('CUT_ID');
+      AddInvisible('NAME');
+      AddInvisible('DESCRIPTION');
+    end;
+    DS.FilterGroups.Add.Filters.Add('CUT_TYPE',fcEqual,CutType);
+    DS.Orders.Add('PRIORITY',otAsc);
+    DS.Open;
+    if DS.Active then
+      while not DS.Eof do begin
+        Info:=TCutInfo.Create;
+        Info.CutId:=DS.FieldByName('CUT_ID').AsInteger;
+        Info.Name:=DS.FieldByName('NAME').AsString;
+        Info.Description:=DS.FieldByName('DESCRIPTION').AsString;
+        Index:=ComboBoxCut.Items.AddObject(Info.Name,Info);
+        if Info.CutId=Iface.CutId then begin
+          NewIndex:=Index;
+        end;
+        DS.Next;
+      end;
+  finally
+    DS.Free;
+    ComboBoxCut.ItemIndex:=NewIndex;
+    ComboBoxCutChange(nil);
+    ComboBoxCut.Items.EndUpdate;
+    Screen.Cursor:=OldCursor;
+  end;
+end;
+
+procedure TSgtsJrnJournalsForm.ComboBoxCutTypeSelect(Sender: TObject);
+begin
+  FlagRefresh:=false;
+  Iface.CutType:=ComboBoxCutType.ItemIndex;
+  if FOldIndexCutType<>ComboBoxCutType.ItemIndex then begin
+    FillCutsByType(ComboBoxCutType.ItemIndex);
+    FOldIndexCutType:=ComboBoxCutType.ItemIndex;
+  end;
+end;
+
+procedure TSgtsJrnJournalsForm.ButtonCutClick(Sender: TObject);
+var
+  AIface: TSgtsRbkCutsIface;
+  Buffer: String;
+  Info: TCutInfo;
+  FilterGroups: TSgtsGetRecordsConfigFilterGroups;
+  DS: TSgtsCDS;
+  Index: Integer;
+begin
+  if ComboBoxCut.ItemIndex<>-1 then begin
+    Info:=TCutInfo(ComboBoxCut.Items.Objects[ComboBoxCut.ItemIndex]);
+    AIface:=TSgtsRbkCutsIface.Create(CoreIntf);
+    FilterGroups:=TSgtsGetRecordsConfigFilterGroups.Create;
+    try
+      FilterGroups.Add.Filters.Add('CUT_TYPE',fcEqual,ComboBoxCutType.ItemIndex);
+      if AIface.SelectVisible('CUT_ID',Info.CutId,Buffer,FilterGroups) then begin
+        DS:=TSgtsCDS.Create(nil);
+        try
+          DS.XMLData:=Buffer;
+          if DS.Active and not DS.IsEmpty then begin
+            Index:=GetCutIndexById(DS.FieldByName('CUT_ID').AsInteger);
+            if Index<>-1 then begin
+              ComboBoxCut.ItemIndex:=Index;
+              ComboBoxCutChange(nil);
+            end;  
+          end;
+        finally
+          DS.Free;
+        end;
+      end;
+    finally
+      FilterGroups.Free;
+      AIface.Free;
+    end;
+  end;
+end;
+
+function TSgtsJrnJournalsForm.GetCutIndexById(CutId: Integer): Integer;
+var
+  i: Integer;
+  Info: TCutInfo;
+begin
+  Result:=-1;
+  for i:=0 to ComboBoxCut.Items.Count-1 do begin
+    Info:=TCutInfo(ComboBoxCut.Items.Objects[i]);
+    if Info.CutId=CutId then begin
+      Result:=i;
+      exit;
+    end;
+  end;
+end;
+
+procedure TSgtsJrnJournalsForm.ComboBoxCutChange(Sender: TObject);
+var
+  Info1,Info2: TCutInfo;
+begin
+  FlagRefresh:=false;
+  ButtonCut.Enabled:=ComboBoxCut.ItemIndex<>-1;
+  ButtonApply.Enabled:=ButtonCut.Enabled;
+  if FOldIndexCut<>ComboBoxCut.ItemIndex then begin
+    if FOldIndexCut<>-1 then begin
+      Info2:=TCutInfo(ComboBoxCut.Items.Objects[FOldIndexCut]);
+      DeleteInactiveFilters;
+      WriteParamsByCutId(Info2.CutId);
+    end;
+    if ButtonCut.Enabled then begin
+      Info1:=TCutInfo(ComboBoxCut.Items.Objects[ComboBoxCut.ItemIndex]);
+      Grid.Hint:=Info1.Description;
+      SetDataSetByCutId(Info1.CutId);
+    end;
+    FOldIndexCut:=ComboBoxCut.ItemIndex;
+  end;
+  if not ButtonCut.Enabled then begin
+    with Iface.DataSet do begin
+      Iface.CloseData;
+      IndexName:='';
+      SelectDefs.Clear;
+      FilterGroups.Clear;
+      Iface.DefaultFilterGroups.Clear;
+      Orders.Clear;
+      Iface.DefaultOrders.Clear;
+    end;
+    GroupBoxInfo.Visible:=false;
+    EnableByDateObservation(false);
+    EnableByCycleNum(false);
+
+    Grid.ColumnSort:=nil;
+    Grid.Columns.Clear;
+  end;
+end;
+
+procedure TSgtsJrnJournalsForm.ButtonPeriodClick(Sender: TObject);
+var
+  AIface: TSgtsPeriodIface;
+  DateBegin: TDate;
+  DateEnd: TDate;
+begin
+  AIface:=TSgtsPeriodIface.Create(CoreIntf);
+  try
+    DateBegin:=DatePeriodBegin.Date;
+    DateEnd:=DatePeriodEnd.Date;
+    if AIface.Select(FPeriodType,DateBegin,DateEnd) then begin
+      DatePeriodBegin.Date:=DateBegin;
+      DatePeriodEnd.Date:=DateEnd;
+    end;
+  finally
+    AIface.Free;
+  end;
+end;
+
+procedure TSgtsJrnJournalsForm.ButtonCycleBeginClick(Sender: TObject);
+var
+  CycleNum: Variant;
+  TryValue: Integer;
+begin
+  CycleNum:=Null;
+  if TryStrToInt(EditCycleBegin.Text,TryValue) then
+    CycleNum:=TryValue;
+  if SelectCycle(CycleNum) then
+    EditCycleBegin.Text:=VarToStrDef(CycleNum,'');
+end;
+
+procedure TSgtsJrnJournalsForm.ButtonCycleEndClick(Sender: TObject);
+var
+  CycleNum: Variant;
+  TryValue: Integer;
+begin
+  CycleNum:=Null;
+  if TryStrToInt(EditCycleEnd.Text,TryValue) then
+    CycleNum:=TryValue;
+  if SelectCycle(CycleNum) then
+    EditCycleEnd.Text:=VarToStrDef(CycleNum,'');
+end;
+
+function TSgtsJrnJournalsForm.SelectCycle(var CycleNum: Variant): Boolean;
+var
+  AIface: TSgtsRbkCyclesIface;
+  DS: TSgtsCDS;
+  Data: String;
+begin
+  AIface:=TSgtsRbkCyclesIface.Create(CoreIntf);
+  try
+    Result:=false;
+    if AIface.SelectVisible('CYCLE_NUM',CycleNum,Data) then begin
+      DS:=TSgtsCDS.Create(nil);
+      try
+        DS.XMLData:=Data;
+        Result:=DS.Active and not DS.IsEmpty;
+        if Result then
+         CycleNum:=DS.FieldByName('CYCLE_NUM').Value;
+      finally
+        DS.Free;
+      end;
+    end;
+  finally
+    AIface.Free;
+  end;
+end;
+
+procedure TSgtsJrnJournalsForm.RadioButtonCycleClick(Sender: TObject);
+begin
+  LabelPeriodBegin.Enabled:=RadioButtonPeriod.Checked and FDateObservationExists;
+  DatePeriodBegin.Enabled:=LabelPeriodBegin.Enabled;
+  DatePeriodBegin.Color:=iff(LabelPeriodBegin.Enabled,clWindow,clBtnFace);
+  LabelPeriodEnd.Enabled:=LabelPeriodBegin.Enabled;
+  DatePeriodEnd.Enabled:=LabelPeriodBegin.Enabled;
+  DatePeriodEnd.Color:=iff(LabelPeriodBegin.Enabled,clWindow,clBtnFace);
+  ButtonPeriod.Enabled:=LabelPeriodBegin.Enabled;
+
+  LabelCycleBegin.Enabled:=RadioButtonCycle.Checked and FCycleNumExists;
+  EditCycleBegin.Enabled:=LabelCycleBegin.Enabled;
+  EditCycleBegin.Color:=iff(LabelCycleBegin.Enabled,clWindow,clBtnFace);
+  ButtonCycleBegin.Enabled:=LabelCycleBegin.Enabled;
+  LabelCycleEnd.Enabled:=LabelCycleBegin.Enabled;
+  EditCycleEnd.Enabled:=LabelCycleBegin.Enabled;
+  EditCycleEnd.Color:=iff(LabelCycleBegin.Enabled,clWindow,clBtnFace);
+  ButtonCycleEnd.Enabled:=LabelCycleBegin.Enabled;
+end;
+
+procedure TSgtsJrnJournalsForm.SetDataSetByCutId(CutId: Integer);
+var
+  Config: TSgtsConfig;
+  Strings: TStringList;
+  i: Integer;
+  DS: TSgtsDatabaseCDS;
+  S: String;
+  IsVisible, IsExists: Boolean;
+  AFieldName: String;
+  ATableName: String;
+  AWidth: Integer;
+  Def: TSgtsSelectDef;
+  OldCursor: TCursor;
+begin
+  if Assigned(Iface.Database) then begin
+    OldCursor:=Screen.Cursor;
+    Screen.Cursor:=crHourGlass;
+    DS:=TSgtsDatabaseCDS.Create(CoreIntf);
+    try
+      DS.ProviderName:=SProviderSelectCuts;
+      with DS.SelectDefs do begin
+        AddInvisible('VIEW_NAME');
+        AddInvisible('DETERMINATION');
+        AddInvisible('CONDITION');
+      end;
+      DS.FilterGroups.Add.Filters.Add('CUT_ID',fcEqual,CutId);
+      DS.Open;
+      if DS.Active then begin
+        with Iface.DataSet do begin
+          Iface.CloseData;
+          IndexName:='';
+          SelectDefs.Clear;
+          FilterGroups.Clear;
+          Iface.DefaultFilterGroups.Clear;
+          Orders.Clear;
+          Iface.DefaultOrders.Clear;
+
+          ProviderName:=DS.FieldByName(SDb_ViewName).AsString;
+          FDetermination:=DS.FieldByName(SDb_Determination).AsString;
+
+          Iface.Database.GetRecordsProviders.AddDefault(ProviderName);
+          Config:=TSgtsConfig.Create(CoreIntf);
+          Strings:=TStringList.Create;
+          try
+            Config.LoadFromString(FDetermination);
+            Config.ReadSection(SCutDeterminationColumns,Strings);
+            FPointIdExists:=false;
+            for i:=0 to Strings.Count-1 do begin
+              S:=Strings[i];
+              IsVisible:=Config.Read(SCutDeterminationColumns,S,true);
+              AFieldName:=Config.Read(S,SCutDeterminationField,'');
+              ATableName:=Config.Read(S,SCutDeterminationTableName,'');
+              if IsVisible then begin
+                if (Trim(AFieldName)<>'') and (Trim(ATableName)='') then begin
+                  AWidth:=Config.Read(S,SCutDeterminationWidth,50);
+                  Def:=SelectDefs.Add(AFieldName,S,AWidth);
+                  if Assigned(Def) then begin
+                    Def.DisplayFormat:=Config.Read(S,SCutDeterminationFormat,Def.DisplayFormat);
+                    Def.Group:=Config.Read(S,SCutDeterminationGroup,Def.Group);
+                    Def.FuncType:=Config.Read(S,SCutDeterminationFuncType,Def.FuncType);
+                  end;
+                end;
+              end else begin
+                if (Trim(AFieldName)<>'') and (Trim(ATableName)='') then
+                  SelectDefs.AddInvisible(AFieldName);
+              end;
+
+              if AnsiSameText(AFieldName,'POINT_ID') then
+                FPointIdExists:=true;
+            end;
+
+            FDateObservationExists:=false;
+            FCycleNumExists:=false;
+            Config.ReadSection(SCutDeterminationFilter,Strings);
+            for i:=0 to Strings.Count-1 do begin
+              S:=Strings[i];
+              IsExists:=Config.Read(SCutDeterminationFilter,S,true);
+              if AnsiSameText(S,'Дата наблюдения') then
+                FDateObservationExists:=IsExists;
+              if AnsiSameText(S,'Цикл') then
+                FCycleNumExists:=IsExists;
+            end;
+
+            FilterGroups.Add.Filters.AddSql(DS.FieldByName(SDb_Condition).AsString);
+
+            GroupBoxInfo.Visible:=FPointIdExists;
+            EnableByDateObservation(FDateObservationExists);
+            EnableByCycleNum(FCycleNumExists);
+
+            Grid.ColumnSort:=nil;
+            CreateGridColumnsBySelectDefs(Grid,SelectDefs);
+            Orders.CopyFromSelectDefs(SelectDefs);
+            Iface.DefaultOrders.CopyFrom(Orders);
+            FilterGroups.CopyFromSelectDefs(SelectDefs);
+            Iface.DefaultFilterGroups.CopyFrom(FilterGroups);
+
+            Grid.AutoFit:=false;
+            ReadParamsByCutId(CutId);
+            WriteParamsByCutId(CutId);
+            
+            Iface.CutId:=CutId;
+          finally
+            Strings.Free;
+            Config.Free;
+          end;
+        end;
+      end;
+    finally
+      DS.Free;
+      Screen.Cursor:=OldCursor;
+    end;
+  end;
+end;
+
+procedure TSgtsJrnJournalsForm.ReadParamsByCutId(CutId: Integer);
+var
+  NewSection: String;
+begin
+  if Assigned(CoreIntf) then begin
+    with CoreIntf.DatabaseConfig do begin
+      NewSection:=Format('%s%s',[Iface.SectionName,VarToStrDef(CutId,'')]);
+      Grid.SetColumnsStr(Read(NewSection,SConfigParamColumns,Grid.GetColumnsStr,cmBase64));
+      UpdateGridColumnsBySelectDefs(Grid,Iface.DataSet.SelectDefs);
+      Grid.AutoFit:=Read(NewSection,SConfigParamAutoFit,Grid.AutoFit);
+      Iface.DataSet.Orders.SetOrdersStr(Read(NewSection,SConfigParamOrders,Iface.DataSet.Orders.GetOrdersStr,cmBase64));
+      Iface.DataSet.FilterGroups.SetFiltersStr(Read(NewSection,SConfigParamFilters,Iface.DataSet.FilterGroups.GetFiltersStr,cmBase64));
+    end;
+  end;
+end;
+
+procedure TSgtsJrnJournalsForm.WriteParamsByCutId(CutId: Integer);
+var
+  NewSection: String;
+begin
+//  exit;
+  if Assigned(CoreIntf) then begin
+    with CoreIntf.DatabaseConfig do begin
+      NewSection:=Format('%s%s',[Iface.SectionName,VarToStrDef(CutId,'')]);
+      Write(NewSection,SConfigParamColumns,Grid.GetColumnsStr,cmBase64);
+      Write(NewSection,SConfigParamAutoFit,Grid.AutoFit);
+      Write(NewSection,SConfigParamOrders,Iface.DataSet.Orders.GetOrdersStr,cmBase64);
+      Write(NewSection,SConfigParamFilters,Iface.DataSet.FilterGroups.GetFiltersStr,cmBase64);
+    end;
+  end;
+end;
+
+procedure TSgtsJrnJournalsForm.WriteParamsByCurrentCutId;
+var
+  Info: TCutInfo;
+begin
+  if ComboBoxCut.ItemIndex<>-1 then begin
+    Info:=TCutInfo(ComboBoxCut.Items.Objects[ComboBoxCut.ItemIndex]);
+    WriteParamsByCutId(Info.CutId);
+  end;
+end;
+
+procedure TSgtsJrnJournalsForm.DeleteInactiveFilters;
+begin
+  Iface.DataSet.FilterGroups.DeleteInactive;
+  Iface.DefaultFilterGroups.DeleteInactive;
+end;
+
+procedure TSgtsJrnJournalsForm.ApplyFilter(WithOpen: Boolean);
+var
+  OldCursor: TCursor;
+  Group: TSgtsGetRecordsConfigFilterGroup;
+  Temp: TSgtsGetRecordsConfigFilterGroups;
+  CycleBegin, CycleEnd: Integer;
+begin
+  OldCursor:=Screen.Cursor;
+  Screen.Cursor:=crHourGlass;
+  Temp:=TSgtsGetRecordsConfigFilterGroups.Create;
+  try
+    if WithOpen then
+      DeleteInactiveFilters;
+
+    if RadioButtonPeriod.Checked and RadioButtonPeriod.Enabled then begin
+      Group:=nil;
+      if (FDatePeriodBegin.Date<>NullDate) or
+         (FDatePeriodEnd.Date<>NullDate) then begin
+        Group:=Temp.Add;
+        Group.GroupName:=RadioButtonPeriod.Caption;
+        Group.Visible:=true;
+        Group.Active:=false;
+      end;
+      if (FDatePeriodBegin.Date<>NullDate) then
+        Group.Filters.Add('DATE_OBSERVATION',fcEqualGreater,FDatePeriodBegin.Date2);
+      if FDatePeriodEnd.Date<>NullDate then
+        Group.Filters.Add('DATE_OBSERVATION',fcEqualLess,FDatePeriodEnd.Date2);
+    end;
+
+    if RadioButtonCycle.Checked and RadioButtonCycle.Enabled then begin
+      Group:=nil;
+      CycleBegin:=-1;
+      CycleEnd:=-1;
+      if TryStrToInt(EditCycleBegin.Text,CycleBegin) or
+         TryStrToInt(EditCycleEnd.Text,CycleEnd) then begin
+        Group:=Temp.Add;
+        Group.GroupName:=RadioButtonCycle.Caption;
+        Group.Visible:=true;
+        Group.Active:=false;
+      end;
+      CycleBegin:=-1;
+      if TryStrToInt(EditCycleBegin.Text,CycleBegin) then
+        Group.Filters.Add('CYCLE_NUM',fcEqualGreater,CycleBegin);
+      CycleEnd:=-1;  
+      if TryStrToInt(EditCycleEnd.Text,CycleEnd) then 
+        Group.Filters.Add('CYCLE_NUM',fcEqualLess,CycleEnd);
+    end;    
+
+    Iface.CloseData;
+    Iface.DataSet.IndexName:='';
+    Iface.DataSet.FilterGroups.CopyFrom(Temp,False,True);
+    Iface.DefaultFilterGroups.CopyFrom(Temp,False,True);
+
+    if Grid.AutoFit then
+      Grid.AutoFitColumns;
+
+    if WithOpen then
+      Iface.OpenData;
+  finally
+    Temp.Free;
+    Screen.Cursor:=OldCursor;
+  end;
+end;
+
+procedure TSgtsJrnJournalsForm.EnableByDateObservation(AEnabled: Boolean);
+begin
+  RadioButtonPeriod.Enabled:=AEnabled;
+  LabelPeriodBegin.Enabled:=RadioButtonPeriod.Enabled and RadioButtonPeriod.Checked;
+  DatePeriodBegin.Enabled:=LabelPeriodBegin.Enabled;
+  DatePeriodBegin.Color:=iff(LabelPeriodBegin.Enabled,clWindow,clBtnFace);
+  LabelPeriodEnd.Enabled:=LabelPeriodBegin.Enabled;
+  DatePeriodEnd.Enabled:=LabelPeriodBegin.Enabled;
+  DatePeriodEnd.Color:=iff(LabelPeriodBegin.Enabled,clWindow,clBtnFace);
+  ButtonPeriod.Enabled:=LabelPeriodBegin.Enabled;
+end;
+
+procedure TSgtsJrnJournalsForm.EnableByCycleNum(AEnabled: Boolean);
+begin
+  RadioButtonCycle.Enabled:=AEnabled;
+  LabelCycleBegin.Enabled:=RadioButtonCycle.Enabled and RadioButtonCycle.Checked;
+  EditCycleBegin.Enabled:=LabelCycleBegin.Enabled;
+  EditCycleBegin.Color:=iff(LabelCycleBegin.Enabled,clWindow,clBtnFace);
+  ButtonCycleBegin.Enabled:=LabelCycleBegin.Enabled;
+  LabelCycleEnd.Enabled:=LabelCycleBegin.Enabled;
+  EditCycleEnd.Enabled:=LabelCycleBegin.Enabled;
+  EditCycleEnd.Color:=iff(LabelCycleBegin.Enabled,clWindow,clBtnFace);
+  ButtonCycleEnd.Enabled:=LabelCycleBegin.Enabled;
+end;
+
+procedure TSgtsJrnJournalsForm.ToolButtonGraphClick(Sender: TObject);
+begin
+  Iface.Graph;
+end;
+
+end.

@@ -1,0 +1,61 @@
+unit SgtsRbkMTPlanGridFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, Menus, ImgList, ExtCtrls, ComCtrls, ToolWin, StdCtrls, DBCtrls,
+  Grids, DBGrids,
+  SgtsDataGridFm, SgtsDataFm, SgtsFm, SgtsCDS,  SgtsCoreIntf, SgtsMTPlanTreeFm;
+
+type
+  TSgtsRbkMTPlanGridForm = class(TSgtsDataGridForm)
+    Panel1: TPanel;
+    Splitter: TSplitter;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+  TSgtsRbkMTPlanIface=class(TSgtsDataGridIface)
+  public
+    procedure Init; override;
+  end;
+
+var
+  SgtsRbkMTPlanGridForm: TSgtsRbkMTPlanGridForm;
+
+implementation
+
+uses SgtsIface, SgtsConsts, SgtsRbkTestEditFm,
+     SgtsSelectDefs,SgtsRbkTestFm;
+
+{$R *.dfm}
+
+{ TSgtsRbkMTPlanIface }
+
+procedure TSgtsRbkMTPlanIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkMTPlanGridForm;
+  InterfaceName:='План - графики';
+
+
+  InsertClass:=TSgtsRbkMTPlanInsertIface;
+  //UpdateClass:=TSgtsRbkTestUpdateIface;
+  //DeleteClass:=TSgtsRbkTestDeleteIface;
+
+  with DataSet do begin
+    ProviderName:='S_PLAN_GRAPH_YEARS';
+    with SelectDefs do begin
+      AddKey('YEAR');
+      Add('YEAR','Год');
+    end;
+    CheckProvider:=false;
+  end;
+  MenuPath:=Format(SHandbooksMenu,['Тестирование\План - график']);
+  MenuIndex:=1006;
+end;
+
+end.

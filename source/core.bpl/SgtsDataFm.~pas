@@ -1,0 +1,1297 @@
+unit SgtsDataFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Menus, ExtCtrls, ToolWin, ComCtrls, Grids, DBGrids, ImgList, DB,
+  Contnrs, StdCtrls,
+  SgtsChildFm, SgtsFm, SgtsDatabaseCDS, SgtsIface, SgtsCDS,
+  SgtsDataInsertFm, SgtsDataUpdateFm, SgtsDataDelete, SgtsExecuteDefs,
+  SgtsDataFmIntf, SgtsDataIfaceIntf, SgtsCoreIntf, SgtsGetRecordsConfig,
+  SgtsMenus, SgtsDatabaseIntf, SgtsBaseReportFm;
+
+type
+  TSgtsDataIface=class;
+
+  TSgtsDataForm = class(TSgtsChildForm)
+    MainMenu: TMainMenu;
+    MenuData: TMenuItem;
+    StatusBar: TStatusBar;
+    ToolBar: TToolBar;
+    PanelView: TPanel;
+    ToolButtonInsert: TToolButton;
+    ImageList: TImageList;
+    PopupMenuView: TPopupMenu;
+    ToolButtonUpdate: TToolButton;
+    ToolButtonCopy: TToolButton;
+    ToolButtonDelete: TToolButton;
+    ToolButtonFirst: TToolButton;
+    ToolButtonPrior: TToolButton;
+    ToolButtonNext: TToolButton;
+    ToolButtonLast: TToolButton;
+    PopupMenuFilter: TPopupMenu;
+    PopupMenuReport: TPopupMenu;
+    N1: TMenuItem;
+    N2: TMenuItem;
+    DataSource: TDataSource;
+    ToolButtonRefresh: TToolButton;
+    PopupMenuInsert: TPopupMenu;
+    BevelStatus: TBevel;
+    PanelButton: TPanel;
+    ButtonCancel: TButton;
+    ButtonOk: TButton;
+    ToolButtonReport: TToolButton;
+    ToolButtonAdjust: TToolButton;
+    procedure ToolButtonOptionClick(Sender: TObject);
+    procedure ToolButtonRefreshClick(Sender: TObject);
+    procedure ToolButtonInsertClick(Sender: TObject);
+    procedure PopupMenuViewPopup(Sender: TObject);
+    procedure ToolButtonUpdateClick(Sender: TObject);
+    procedure ToolButtonDeleteClick(Sender: TObject);
+    procedure ToolButtonCopyClick(Sender: TObject);
+    procedure ToolButtonFirstClick(Sender: TObject);
+    procedure ToolButtonPriorClick(Sender: TObject);
+    procedure ToolButtonNextClick(Sender: TObject);
+    procedure ToolButtonLastClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure PopupMenuInsertPopup(Sender: TObject);
+    procedure ButtonCancelClick(Sender: TObject);
+    procedure ButtonOkClick(Sender: TObject);
+    procedure ToolButtonReportClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure ToolButtonAdjustClick(Sender: TObject);
+  private
+    function GetIface: TSgtsDataIface;
+    procedure CMDialogKey(var Message: TCMDialogKey); message CM_DIALOGKEY;
+    procedure EnableModal(AEnabled: Boolean);
+  protected
+    procedure ShowingChanged; override;
+    procedure DblClickAction; virtual;
+    function GetIfaceIntf: ISgtsDataIface; virtual;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+    procedure InitByIface(AIface: TSgtsFormIface); override;
+
+    property Iface: TSgtsDataIface read GetIface;
+    property IfaceIntf: ISgtsDataIface read GetIfaceIntf;
+  end;
+
+  TSgtsDataIfaces=class(TObjectList)
+  end;
+
+  TSgtsCreateSelectedDataType=(sdtCurrent,sdtAll,sdtBookmark);
+
+  TSgtsDataIface=class(TSgtsChildIface,ISgtsDataForm,ISgtsDataIface)
+  private
+    FDataSet: TSgtsDatabaseCDS;
+    FIfaces: TSgtsDataIfaces;
+    FUpdateClass: TSgtsDataUpdateIfaceClass;
+    FDeleteClass: TSgtsDataDeleteIfaceClass;
+    FDetailClass: TSgtsDataUpdateIfaceClass;
+
+    FInsertClasses: TSgtsDataInsertIfaceClasses;
+    FReportClassInfos: TSgtsBaseReportIfaceClassInfos;
+
+    FMode: TSgtsDataIfaceMode;
+    FExecuteSuccess: Boolean;
+    FCancelProgress: Boolean;
+    FInProgress: Boolean;
+    FFirstOpen: Boolean;
+    FIsCanSelect: Boolean;
+
+    function GetForm: TSgtsDataForm;
+    function GetInsertClass: TSgtsDataInsertIfaceClass;
+    procedure SetInsertClass(Value: TSgtsDataInsertIfaceClass);
+    procedure MenuItemInsertClick(Sender: TObject);
+    procedure CreatePopupMenuInsert(MenuParent: TMenuItem);
+    procedure UpdatePopupMenuInsert(MenuParent: TMenuItem);
+    procedure MenuItemReportClick(Sender: TObject);
+    procedure CreatePopupMenuReport(MenuParent: TMenuItem);
+    procedure UpdatePopupMenuReport(MenuParent: TMenuItem);
+    function GetDatabase: ISgtsDatabase;
+    function GetExecuteSuccess: Boolean;
+  protected
+    function GetFormClass: TSgtsFormClass; override;
+    procedure AfterCreateForm(AForm: TSgtsForm); override;
+    procedure BeforeShowForm(AForm: TSgtsForm); override;
+    procedure DataSetAfterScroll(DataSet: TDataSet); virtual;
+    procedure DataSetProgressProc(Min,Max,Position: Integer; var Breaked: Boolean); virtual;
+    function GetReportComponent: TComponent; virtual;
+
+    function _GetDataSet: TSgtsCDS;
+    function _GetExecuteDefs: TSgtsExecuteDefs;
+    function _GetMode: TSgtsDataIfaceMode;
+    function _GetFilterGroups: TSgtsGetRecordsConfigFilterGroups;
+
+    property Ifaces: TSgtsDataIfaces read FIfaces;
+    property FirstOpen: Boolean read FFirstOpen write FFirstOpen;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+    procedure Init; override;
+    procedure DatabaseLink; override;
+    procedure UpdateContents; override;
+
+    procedure InsertByDefs(ExecuteDefs: Pointer); virtual;
+    procedure UpdateByDefs(ExecuteDefs: Pointer); virtual;
+    procedure DeleteByDefs(ExecuteDefs: Pointer); virtual;
+
+    function CanShow: Boolean; override;
+    procedure UpdateButtons; virtual;
+    procedure UpdateStatusBar; virtual;
+
+    function CanRefresh: Boolean; virtual;
+    procedure Refresh; virtual;
+    function CanInsert: Boolean; virtual;
+    procedure Insert; virtual;
+    function CanUpdate: Boolean; virtual;
+    procedure Update; virtual;
+    function CanDelete: Boolean; virtual;
+    procedure Delete; virtual;
+    function CanCopy: Boolean; virtual;
+    procedure Copy; virtual;
+    function CanFirst: Boolean; virtual;
+    procedure First; virtual;
+    function CanPrior: Boolean; virtual;
+    procedure Prior; virtual;
+    function CanNext: Boolean; virtual;
+    procedure Next; virtual;
+    function CanLast: Boolean; virtual;
+    procedure Last; virtual;
+    function CanDetail: Boolean; virtual;
+    procedure Detail; virtual;
+    function CanReport: Boolean; virtual;
+    procedure Report; virtual;
+    function CanInfo: Boolean; virtual;
+    procedure Info; virtual;
+    function CanAdjust: Boolean; virtual;
+    function Adjust: Boolean; virtual;
+
+    procedure CloseData; virtual;
+    procedure OpenData; virtual;
+
+    function CanSelect: Boolean; virtual;
+    function CreateSelectedData(SelectedType: TSgtsCreateSelectedDataType): String; virtual;
+    function SelectVisible(Fields: String; Values: Variant; var Data: String;
+                           FilterGroups: TSgtsGetRecordsConfigFilterGroups=nil; MultiSelect: Boolean=false): Boolean; virtual;
+    function SelectInvisible(var Data: String; FilterGroups: TSgtsGetRecordsConfigFilterGroups=nil): Boolean; virtual;
+
+    property Form: TSgtsDataForm read GetForm;
+    property DataSet: TSgtsDatabaseCDS read FDataSet;
+
+    property InsertClass: TSgtsDataInsertIfaceClass read GetInsertClass write SetInsertClass;
+    property UpdateClass: TSgtsDataUpdateIfaceClass read FUpdateClass write FUpdateClass;
+    property DeleteClass: TSgtsDataDeleteIfaceClass read FDeleteClass write FDeleteClass;
+    property DetailClass: TSgtsDataUpdateIfaceClass read FDetailClass write FDetailClass;
+
+    property InsertClasses: TSgtsDataInsertIfaceClasses read FInsertClasses;
+    property ReportClassInfos: TSgtsBaseReportIfaceClassInfos read FReportClassInfos;
+
+    property Mode: TSgtsDataIfaceMode read FMode write FMode;
+    property ExecuteSuccess: Boolean read GetExecuteSuccess;
+    property Database: ISgtsDatabase read GetDatabase;
+
+    property InProgress: Boolean read FInProgress write FInProgress;
+    property CancelProgress: Boolean read FCancelProgress write FCancelProgress;
+    property IsCanSelect: Boolean read FIsCanSelect write FIsCanSelect;
+  end;
+
+  TSgtsDataIfaceClass=class of TSgtsDataIface;
+
+var
+  SgtsDataForm: TSgtsDataForm;
+
+implementation
+
+uses DBClient, ComObj,
+     SgtsObj, SgtsUtils, SgtsConsts, SgtsDialogs, SgtsDataEditFm,
+     SgtsCoreObj;
+
+{$R *.dfm}
+
+
+type
+  TSgtsMenuItemInsert=class(TMenuItem)
+  private
+    FInsertClass: TSgtsDataInsertIfaceClass;
+  public
+    property InsertClass: TSgtsDataInsertIfaceClass read FInsertClass write FInsertClass;
+  end;
+
+  TSgtsMenuItemReport=class(TMenuItem)
+  private
+    FReportClassInfo: TSgtsBaseReportIfaceClassInfo;
+  public
+    property ReportClassInfo: TSgtsBaseReportIfaceClassInfo read FReportClassInfo write FReportClassInfo;
+  end;
+
+{ TSgtsDataIface }
+
+constructor TSgtsDataIface.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FDataSet:=TSgtsDatabaseCDS.Create(ACoreIntf);
+  FDataSet.AfterScroll:=DataSetAfterScroll;
+  FDataSet.ProgressProc:=DataSetProgressProc;
+  FDataSet.Name:=Format(SSDataSet,[GetNameByClass(ClassName)]);
+  FIfaces:=TSgtsDataIfaces.Create;
+  FInsertClasses:=TSgtsDataInsertIfaceClasses.Create;
+  FReportClassInfos:=TSgtsBaseReportIfaceClassInfos.Create;
+  FIsCanSelect:=true;
+end;
+
+destructor TSgtsDataIface.Destroy;
+begin
+  FReportClassInfos.Free;
+  FInsertClasses.Free;
+  FIfaces.Free;
+  FDataSet.Free;
+  inherited Destroy;
+end;
+
+procedure TSgtsDataIface.Init;
+begin
+  inherited Init;
+  with Permissions do begin
+    AddDefault(SPermissionNameShow);
+    AddDefault(SPermissionNameInsert);
+    AddDefault(SPermissionNameUpdate);
+    AddDefault(SPermissionNameDelete);
+    AddDefault(SPermissionNameDetail);
+    AddDefault(SPermissionNameInfo);
+  end;
+end;
+
+procedure TSgtsDataIface.DatabaseLink;
+var
+  AIface: TSgtsBaseReportIface;
+  Str: TStringList;
+  i: Integer;
+  Index: Integer;
+begin
+  inherited DatabaseLink;
+  Str:=TStringList.Create;
+  try
+    FReportClassInfos.Clear;
+    Str.Sorted:=false;
+    CoreIntf.GetInterfaceNames(Str,TSgtsBaseReportIface);
+    for i:=0 to Str.Count-1 do begin
+      AIface:=TSgtsBaseReportIface(Str.Objects[i]);
+      if Assigned(AIface) and
+         AIface.ReportExists then begin
+        Index:=AIface.Interfaces.IndexOf(InterfaceName);
+        if Index<>-1 then
+          FReportClassInfos.AddByIface(AIface);
+      end;  
+    end;
+  finally
+    Str.Free;
+  end;
+end;
+
+function TSgtsDataIface.GetForm: TSgtsDataForm;
+begin
+  Result:=TSgtsDataForm(inherited Form);
+end;
+
+function TSgtsDataIface.GetFormClass: TSgtsFormClass;
+begin
+  Result:=TSgtsDataForm;
+end;
+
+function TSgtsDataIface._GetDataSet: TSgtsCDS;
+begin
+  Result:=FDataSet;
+end;
+
+function TSgtsDataIface._GetExecuteDefs: TSgtsExecuteDefs;
+begin
+  Result:=FDataSet.ExecuteDefs;
+end;
+
+function TSgtsDataIface._GetMode: TSgtsDataIfaceMode;
+begin
+  Result:=FMode;
+end;
+
+function TSgtsDataIface._GetFilterGroups: TSgtsGetRecordsConfigFilterGroups;
+begin
+  Result:=FDataSet.FilterGroups;
+end;
+
+function TSgtsDataIface.GetDatabase: ISgtsDatabase;
+begin
+  Result:=nil;
+  if Assigned(CoreIntf) and
+     Assigned(CoreIntf.DatabaseModules.Current) then
+    Result:=CoreIntf.DatabaseModules.Current.Database;
+end;
+
+function TSgtsDataIface.GetInsertClass: TSgtsDataInsertIfaceClass;
+begin
+  Result:=nil;
+  if FInsertClasses.Count>0 then
+    Result:=FInsertClasses.Items[0];
+end;
+
+procedure TSgtsDataIface.SetInsertClass(Value: TSgtsDataInsertIfaceClass);
+begin
+  if Assigned(Value) then
+    FInsertClasses.Insert(0,Value)
+  else
+    if FInsertClasses.Count>0 then
+      FInsertClasses.Delete(0);
+end;
+
+procedure TSgtsDataIface.AfterCreateForm(AForm: TSgtsForm);
+begin
+  inherited AfterCreateForm(AForm);
+  Form.MenuData.Caption:=AForm.Caption;
+  Refresh;
+  UpdateContents;
+end;
+
+procedure TSgtsDataIface.BeforeShowForm(AForm: TSgtsForm);
+begin
+  inherited BeforeShowForm(AForm);
+  FFirstOpen:=true;
+end;
+
+procedure TSgtsDataIface.UpdateContents;
+begin
+  inherited UpdateContents;
+
+  if Assigned(Form) then begin
+    with Form do begin
+      CreatePopupMenuInsert(TMenuItem(PopupMenuInsert.Items));
+      CreatePopupMenuReport(TMenuItem(PopupMenuReport.Items));
+      MenuData.Clear;
+      CreateMenuByToolBar(MenuData,ToolBar);
+      PopupMenuView.Items.Clear;
+      CreateMenuByToolBar(TMenuItem(PopupMenuView.Items),ToolBar);
+    end;
+  end;
+    
+  UpdateButtons;
+  UpdateStatusBar;
+end;
+
+procedure TSgtsDataIface.DataSetAfterScroll(DataSet: TDataSet);
+begin
+  UpdateButtons;
+  UpdateStatusBar;
+end;
+
+procedure TSgtsDataIface.UpdateButtons;
+begin
+  if Assigned(Form) then begin
+    with Form do begin
+      ToolButtonRefresh.Enabled:=CanRefresh;
+
+      UpdatePopupMenuInsert(TMenuItem(PopupMenuInsert.Items));
+      ToolButtonInsert.Enabled:=CanInsert;
+      if FInsertClasses.Count>1 then
+        ToolButtonInsert.DropdownMenu:=PopupMenuInsert
+      else ToolButtonInsert.DropdownMenu:=nil;
+
+      ToolButtonUpdate.Enabled:=CanUpdate;
+      ToolButtonDelete.Enabled:=CanDelete;
+      ToolButtonCopy.Enabled:=CanCopy;
+
+      UpdatePopupMenuReport(TMenuItem(PopupMenuReport.Items));
+      ToolButtonReport.Enabled:=CanReport;
+      if FReportClassInfos.Count>1 then
+        ToolButtonReport.DropdownMenu:=PopupMenuReport
+      else ToolButtonReport.DropdownMenu:=nil;
+
+      ToolButtonAdjust.Enabled:=CanAdjust;
+
+      ToolButtonFirst.Enabled:=CanFirst;
+      ToolButtonPrior.Enabled:=CanPrior;
+      ToolButtonNext.Enabled:=CanNext;
+      ToolButtonLast.Enabled:=CanLast;
+
+      ButtonOk.Enabled:=CanSelect;
+
+      UpdateMenuByButtons(MenuData);
+      UpdateMenuByButtons(TMenuItem(PopupMenuView.Items));
+    end;
+  end;
+end;
+
+procedure TSgtsDataIface.UpdateStatusBar;
+var
+  AllCount,CurrentCount: Integer;
+begin
+  if Assigned(Form) then begin
+    with Form do begin
+      AllCount:=0;
+      CurrentCount:=0;
+      if FDataSet.Active then begin
+        AllCount:=FDataSet.ServerRecordCount;
+        CurrentCount:=FDataSet.ClientRecordCount;
+      end;
+      StatusBar.Panels[0].Text:=Format(SWhole,[AllCount]);
+      StatusBar.Panels[1].Text:=Format(SReceive,[CurrentCount]);
+      StatusBar.Panels[2].Text:=iff(DataSet.Orders.Enabled or (Trim(DataSet.IndexName)<>''),SOrderOn,SOrderOff);
+      StatusBar.Panels[3].Text:=iff(DataSet.FilterGroups.VisibleEnabled,SFilterOn,SFilterOff);
+    end;
+  end;  
+end;
+
+function TSgtsDataIface.CanShow: Boolean;
+begin
+  Result:=Assigned(CoreIntf) and
+          PermissionExists(SPermissionNameShow);
+end;
+
+function TSgtsDataIface.CanRefresh: Boolean;
+begin
+  Result:=Assigned(Form) and
+          CanShow;
+  if Result then begin
+    if Assigned(Database) then
+      Result:=Result and Database.ProviderExists(FDataSet.ProviderName);
+  end;
+end;
+
+procedure TSgtsDataIface.Refresh;
+var
+  OldPacket: Integer;
+  OldCursor: TCursor;
+begin
+  if CanRefresh then begin
+    OldCursor:=Screen.Cursor;
+    Screen.Cursor:=crHourGlass;
+    OldPacket:=FDataSet.PacketRecords;
+    try
+{      if not FFirstOpen then
+        FDataSet.PacketRecords:=FirstOpenPacketRecords;}
+      CloseData;
+      OpenData;
+    finally
+      FDataSet.PacketRecords:=OldPacket;
+      Screen.Cursor:=OldCursor;
+    end;
+  end;
+end;
+
+function TSgtsDataIface.CanInsert: Boolean;
+begin
+  Result:=Assigned(Form) and
+          Assigned(GetFirstDefaultMenu(TMenuItem(Form.PopupMenuInsert.Items))) and
+          FDataSet.Active and
+          PermissionExists(SPermissionNameInsert);
+end;
+
+procedure TSgtsDataIface.Insert;
+var
+  MenuItem: Menus.TMenuItem;
+begin
+  if CanInsert then begin
+    MenuItem:=GetFirstDefaultMenu(TMenuItem(Form.PopupMenuInsert.Items));
+    if Assigned(MenuItem) then
+      MenuItemInsertClick(MenuItem);
+  end;
+end;
+
+function TSgtsDataIface.CanUpdate: Boolean;
+begin
+  Result:=Assigned(Form) and
+          Assigned(FUpdateClass) and
+          FDataSet.Active and
+          not FDataSet.IsEmpty and
+          PermissionExists(SPermissionNameUpdate);
+end;
+
+procedure TSgtsDataIface.Update;
+var
+  AIface: TSgtsDataUpdateIface;
+begin
+  if CanUpdate then begin
+    AIface:=FUpdateClass.Create(CoreIntf,Self);
+    FIfaces.Add(AIface);
+    AIface.Init;
+    AIface.BeforeReadParams;
+    AIface.ReadParams;
+    AIface.DatabaseLink;
+    if AsModal then
+      AIface.ShowModal
+    else
+      AIface.Show;
+  end;
+end;
+
+function TSgtsDataIface.CanDelete: Boolean;
+begin
+  Result:=Assigned(Form) and
+          Assigned(FDeleteClass) and
+          FDataSet.Active and
+          not FDataSet.IsEmpty and
+          PermissionExists(SPermissionNameDelete);
+end;
+
+procedure TSgtsDataIface.Delete;
+var
+  AIface: TSgtsDataDeleteIface;
+begin
+  if CanDelete then begin
+    AIface:=FDeleteClass.Create(CoreIntf,Self);
+    FIfaces.Add(AIface);
+    with AIface do begin
+      Init;
+      ReadParams;
+      Sync;
+      Show;
+    end;  
+  end;
+end;
+
+function TSgtsDataIface.CanCopy: Boolean;
+begin
+  Result:=CanInsert and not FDataSet.IsEmpty;
+end;
+
+procedure TSgtsDataIface.Copy;
+var
+  AIface: TSgtsDataInsertIface;
+  MenuItem: TMenuItem;
+  AClass: TSgtsDataInsertIfaceClass;
+begin
+  if CanCopy then begin
+    MenuItem:=GetFirstDefaultMenu(TMenuItem(Form.PopupMenuInsert.Items));
+    if Assigned(MenuItem) then begin
+      if MenuItem is TSgtsMenuItemInsert then begin
+        AClass:=TSgtsMenuItemInsert(MenuItem).InsertClass;
+        if Assigned(AClass) then begin
+          AIface:=AClass.Create(CoreIntf,Self);
+          FIfaces.Add(AIface);
+          AIface.Init;
+          AIface.BeforeReadParams;
+          AIface.ReadParams;
+          AIface.DatabaseLink;
+          if AsModal then
+            AIface.ShowModal
+          else
+            AIface.Show;
+        end;    
+      end;
+    end;
+  end;
+end;
+
+function TSgtsDataIface.CanFirst: Boolean;
+begin
+  Result:=Assigned(Form) and
+          FDataSet.Active and
+          not FDataSet.IsEmpty and
+          not FDataSet.Bof;
+end;
+
+procedure TSgtsDataIface.First;
+begin
+  if CanFirst then begin
+    FDataSet.First;
+  end;
+end;
+
+function TSgtsDataIface.CanPrior: Boolean;
+begin
+  Result:=CanFirst;
+end;
+
+procedure TSgtsDataIface.Prior;
+begin
+  if CanPrior then begin
+    FDataSet.Prior;
+  end;
+end;
+
+function TSgtsDataIface.CanNext: Boolean;
+begin
+  Result:=CanLast;
+end;
+
+procedure TSgtsDataIface.Next;
+begin
+  if CanNext then begin
+    FDataSet.Next;
+  end;
+end;
+
+function TSgtsDataIface.CanLast: Boolean;
+begin
+  Result:=Assigned(Form) and
+          FDataSet.Active and
+          not FDataSet.IsEmpty and
+          not FDataSet.Eof;
+end;
+
+procedure TSgtsDataIface.Last;
+begin
+  if CanLast then begin
+    FDataSet.Last;
+  end;
+end;
+
+function TSgtsDataIface.CanDetail: Boolean;
+begin
+  Result:=Assigned(Form) and
+          Assigned(FDetailClass) and
+          FDataSet.Active and
+          not FDataSet.IsEmpty and
+          PermissionExists(SPermissionNameDetail)
+end;
+
+procedure TSgtsDataIface.Detail;
+var
+  AIface: TSgtsDataUpdateIface;
+begin
+  if CanDetail then begin
+    AIface:=FDetailClass.Create(CoreIntf,Self);
+    FIfaces.Add(AIface);
+    AIface.ReadOnly:=true;
+    AIface.Init;
+    AIface.BeforeReadParams;
+    AIface.ReadParams;
+    AIface.DatabaseLink;
+    if AsModal then
+      AIface.ShowModal
+    else
+      AIface.Show;
+  end;
+end;
+
+function TSgtsDataIface.CanReport: Boolean;
+begin
+  Result:=Assigned(Form) and
+          Assigned(GetFirstDefaultMenu(TMenuItem(Form.PopupMenuReport.Items))) and
+          FDataSet.Active and
+          not FDataSet.IsEmpty and
+          not AsModal;
+end;
+
+procedure TSgtsDataIface.Report;
+var
+  MenuItem: Menus.TMenuItem;
+begin
+  if CanReport then begin
+    MenuItem:=GetFirstDefaultMenu(TMenuItem(Form.PopupMenuReport.Items));
+    if Assigned(MenuItem) then
+      MenuItemReportClick(MenuItem);
+  end;
+end;
+
+function TSgtsDataIface.CanInfo: Boolean;
+begin
+  Result:=FDataSet.Active and
+          not FDataSet.IsEmpty and
+          PermissionExists(SPermissionNameInfo);
+end;
+
+procedure TSgtsDataIface.Info;
+begin
+  if CanInfo then begin
+    ShowInfo(FDataSet.GetInfo);
+  end;
+end;
+
+function TSgtsDataIface.CanAdjust: Boolean;
+begin
+  Result:=false;
+end;
+
+function TSgtsDataIface.Adjust: Boolean;
+begin
+  Result:=false;
+  if CanAdjust then ;
+end;
+
+procedure TSgtsDataIface.CloseData;
+begin
+  if FDataSet.Active then begin
+    FDataSet.Close;
+    UpdateButtons;
+    UpdateStatusBar;
+  end;
+end;
+
+procedure TSgtsDataIface.OpenData;
+begin
+  if not FDataSet.Active and
+     not FInProgress then begin
+    try
+      FInProgress:=true;
+      FCancelProgress:=false;
+      DataSetProgressProc(0,0,0,FCancelProgress);
+      try
+        if Assigned(Form) then
+          Form.Update;
+        FDataSet.Open;
+        UpdateButtons;
+        UpdateStatusBar;
+      finally
+        FInProgress:=false;
+        FCancelProgress:=false;
+        DataSetProgressProc(0,0,0,FCancelProgress);
+      end;  
+    except
+      on E: Exception do
+        ShowError(E.Message);
+    end;
+  end;
+end;
+
+procedure TSgtsDataIface.InsertByDefs(ExecuteDefs: Pointer);
+begin
+  FDataSet.InsertByDefs(ExecuteDefs);
+  UpdateStatusBar;
+end;
+
+procedure TSgtsDataIface.UpdateByDefs(ExecuteDefs: Pointer);
+begin
+  FDataSet.UpdateByDefs(ExecuteDefs);
+  UpdateStatusBar;
+end;
+
+procedure TSgtsDataIface.DeleteByDefs(ExecuteDefs: Pointer);
+begin
+  FDataSet.DeleteByDefs(ExecuteDefs);
+  UpdateStatusBar;
+end;
+
+function TSgtsDataIface.GetExecuteSuccess: Boolean;
+begin
+  Result:=FDataSet.ExecuteSuccess;
+end;
+
+function TSgtsDataIface.CanSelect: Boolean;
+begin
+  Result:=CanShow and
+          FDataSet.Active and
+          not FDataSet.IsEmpty and
+          FIsCanSelect;
+end;
+
+function TSgtsDataIface.CreateSelectedData(SelectedType: TSgtsCreateSelectedDataType): String;
+var
+  B: TBookMark;
+  DSOut: TSgtsCDS;
+begin
+  Result:='';
+  FDataSet.DisableControls;
+  DSOut:=TSgtsCDS.Create(nil);
+  B:=FDataSet.GetBookmark;
+  try
+    if FDataSet.Active then begin
+      case SelectedType of
+        sdtCurrent: begin
+          DSOut.CreateDataSetBySource(FDataSet);
+          DSOut.FieldValuesBySource(FDataSet);
+          DSOut.MergeChangeLog;
+          Result:=DSOut.XMLData;
+        end;
+        sdtAll: begin
+          DSOut.CreateDataSetBySource(FDataSet,true,true);
+          DSOut.MergeChangeLog;
+          Result:=DSOut.XMLData;
+        end;
+        sdtBookmark: begin
+          ///
+        end;
+      end;
+    end;
+  finally
+    DSOut.Free;
+    if Assigned(B) and FDataSet.BookmarkValid(B) then
+      FDataSet.GotoBookmark(B);
+    FDataSet.EnableControls;
+  end;
+end;
+
+function TSgtsDataIface.SelectVisible(Fields: String; Values: Variant; var Data: String;
+                                      FilterGroups: TSgtsGetRecordsConfigFilterGroups=nil;
+                                      MultiSelect: Boolean=false): Boolean;
+var
+  AForm: TSgtsDataForm;
+begin
+  Result:=false;
+  FMode:=iff(not MultiSelect,imSelect,imMultiSelect);
+  Init;
+  BeforeReadParams;
+  ReadParams;
+  FDataSet.FilterGroups.CopyFrom(FilterGroups);
+  DatabaseLink;
+  if CanShow then begin
+    AForm:=TSgtsDataForm(CreateForm);
+    if Assigned(AForm) then begin
+      try
+        AForm.IsReadSize:=false;
+        AForm.IsReadPosition:=false;
+        AForm.InitByIface(Self);
+        SetDefaultForm(AForm);
+        AsModal:=true;
+        SetDefaultFormStyle(fsNormal);
+        AfterCreateForm(AForm);
+        if not VarIsEmpty(Values) then
+          FDataSet.Locate(Fields,Values);
+        with AForm do begin
+          MenuData.Visible:=false;
+          BorderIcons:=AForm.BorderIcons-[biMinimize];
+          PanelButton.Visible:=true;
+          StatusBar.Top:=PanelButton.Top+PanelButton.Height+1;
+          EnableModal(true);
+          ButtonOk.Enabled:=CanSelect;
+        end;
+        BeforeShowForm(AForm);
+        LogWrite(SInterfaceShow);
+        if AForm.ShowModal=mrOk then begin
+          if CanSelect then begin
+            SetDefaultForm(AForm);
+            try
+              Data:=CreateSelectedData(iff(not MultiSelect,sdtCurrent,sdtBookmark));
+              Result:=true;
+            finally
+              SetDefaultForm(nil);
+            end;  
+          end;
+        end;
+      finally
+        AForm.Free;
+        BeforeWriteParams;
+        WriteParams;
+      end;
+    end;
+  end;
+end;
+
+function TSgtsDataIface.SelectInvisible(var Data: String; FilterGroups: TSgtsGetRecordsConfigFilterGroups=nil): Boolean; 
+begin
+  Result:=false;
+  FMode:=imSelect;
+  Init;
+  BeforeReadParams;
+  ReadParams;
+  FDataSet.FilterGroups.CopyFrom(FilterGroups);
+  DatabaseLink;
+  CloseData;
+  OpenData;
+  if CanSelect then begin
+    Data:=CreateSelectedData(sdtAll);
+    Result:=true;
+  end;
+end;
+
+procedure TSgtsDataIface.MenuItemInsertClick(Sender: TObject);
+var
+  MenuItem: TSgtsMenuItemInsert;
+  AClass: TSgtsDataInsertIfaceClass;
+  AIface: TSgtsDataInsertIface;
+begin
+  MenuItem:=nil;
+  if Assigned(Sender) then
+    if Sender is TSgtsMenuItemInsert then
+      MenuItem:=TSgtsMenuItemInsert(Sender)
+    else begin
+      MenuItem:=TSgtsMenuItemInsert(Pointer(TMenuItem(Sender).Tag));
+    end;
+  if Assigned(MenuItem) then begin
+    AClass:=MenuItem.InsertClass;
+    if Assigned(AClass) then begin
+      FExecuteSuccess:=false;
+      AIface:=AClass.Create(CoreIntf,Self);
+      FIfaces.Add(AIface);
+      AIface.DisableSet:=true;
+      AIface.Init;
+      AIface.BeforeReadParams;
+      AIface.ReadParams;
+      AIface.DatabaseLink;
+      if AsModal then
+        AIface.ShowModal
+      else
+        AIface.Show;
+    end;
+  end;
+end;
+
+procedure TSgtsDataIface.CreatePopupMenuInsert(MenuParent: TMenuItem);
+var
+  i: Integer;
+  AClass: TSgtsDataInsertIfaceClass;
+  AIface: TSgtsDataInsertIface;
+  MenuItem: TSgtsMenuItemInsert;
+  Flag: Boolean;
+begin
+  MenuParent.Clear;
+  Flag:=false;
+  for i:=0 to FInsertClasses.Count-1 do begin
+    AClass:=FInsertClasses.Items[i];
+    AIface:=AClass.Create(CoreIntf,Self);
+    try
+      AIface.Init;
+      AIface.BeforeReadParams;
+      AIface.ReadParams;
+      MenuItem:=TSgtsMenuItemInsert.Create(MenuParent);
+      MenuItem.Caption:=AIface.Caption;
+      MenuItem.Hint:=MenuItem.Caption;
+      MenuItem.Enabled:=AIface.CanShow;
+      MenuItem.OnClick:=MenuItemInsertClick;
+      MenuItem.InsertClass:=AClass;
+      if not Flag and MenuItem.Enabled then begin
+        MenuItem.Default:=true;
+        Flag:=true;
+      end;
+      MenuParent.Add(MenuItem);
+    finally
+      AIface.Free;
+    end;
+  end;
+end;
+
+procedure TSgtsDataIface.UpdatePopupMenuInsert(MenuParent: TMenuItem);
+var
+  i: Integer;
+  AClass: TSgtsDataInsertIfaceClass;
+  AIface: TSgtsDataInsertIface;
+  MenuItem: TSgtsMenuItemInsert;
+  Flag: Boolean;
+begin
+  Flag:=false;
+  for i:=0 to MenuParent.Count-1 do begin
+    if MenuParent.Items[i] is TSgtsMenuItemInsert then begin
+      MenuItem:=TSgtsMenuItemInsert(MenuParent.Items[i]);
+      AClass:=MenuItem.InsertClass;
+      if Assigned(AClass) then begin
+        AIface:=AClass.Create(CoreIntf,Self);
+        try
+          AIface.Init;
+          AIface.BeforeReadParams;
+          AIface.ReadParams;
+          MenuItem.Enabled:=AIface.CanShow;
+          if not Flag and MenuItem.Enabled then begin
+            MenuItem.Default:=true;
+            Flag:=true;
+          end;
+        finally
+          AIface.Free;
+        end;
+      end;
+    end;
+  end;
+end;
+
+function TSgtsDataIface.GetReportComponent: TComponent; 
+begin
+  Result:=nil;
+end;
+
+procedure TSgtsDataIface.MenuItemReportClick(Sender: TObject);
+var
+  MenuItem: TSgtsMenuItemReport;
+  AClassInfo: TSgtsBaseReportIfaceClassInfo;
+  AIface: TSgtsBaseReportIface;
+begin
+  MenuItem:=nil;
+  if Assigned(Sender) then
+    if Sender is TSgtsMenuItemReport then
+      MenuItem:=TSgtsMenuItemReport(Sender)
+    else begin
+      MenuItem:=TSgtsMenuItemReport(Pointer(TMenuItem(Sender).Tag));
+    end;
+  if Assigned(MenuItem) then begin
+    AClassInfo:=MenuItem.ReportClassInfo;
+    if Assigned(AClassInfo) then begin
+      FExecuteSuccess:=false;
+      AIface:=AClassInfo.ReportClass.Create(CoreIntf);
+      FIfaces.Add(AIface);
+      AIface.Init(AClassInfo.ReportId,AClassInfo.Name,AClassInfo.Description,'','',true,FDataSet,GetReportComponent);
+      AIface.BeforeReadParams;
+      AIface.ReadParams;
+      AIface.DatabaseLink;
+      AIface.Show;
+      MenuItem.Default:=true;
+    end;
+  end;
+end;
+
+procedure TSgtsDataIface.CreatePopupMenuReport(MenuParent: TMenuItem);
+var
+  i: Integer;
+  AClassInfo: TSgtsBaseReportIfaceClassInfo;
+  AIface: TSgtsBaseReportIface;
+  MenuItem: TSgtsMenuItemReport;
+  Flag: Boolean;
+begin
+  MenuParent.Clear;
+  Flag:=false;
+  for i:=0 to FReportClassInfos.Count-1 do begin
+    AClassInfo:=FReportClassInfos.Items[i];
+    AIface:=AClassInfo.ReportClass.Create(CoreIntf);
+    try
+      AIface.Init(AClassInfo.ReportId,AClassInfo.Name,AClassInfo.Description,'','',true);
+      AIface.BeforeReadParams;
+      AIface.ReadParams;
+      AIface.DatabaseLink;
+      MenuItem:=TSgtsMenuItemReport.Create(MenuParent);
+      MenuItem.Caption:=AIface.Caption;
+      MenuItem.Hint:=MenuItem.Caption;
+      MenuItem.Enabled:=AIface.CanShow;
+      MenuItem.OnClick:=MenuItemReportClick;
+      MenuItem.ReportClassInfo:=AClassInfo;
+      if not Flag and MenuItem.Enabled then begin
+        MenuItem.Default:=true;
+        Flag:=true;
+      end;
+      MenuParent.Add(MenuItem);
+    finally
+      AIface.Free;
+    end;
+  end;
+end;
+
+procedure TSgtsDataIface.UpdatePopupMenuReport(MenuParent: TMenuItem);
+var
+  i: Integer;
+  AClassInfo: TSgtsBaseReportIfaceClassInfo;
+  AIface: TSgtsBaseReportIface;
+  MenuItem: TSgtsMenuItemReport;
+  Flag: Boolean;
+begin
+  Flag:=false;
+  for i:=0 to MenuParent.Count-1 do begin
+    if MenuParent.Items[i] is TSgtsMenuItemReport then begin
+      MenuItem:=TSgtsMenuItemReport(MenuParent.Items[i]);
+      AClassInfo:=MenuItem.ReportClassInfo;
+      if Assigned(AClassInfo) then begin
+        AIface:=AClassInfo.ReportClass.Create(CoreIntf);
+        try
+          AIface.Init(AClassInfo.ReportId,AClassInfo.Name,AClassInfo.Description,'','',true);
+          AIface.BeforeReadParams;
+          AIface.ReadParams;
+          AIface.DatabaseLink;
+          MenuItem.Enabled:=AIface.CanShow;
+          if not Flag and MenuItem.Enabled then begin
+            MenuItem.Default:=true;
+            Flag:=true;
+          end;
+        finally
+          AIface.Free;
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsDataIface.DataSetProgressProc(Min,Max,Position: Integer; var Breaked: Boolean); 
+begin
+  CoreIntf.MainForm.Progress(Min,Max,Position);
+  Application.ProcessMessages;
+  Breaked:=FCancelProgress;
+end;
+
+{ TSgtsDataForm }
+
+constructor TSgtsDataForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  Constraints.MinHeight:=465;
+  if Constraints.MinHeight<>0 then
+    Constraints.MinHeight:=Constraints.MinHeight-PanelButton.Height;
+  Height:=Height-PanelButton.Height;
+  PanelButton.Top:=Height;
+  StatusBar.Top:=PanelButton.Top-PanelButton.Height+1;
+  BevelStatus.Top:=StatusBar.Top+StatusBar.Height+1;
+end;
+
+destructor TSgtsDataForm.Destroy;
+begin
+  inherited Destroy;
+end;
+
+procedure TSgtsDataForm.InitByIface(AIface: TSgtsFormIface);
+begin
+  inherited InitByIface(AIface);
+  DataSource.DataSet:=Iface.DataSet;
+end;
+
+procedure TSgtsDataForm.ToolButtonOptionClick(Sender: TObject);
+begin
+  CoreIntf.OptionsForm.ShowModal;
+end;
+
+procedure TSgtsDataForm.ShowingChanged;
+begin
+  if Iface.Mode=imDefault then
+    inherited ShowingChanged;
+end;
+
+function TSgtsDataForm.GetIface: TSgtsDataIface;
+begin
+  Result:=TSgtsDataIface(inherited Iface);
+end;
+
+procedure TSgtsDataForm.ToolButtonRefreshClick(Sender: TObject);
+begin
+  Iface.Refresh;
+end;
+
+procedure TSgtsDataForm.ToolButtonInsertClick(Sender: TObject);
+begin
+  Iface.Insert;
+end;
+
+procedure TSgtsDataForm.PopupMenuViewPopup(Sender: TObject);
+begin
+  Iface.UpdateButtons;
+end;
+
+procedure TSgtsDataForm.ToolButtonUpdateClick(Sender: TObject);
+begin
+  Iface.Update;
+end;
+
+procedure TSgtsDataForm.ToolButtonDeleteClick(Sender: TObject);
+begin
+  Iface.Delete;
+end;
+
+procedure TSgtsDataForm.ToolButtonCopyClick(Sender: TObject);
+begin
+  Iface.Copy;
+end;
+
+procedure TSgtsDataForm.ToolButtonFirstClick(Sender: TObject);
+begin
+  Iface.First;
+end;
+
+procedure TSgtsDataForm.ToolButtonPriorClick(Sender: TObject);
+begin
+  Iface.Prior;
+end;
+
+procedure TSgtsDataForm.ToolButtonNextClick(Sender: TObject);
+begin
+  Iface.Next;
+end;
+
+procedure TSgtsDataForm.ToolButtonLastClick(Sender: TObject);
+begin
+  Iface.Last;
+end;
+
+procedure TSgtsDataForm.CMDialogKey(var Message: TCMDialogKey);
+begin
+  with Message do
+    if  ((CharCode = VK_RETURN) or (CharCode = VK_ESCAPE)) and
+      (KeyDataToShiftState(Message.KeyData) = [])  then  begin
+      if CharCode=VK_RETURN then begin
+        DblClickAction;
+        Result:=1;
+      end;
+      if CharCode=VK_ESCAPE then begin
+        if not Iface.InProgress then begin
+          if IfaceIntf.Mode in [imSelect,imMultiSelect] then begin
+            Close;
+            Result:=1;
+          end;
+        end else
+          Iface.CancelProgress:=true;
+      end;
+    end else
+      inherited;
+end;
+
+procedure TSgtsDataForm.DblClickAction;
+begin
+  case Iface.Mode of
+    imDefault: begin
+      if IfaceIntf.CanUpdate then
+        IfaceIntf.Update
+      else
+        if IfaceIntf.CanDetail then
+          IfaceIntf.Detail;
+    end;
+    imSelect, imMultiSelect: begin
+      if IfaceIntf.CanSelect then
+        ModalResult:=mrOk;
+    end;
+  end;
+end;
+
+procedure TSgtsDataForm.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Shift=[] then begin
+    case Key of
+      VK_F3: begin
+        IfaceIntf.Info;
+        Key:=0;
+      end;
+      VK_F5: begin
+        IfaceIntf.Refresh;
+        Key:=0;
+      end;
+      VK_INSERT: begin
+        IfaceIntf.Insert;
+        Key:=0;
+      end;
+      VK_DELETE: begin
+        IfaceIntf.Delete;
+        Key:=0;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsDataForm.PopupMenuInsertPopup(Sender: TObject);
+begin
+  Iface.UpdateButtons;
+end;
+
+procedure TSgtsDataForm.EnableModal(AEnabled: Boolean);
+begin
+  if AEnabled then begin
+    if Constraints.MinHeight<>0 then
+      Constraints.MinHeight:=Constraints.MinHeight+PanelButton.Height;
+    if Constraints.MinHeight<Height then
+      Height:=Height+PanelButton.Height;
+  end;  
+end;
+
+procedure TSgtsDataForm.ButtonCancelClick(Sender: TObject);
+begin
+  Close;
+end;
+
+procedure TSgtsDataForm.ButtonOkClick(Sender: TObject);
+begin
+  if Iface.CanSelect then
+    ModalResult:=mrOk;
+end;
+
+function TSgtsDataForm.GetIfaceIntf: ISgtsDataIface;
+begin
+  Result:=Iface as ISgtsDataIface;
+end;
+
+procedure TSgtsDataForm.ToolButtonReportClick(Sender: TObject);
+begin
+  Iface.Report;
+end;
+
+procedure TSgtsDataForm.FormCloseQuery(Sender: TObject;
+  var CanClose: Boolean);
+begin
+  CanClose:=not Iface.InProgress;
+end;
+
+procedure TSgtsDataForm.ToolButtonAdjustClick(Sender: TObject);
+begin
+  Iface.Adjust;
+end;
+
+end.

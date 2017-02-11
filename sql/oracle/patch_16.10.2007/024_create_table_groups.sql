@@ -1,0 +1,105 @@
+/* Создание последовательности для таблицы групп */
+
+CREATE SEQUENCE SEQ_GROUPS
+INCREMENT BY 1 
+START WITH 2500 
+MAXVALUE 1.0E28 
+MINVALUE 2500
+NOCYCLE 
+CACHE 20 
+NOORDER
+
+--
+
+/* Создание фунции генерации идентификатора для таблицы групп */
+
+
+CREATE FUNCTION GET_GROUP_ID RETURN INTEGER IS
+  ID INTEGER;
+BEGIN
+  SELECT SEQ_GROUPS.NEXTVAL INTO ID FROM DUAL;
+  RETURN ID;
+END;
+
+--
+
+/* Создание таблицы групп */
+
+CREATE TABLE GROUPS
+(
+  GROUP_ID INTEGER NOT NULL, 
+  NAME VARCHAR2(100) NOT NULL,
+  DESCRIPTION VARCHAR2(250),
+  PRIMARY KEY (GROUP_ID)
+)
+
+--
+
+/* Создание просмотра таблицы групп */
+
+CREATE VIEW S_GROUPS
+AS
+  SELECT G.*
+    FROM GROUPS G
+
+
+--
+
+/* Создание процедуры создания группы */
+
+
+CREATE OR REPLACE PROCEDURE I_GROUP
+(
+  GROUP_ID IN INTEGER,
+  NAME IN VARCHAR2,
+  DESCRIPTION IN VARCHAR2
+)
+AS
+BEGIN
+  INSERT INTO GROUPS (GROUP_ID,NAME,DESCRIPTION)
+       VALUES (GROUP_ID,NAME,DESCRIPTION);
+  COMMIT;
+END;
+
+--
+
+/* Создание процедуры изменения группы */
+
+CREATE OR REPLACE PROCEDURE U_GROUP
+(
+  GROUP_ID IN INTEGER,
+  NAME IN VARCHAR2,
+  DESCRIPTION IN VARCHAR2,
+  OLD_GROUP_ID IN INTEGER
+)
+AS
+BEGIN
+  UPDATE GROUPS 
+     SET GROUP_ID=U_GROUP.GROUP_ID,
+         NAME=U_GROUP.NAME, 
+         DESCRIPTION=U_GROUP.DESCRIPTION 
+   WHERE GROUP_ID=OLD_GROUP_ID;
+  COMMIT;        
+END;
+
+--
+
+/* Создание процедуры удаления группы */
+
+CREATE PROCEDURE D_GROUP
+(
+  OLD_GROUP_ID IN INTEGER
+)
+AS
+BEGIN
+  DELETE FROM GROUPS
+        WHERE GROUP_ID=OLD_GROUP_ID;
+  COMMIT;        
+END;
+
+--
+
+/* Фиксация изменений БД */
+
+
+COMMIT

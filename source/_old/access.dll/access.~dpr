@@ -1,0 +1,14 @@
+library access;
+
+{$R *.res}
+
+uses
+  SgtsOracle in '..\oracle.dll\SgtsOracle.pas',
+  SgtsOracleDatabase in '..\oracle.dll\SgtsOracleDatabase.pas',
+  SgtsOracleConsts in '..\oracle.dll\SgtsOracleConsts.pas';
+
+exports
+  InitByModule;
+    
+begin
+end.

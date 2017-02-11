@@ -1,0 +1,102 @@
+unit SgtsReport;
+
+interface
+
+uses Classes, Contnrs,
+     SgtsReportIntf, SgtsReportModulesIntf, SgtsCoreIntf, SgtsDatabaseIntf;
+
+type
+
+  TSgtsReport=class(TComponent,ISgtsReport)
+  private
+    FModuleIntf: ISgtsReportModule;
+    FCoreIntf: ISgtsCore;
+    FInited: Boolean;
+  protected
+    function Generate(const FileName: String; ProgressProc: TSgtsReportGenerateProgressProc=nil): Boolean; virtual;
+    function GetDatabase: ISgtsDatabase;
+  public
+    constructor Create; reintroduce; virtual;
+    destructor Destroy; override;
+    procedure InitByModule(ACoreIntf: ISgtsCore; AModuleIntf: ISgtsReportModule); virtual;
+
+    property Inited: Boolean read FInited;
+    property CoreIntf: ISgtsCore read FCoreIntf;
+  end;
+
+  TSgtsReportClass=class of TSgtsReport;
+
+  TSgtsReports=class(TObjectList)
+  private
+    function GetItem(Index: Integer): TSgtsReport;
+    procedure SetItem(Index: Integer; Value: TSgtsReport);
+  public
+    function AddByModule(ACoreIntf: ISgtsCore; AModuleIntf: ISgtsReportModule; AClass: TSgtsReportClass): TSgtsReport;
+    property Items[Index: Integer]: TSgtsReport read GetItem write SetItem;
+  end;
+
+implementation
+
+uses SysUtils, Variants, 
+     SgtsUtils, SgtsConsts;
+
+{ TSgtsReport }
+
+constructor TSgtsReport.Create;
+begin
+  inherited Create(nil);
+end;
+
+destructor TSgtsReport.Destroy;
+begin
+  inherited Destroy;
+end;
+
+procedure TSgtsReport.InitByModule(ACoreIntf: ISgtsCore; AModuleIntf: ISgtsReportModule);
+begin
+  FCoreIntf:=ACoreIntf;
+  FModuleIntf:=AModuleIntf;
+  FModuleIntf.InitByReport(Self as ISgtsFileReport);
+  if not FInited then begin
+    FInited:=true;
+  end else
+    raise Exception.Create(SOnlyOneInit);
+end;
+
+function TSgtsReport.Generate(const FileName: String; ProgressProc: TSgtsReportGenerateProgressProc=nil): Boolean;
+begin
+  Result:=false;
+end;
+
+function TSgtsReport.GetDatabase: ISgtsDatabase;
+begin
+  Result:=nil;
+  if Assigned(FCoreIntf) and
+     Assigned(FCoreIntf.DatabaseModules.Current) then
+    Result:=FCoreIntf.DatabaseModules.Current.Database; 
+end;
+
+{ TSgtsReports }
+
+function TSgtsReports.GetItem(Index: Integer): TSgtsReport;
+begin
+  Result:=TSgtsReport(inherited Items[Index]);
+end;
+
+procedure TSgtsReports.SetItem(Index: Integer; Value: TSgtsReport);
+begin
+  inherited Items[Index]:=Value;
+end;
+
+function TSgtsReports.AddByModule(ACoreIntf: ISgtsCore; AModuleIntf: ISgtsReportModule; AClass: TSgtsReportClass): TSgtsReport;
+begin
+  Result:=nil;
+  if Assigned(AClass) then
+    Result:=AClass.Create;
+  if Assigned(Result) then begin
+    Add(Result);
+    Result.InitByModule(ACoreIntf,AModuleIntf);
+  end;  
+end;
+
+end.

@@ -1,0 +1,12 @@
+unit SgtsMenuIntf;
+
+interface
+
+type
+
+  ISgtsMenu=interface
+  end;
+
+implementation
+
+end.

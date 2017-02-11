@@ -1,0 +1,63 @@
+inherited SgtsFieldEditForm: TSgtsFieldEditForm
+  Left = 364
+  Top = 236
+  Width = 430
+  Height = 351
+  BorderIcons = [biSystemMenu, biMaximize]
+  BorderStyle = bsSizeable
+  Caption = #1056#1077#1076#1072#1082#1090#1080#1088#1086#1074#1072#1085#1080#1077' '#1087#1086#1083#1103
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited PanelDialog: TPanel
+    Width = 422
+    Height = 286
+    object PageControl: TPageControl
+      Left = 0
+      Top = 0
+      Width = 422
+      Height = 286
+      ActivePage = TabSheetMemo
+      Align = alClient
+      HotTrack = True
+      TabOrder = 0
+      object TabSheetMemo: TTabSheet
+        Caption = #1050#1072#1082' '#1090#1077#1082#1089#1090
+        object PanelText: TPanel
+          Left = 0
+          Top = 0
+          Width = 414
+          Height = 258
+          Align = alClient
+          BevelOuter = bvNone
+          BorderWidth = 3
+          TabOrder = 0
+          object Memo: TMemo
+            Left = 3
+            Top = 3
+            Width = 408
+            Height = 252
+            Align = alClient
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -13
+            Font.Name = 'Courier New'
+            Font.Style = []
+            ParentFont = False
+            ScrollBars = ssBoth
+            TabOrder = 0
+          end
+        end
+      end
+    end
+  end
+  inherited PanelButton: TPanel
+    Top = 286
+    Width = 422
+    inherited ButtonOk: TButton
+      Left = 260
+    end
+    inherited ButtonCancel: TButton
+      Left = 342
+    end
+  end
+end

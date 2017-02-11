@@ -1,0 +1,131 @@
+unit SgtsJournalGraphFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Menus, ExtDlgs, ImgList, TeeProcs, TeEngine,
+  Chart, DbChart, ExtCtrls, ComCtrls, ToolWin, DbGrids, 
+  SgtsFm, SgtsDbGrid, SgtsDatabaseCDS,
+  SgtsCoreIntf,
+  SgtsBaseGraphRefreshFm, SgtsBaseGraphFm;
+
+type
+  TSgtsJournalGraphForm = class(TSgtsBaseGraphForm)
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+  TSgtsJournalGraphIface=class(TSgtsBaseGraphIface)
+  private
+    FGrid: TSgtsDbGrid;
+    FCutId: Integer;
+    FCutDescription: String;
+    function GetColumns: TDBGridColumns;
+    function GetForm: TSgtsJournalGraphForm;
+  protected
+    procedure AutoChartTitles; override;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+    procedure Init; override;
+    procedure Show(ACutId: Integer;
+                   ACutDescription: String; ADataSet: TSgtsDatabaseCDS;
+                   AColumns: TDbGridColumns); reintroduce;
+
+    property CutId: Integer read FCutId;
+    property Columns: TDBGridColumns read GetColumns;
+    property Form: TSgtsJournalGraphForm read GetForm;
+  end;
+
+var
+  SgtsJournalGraphForm: TSgtsJournalGraphForm;
+
+implementation
+
+uses DBClient,
+     SgtsIface, SgtsGraphFm, SgtsGetRecordsConfig, SgtsConsts, SgtsObj, SgtsUtils,
+     SgtsJournalGraphRefreshFm, SgtsGraphChartFm;
+
+{$R *.dfm}
+
+{ TSgtsJournalGraphIface }
+
+constructor TSgtsJournalGraphIface.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FGrid:=TSgtsDbGrid.Create(Self);
+  Permissions.Enabled:=false;
+end;
+
+destructor TSgtsJournalGraphIface.Destroy;
+begin
+  inherited Destroy;
+end;
+
+procedure TSgtsJournalGraphIface.Init;
+begin
+  inherited Init;
+  InterfaceName:=SInterfaceJournalGraph;
+  FormClass:=TSgtsJournalGraphForm;
+  Caption:=iff(Trim(FCutDescription)<>'',FCutDescription,Caption);
+  RefreshClass:=TSgtsJournalGraphRefreshIface;
+end;
+
+function TSgtsJournalGraphIface.GetColumns: TDBGridColumns;
+begin
+  Result:=FGrid.Columns;
+end;
+
+function TSgtsJournalGraphIface.GetForm: TSgtsJournalGraphForm;
+begin
+  Result:=TSgtsJournalGraphForm(inherited Form);
+end;
+
+procedure TSgtsJournalGraphIface.Show(ACutId: Integer;
+                                      ACutDescription: String; ADataSet: TSgtsDatabaseCDS;
+                                      AColumns: TDbGridColumns);
+begin
+  SectionName:=Name+InttoStr(ACutId);
+  FCutId:=ACutId;
+  FCutDescription:=ACutDescription;
+  with DefaultDataSet do begin
+    FieldDefs.Assign(ADataSet.FieldDefs);
+    ProviderName:=ADataSet.ProviderName;
+    FilterGroups.CopyFrom(ADataSet.FilterGroups);
+    Orders.CopyFrom(ADataSet.Orders);
+  end;
+  CopyGridColumns(AColumns,FGrid.Columns);
+  Init;
+  BeforeReadParams;
+  ReadParams;
+  DatabaseLink;
+  inherited Show;
+end;
+
+procedure TSgtsJournalGraphIface.AutoChartTitles;
+begin
+  inherited AutoChartTitles;
+  if Assigned(RefreshIface) then begin
+    ChartTitle.Clear;
+    ChartTitle.Add(RefreshIface.GraphName);
+    ChartTitle.Add(RefreshIface.);
+  end;
+end;
+
+{ TSgtsJournalGraphForm }
+
+procedure TSgtsJournalGraphForm.FormCloseQuery(Sender: TObject;
+  var CanClose: Boolean);
+begin
+  if CanClose then begin
+    Iface.BeforeWriteParams;
+    Iface.WriteParams;
+  end;
+  inherited;
+end;
+
+end.

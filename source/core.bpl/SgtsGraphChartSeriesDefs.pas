@@ -1,0 +1,385 @@
+unit SgtsGraphChartSeriesDefs;
+
+interface
+
+uses Classes, Contnrs, DB, Graphics,
+     TeEngine, Chart, DBChart, Series;
+
+type
+
+  TSgtsGraphChartSeriesDefAxisType=(atLeftBottom,atRightBottom);
+
+  TSgtsGraphChartSeriesDefColotType=(ctAuto,ctManual);
+
+  TSgtsGraphChartSeriesDefs=class;
+
+  TSgtsGraphChartSeriesDef=class(TObject)
+  private
+    FSeriesDefs: TSgtsGraphChartSeriesDefs;
+    FName: String;
+    FDataSet: TDataSet;
+    FDataSetFilter: String;
+    FXFieldName: String;
+    FYFieldName: String;
+    FSeriesClass: TChartSeriesClass;
+    FSeries: TChartSeries;
+    FActive: Boolean;
+    FAxisType: TSgtsGraphChartSeriesDefAxisType;
+    FXMerging: Boolean;
+    FXLabelFieldName: String;
+    FPointerVisible: Boolean;
+    FColor: TColor;
+    FColorType: TSgtsGraphChartSeriesDefColotType;
+    FXOrdered: Boolean;
+    procedure SetActive(Value: Boolean);
+    function SeriesBeforeAdd(Sender: TChartSeries): Boolean;
+    function GetNewColor(ASeries: TChartSeries): TColor;
+    function GetNewPointStyle(ASeries: TChartSeries): TSeriesPointerStyle;
+  public
+    constructor Create(ASeriesDefs: TSgtsGraphChartSeriesDefs); virtual;
+    destructor Destroy; override;
+    procedure CreateSeries(Chart: TDBChart);
+    procedure ClearSeries;
+    function ChangeSeriesByClass(AClass: TChartSeriesClass; APointerVisible: Boolean): TChartSeries;
+
+    property Name: String read FName write FName;
+    property DataSet: TDataSet read FDataSet write FDataSet;
+    property DataSetFilter: String read FDataSetFilter write FDataSetFilter;
+    property XFieldName: String read FXFieldName write FXFieldName;
+    property YFieldName: String read FYFieldName write FYFieldName;
+    property SeriesClass: TChartSeriesClass read FSeriesClass write FSeriesClass;
+    property AxisType: TSgtsGraphChartSeriesDefAxisType read FAxisType write FAxisType;
+    property XMerging: Boolean read FXMerging write FXMerging;
+    property XLabelFieldName: String read FXLabelFieldName write FXLabelFieldName;
+    property PointerVisible: Boolean read FPointerVisible write FPointerVisible;
+    property Color: TColor read FColor write FColor;
+    property ColorType: TSgtsGraphChartSeriesDefColotType read FColorType write FColorType;
+    property XOrdered: Boolean read FXOrdered write FXOrdered; 
+
+    property Active: Boolean read FActive write SetActive;
+    property Series: TChartSeries read FSeries write FSeries;
+  end;
+
+  TSgtsGraphChartSeriesDefClass=class of TSgtsGraphChartSeriesDef;
+
+  TSgtsGraphChartSeriesDefs=class(TObjectList)
+  private
+    FChart: TDBChart;
+    FActive: Boolean;
+    function GetItems(Index: Integer): TSgtsGraphChartSeriesDef;
+    procedure SetItems(Index: Integer; Value: TSgtsGraphChartSeriesDef);
+    procedure SetActive(Value: Boolean);
+  public
+    function Add(SeriesDefClass: TSgtsGraphChartSeriesDefClass;
+                 Name: String; SeriesClass: TChartSeriesClass;
+                 DataSet: TDataSet; XFieldName, YFieldName, XLabelFieldName: String): TSgtsGraphChartSeriesDef;
+    function AddLine(Name: String; DataSet: TDataSet; XFieldName, YFieldName, XLabelFieldName: String): TSgtsGraphChartSeriesDef;
+    function AddPoint(Name: String; DataSet: TDataSet; XFieldName, YFieldName, XLabelFieldName: String): TSgtsGraphChartSeriesDef;
+    function AddBar(Name: String; DataSet: TDataSet; XFieldName, YFieldName, XLabelFieldName: String): TSgtsGraphChartSeriesDef;
+    function AddArea(Name: String; DataSet: TDataSet; XFieldName, YFieldName, XLabelFieldName: String): TSgtsGraphChartSeriesDef;
+    function AddLinePoint(Name: String; DataSet: TDataSet; XFieldName, YFieldName, XLabelFieldName: String): TSgtsGraphChartSeriesDef;
+
+    function FindBySeries(Series: TChartSeries): TSgtsGraphChartSeriesDef;
+
+    procedure ClearSeries;
+    procedure CreateSeries(Chart: TDBChart);
+
+    property Items[Index: Integer]: TSgtsGraphChartSeriesDef read GetItems write SetItems;
+    property Chart: TDBChart read FChart;
+    property Active: Boolean read FActive write SetActive;
+  end;
+
+
+implementation
+
+uses Controls, SysUtils,
+     SgtsUtils;
+
+{ TSgtsGraphChartSeriesDef }
+
+constructor TSgtsGraphChartSeriesDef.Create(ASeriesDefs: TSgtsGraphChartSeriesDefs);
+begin
+  inherited Create;
+  FSeriesDefs:=ASeriesDefs;
+  FXMerging:=true;
+  FActive:=false;
+end;
+
+destructor TSgtsGraphChartSeriesDef.Destroy;
+begin
+  ClearSeries;
+  inherited Destroy;
+end;
+
+function TSgtsGraphChartSeriesDef.SeriesBeforeAdd(Sender: TChartSeries): Boolean;
+begin
+  Result:=true;
+end;
+
+function TSgtsGraphChartSeriesDef.GetNewColor(ASeries: TChartSeries): TColor;
+const
+  ColorArray: array[0..15] of TColor=(clRed,clBlue,clGreen,clMaroon,clPurple,clTeal,clFuchsia,clNavy,
+                                      clAqua,clOlive,clGray,clSilver,clLime,clYellow,clBlack,clMoneyGreen);
+begin
+  Result:=ASeries.SeriesColor;
+  if Assigned(ASeries.ParentChart) then
+    Result:=ColorArray[(ASeries.ParentChart.SeriesCount mod 16)-1];
+end;
+
+function TSgtsGraphChartSeriesDef.GetNewPointStyle(ASeries: TChartSeries): TSeriesPointerStyle;
+
+{  function GetPointSeriesCount: Integer;
+  var
+    i: Integer;
+  begin
+    Result:=0;
+    for i:=0 to ASeries.ParentChart.SeriesCount-1 do begin
+      if IsClassParent(ASeries.ParentChart.Series[i].ClassType,TPointSeries) or
+         IsClassParent(ASeries.ParentChart.Series[i].ClassType,TLineSeries) then begin
+        Inc(Result);
+      end;
+    end;
+  end;}
+
+var
+  PCount: Integer;
+const
+  StyleArray: array[0..6] of TSeriesPointerStyle=(psRectangle,psStar,psTriangle,psDownTriangle,psCircle,psCross,psDiagCross);
+begin
+  PCount:=ASeries.ParentChart.SeriesList.IndexOf(ASeries)+1;
+  Result:=StyleArray[(PCount mod 7)-1];
+end;
+
+procedure TSgtsGraphChartSeriesDef.CreateSeries(Chart: TDBChart);
+var
+  AColor: TColor;
+begin
+  if not Assigned(FSeries) and
+     Assigned(FSeriesClass) and
+     Assigned(Chart) then begin
+    FActive:=false;
+    FSeries:=FSeriesClass.Create(Chart);
+    Chart.AddSeries(FSeries);
+    FSeries.Title:=FName;
+    FSeries.DataSource:=nil;
+    FSeries.OnBeforeAdd:=SeriesBeforeAdd;
+    FSeries.Cursor:=crArrow;
+    AColor:=FSeries.SeriesColor;
+    case FColorType of
+      ctAuto: AColor:=GetNewColor(FSeries);
+      ctManual: AColor:=FColor;
+    end;
+    FSeries.SeriesColor:=AColor;
+    if IsClassParent(FSeries.ClassType,TLineSeries) then begin
+      TLineSeries(FSeries).Pointer.Visible:=FPointerVisible;
+      if FPointerVisible then
+        TLineSeries(FSeries).Pointer.Style:=GetNewPointStyle(FSeries);
+    end;
+    if IsClassParent(FSeries.ClassType,TPointSeries) then begin
+      TPointSeries(FSeries).Pointer.Style:=GetNewPointStyle(FSeries);
+    end;
+    if IsClassParent(FSeries.ClassType,TBarSeries) then begin
+      TBarSeries(FSeries).AutoBarSize:=true;
+      TBarSeries(FSeries).UseYOrigin:=true;
+      TBarSeries(FSeries).Marks.Visible:=false;
+    end;
+    FSeries.YValues.ValueSource:=YFieldName;
+    FSeries.XValues.ValueSource:='';
+    FSeries.XLabelsSource:='';
+    if FXMerging then
+      FSeries.XValues.ValueSource:=XFieldName
+    else
+      FSeries.XLabelsSource:=XFieldName;
+
+    if Trim(XLabelFieldName)<>'' then
+      FSeries.XLabelsSource:=XLabelFieldName
+    else
+//      FSeries.XLabelsSource:=XFieldName;
+
+   { FSeries.XLabelsSource:=XLabelFieldName;
+    if FXMerging then begin
+      FSeries.XValues.ValueSource:=XFieldName;
+    end else begin
+      FSeries.XLabelsSource:=XFieldName;
+    end; }
+
+    if not FXOrdered then
+      FSeries.XValues.Order:=loNone;
+     
+
+    case FAxisType of
+      atLeftBottom: begin
+        FSeries.HorizAxis:=aBottomAxis;
+        FSeries.VertAxis:=aLeftAxis;
+      end;
+      atRightBottom: begin
+        FSeries.HorizAxis:=aBottomAxis;
+        FSeries.VertAxis:=aRightAxis;
+      end;
+    end;
+    FSeries.Active:=false;
+  end;
+end;
+
+procedure TSgtsGraphChartSeriesDef.ClearSeries;
+begin
+  if Assigned(FSeries) then begin
+    FSeries.Active:=false;
+    FSeries.ParentChart:=nil;
+    FSeries.Free;
+    FSeries:=nil;
+  end;
+end;
+
+procedure TSgtsGraphChartSeriesDef.SetActive(Value: Boolean);
+begin
+  FActive:=Value;
+  if Assigned(FSeries) then begin
+    if Value then
+      if Assigned(FDataSet) then begin
+        FDataSet.Filter:=FDataSetFilter;
+        FDataSet.Filtered:=Trim(FDataSetFilter)<>'';
+        FSeries.DataSource:=FDataSet;
+      end;
+
+    FSeries.Active:=Value;
+  end;
+end;
+
+function TSgtsGraphChartSeriesDef.ChangeSeriesByClass(AClass: TChartSeriesClass; APointerVisible: Boolean): TChartSeries;
+var
+  OldSeries: TChartSeries;
+  Chart: TCustomAxisPanel;
+  Index: Integer;
+begin
+  Result:=nil;
+  if Assigned(AClass) and
+     Assigned(FSeries) then begin
+    Chart:=FSeries.ParentChart;
+    OldSeries:=TChartSeries.Create(nil);
+    try
+      OldSeries.Assign(FSeries);
+      Index:=Chart.SeriesList.IndexOf(FSeries);
+      Active:=false;
+      ClearSeries;
+      FSeriesClass:=AClass;
+      CreateSeries(TDBChart(Chart));
+      Active:=true;
+      FSeries.Assign(OldSeries);
+      Chart.SeriesList.Move(Chart.SeriesCount-1,Index);
+      if IsClassParent(FSeries.ClassType,TLineSeries) then begin
+        TLineSeries(FSeries).Pointer.Visible:=APointerVisible;
+        if APointerVisible then
+          TLineSeries(FSeries).Pointer.Style:=GetNewPointStyle(FSeries);
+      end;
+      if IsClassParent(FSeries.ClassType,TPointSeries) then begin
+        TPointSeries(FSeries).Pointer.Style:=GetNewPointStyle(FSeries);
+      end;
+      Result:=FSeries;
+    finally
+      OldSeries.Free;
+    end;
+  end;
+end;
+
+{ TSgtsGraphChartSeriesDefs }
+
+function TSgtsGraphChartSeriesDefs.GetItems(Index: Integer): TSgtsGraphChartSeriesDef;
+begin
+  Result:=TSgtsGraphChartSeriesDef(inherited Items[Index]);
+end;
+
+procedure TSgtsGraphChartSeriesDefs.SetItems(Index: Integer; Value: TSgtsGraphChartSeriesDef);
+begin
+  inherited Items[Index]:=Value;
+end;
+
+function TSgtsGraphChartSeriesDefs.Add(SeriesDefClass: TSgtsGraphChartSeriesDefClass;
+                                       Name: String; SeriesClass: TChartSeriesClass;
+                                       DataSet: TDataSet; XFieldName, YFieldName, XLabelFieldName: String): TSgtsGraphChartSeriesDef;
+begin
+  Result:=SeriesDefClass.Create(Self);
+  Result.Name:=Name;
+  Result.DataSet:=DataSet;
+  Result.XFieldName:=XFieldName;
+  Result.YFieldName:=YFieldName;
+  Result.XLabelFieldName:=XLabelFieldName;
+  Result.SeriesClass:=SeriesClass;
+  inherited Add(Result);
+end;
+
+function TSgtsGraphChartSeriesDefs.AddLine(Name: String; DataSet: TDataSet; XFieldName, YFieldName, XLabelFieldName: String): TSgtsGraphChartSeriesDef;
+begin
+  Result:=Add(TSgtsGraphChartSeriesDef,Name,TLineSeries,DataSet,XFieldName,YFieldName,XLabelFieldName);
+end;
+
+function TSgtsGraphChartSeriesDefs.AddPoint(Name: String; DataSet: TDataSet; XFieldName, YFieldName, XLabelFieldName: String): TSgtsGraphChartSeriesDef;
+begin
+  Result:=Add(TSgtsGraphChartSeriesDef,Name,TPointSeries,DataSet,XFieldName,YFieldName, XLabelFieldName);
+end;
+
+function TSgtsGraphChartSeriesDefs.AddBar(Name: String; DataSet: TDataSet; XFieldName, YFieldName, XLabelFieldName: String): TSgtsGraphChartSeriesDef;
+begin
+  Result:=Add(TSgtsGraphChartSeriesDef,Name,TBarSeries,DataSet,XFieldName,YFieldName, XLabelFieldName);
+end;
+
+function TSgtsGraphChartSeriesDefs.AddArea(Name: String; DataSet: TDataSet; XFieldName, YFieldName, XLabelFieldName: String): TSgtsGraphChartSeriesDef;
+begin
+  Result:=Add(TSgtsGraphChartSeriesDef,Name,TAreaSeries,DataSet,XFieldName,YFieldName,XLabelFieldName);
+end;
+
+function TSgtsGraphChartSeriesDefs.AddLinePoint(Name: String; DataSet: TDataSet; XFieldName, YFieldName, XLabelFieldName: String): TSgtsGraphChartSeriesDef;
+begin
+  Result:=AddLine(Name,DataSet,XFieldName,YFieldName,XLabelFieldName);
+  if Assigned(Result) then begin
+    Result.PointerVisible:=true;
+  end;
+end;
+
+procedure TSgtsGraphChartSeriesDefs.ClearSeries;
+var
+  i: Integer;
+begin
+  for i:=0 to Count-1 do begin
+    Items[i].ClearSeries;
+  end;
+end;
+
+procedure TSgtsGraphChartSeriesDefs.CreateSeries(Chart: TDBChart);
+var
+  i: Integer;
+begin
+  if Assigned(Chart) then begin
+    for i:=0 to Count-1 do begin
+      Items[i].ClearSeries;
+      Items[i].CreateSeries(Chart);
+    end;
+  end;
+end;
+
+procedure TSgtsGraphChartSeriesDefs.SetActive(Value: Boolean);
+var
+  i: Integer;
+begin
+  FActive:=Value;
+  for i:=0 to Count-1 do begin
+    Items[i].Active:=Value;
+  end;
+end;
+
+function TSgtsGraphChartSeriesDefs.FindBySeries(Series: TChartSeries): TSgtsGraphChartSeriesDef;
+var
+  i: Integer;
+begin
+  Result:=nil;
+  if Assigned(Series) then begin
+    for i:=0 to Count-1 do begin
+      if Items[i].Series=Series then begin
+        Result:=Items[i];
+        exit;
+      end;
+    end;
+  end;  
+end;
+
+end.

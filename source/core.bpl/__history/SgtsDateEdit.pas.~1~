@@ -1,0 +1,80 @@
+unit SgtsDateEdit;
+
+interface
+
+uses Windows, Messages, Classes, Controls, Graphics, StdCtrls, ComCtrls,
+     ToolEdit, SgtsControls;
+
+type
+
+  TSgtsDateEdit=class(TDateEdit)
+  private
+    FOldColor: TColor;
+    FOldLabelColor: TColor;
+    procedure CMEnter(var Message: TCMEnter); message CM_ENTER;
+    procedure CMExit(var Message: TCMExit); message CM_EXIT;
+    function GetDate2: Variant;
+    procedure SetDate2(Value: Variant);
+  public
+    property Date2: Variant read GetDate2 write SetDate2;
+  end;
+
+implementation
+
+uses SysUtils, Variants,
+     SgtsUtils, SgtsConsts;
+
+{ TSgtsDateEdit }
+
+procedure TSgtsDateEdit.CMEnter(var Message: TCMEnter);
+var
+  lb: TLabel;
+begin
+  FOldColor:=Color;
+  Color:=iff(Color<>clBtnFace,ElementFocusColor,Color);
+  lb:=GetLabelByWinControl(Self);
+  if lb<>nil then begin
+    FOldLabelColor:=lb.Font.Color;
+    lb.Font.Color:=ElementLabelFocusColor;
+  end;
+  inherited;
+end;
+
+procedure TSgtsDateEdit.CMExit(var Message: TCMExit);
+var
+  lb: TLabel;
+begin
+  inherited;
+  lb:=GetLabelByWinControl(Self);
+  if lb<>nil then begin
+    lb.Font.Color:=FOldLabelColor;
+  end;
+  Color:=FOldColor;
+end;
+
+function TSgtsDateEdit.GetDate2: Variant;
+var
+  S: String;
+begin
+  if Date<>NullDate then begin
+    S:=DateToStr(Date);
+    Result:=StrToDate(S);
+  end else begin
+    Result:=Null;
+  end;  
+end;
+
+procedure TSgtsDateEdit.SetDate2(Value: Variant);
+var
+  V: Variant;
+  S: String;
+begin
+  V:=Value;
+  if VarType(V)=varString then begin
+    S:=VarToStrDef(V,'');
+    V:=StrToDateDef(S,Date);
+  end;
+  Date:=VarToDateDef(V,Date);
+end;
+
+end.

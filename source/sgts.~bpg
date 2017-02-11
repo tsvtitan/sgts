@@ -1,0 +1,66 @@
+#------------------------------------------------------------------------------
+VERSION = BWS.01
+#------------------------------------------------------------------------------
+!ifndef ROOT
+ROOT = $(MAKEDIR)\..
+!endif
+#------------------------------------------------------------------------------
+MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
+DCC = $(ROOT)\bin\dcc32.exe $**
+BRCC = $(ROOT)\bin\brcc32.exe $**
+#------------------------------------------------------------------------------
+PROJECTS = report.bpl core.bpl sgts.exe oraado.dll kgesgraphs.dll rtl70.rus \
+  vcl70.rus vcldb70.rus sqledit.exe tbledit.exe
+#------------------------------------------------------------------------------
+default: $(PROJECTS)
+#------------------------------------------------------------------------------
+
+sgts.exe: sgts.exe\sgts.dpr
+  $(DCC)
+
+core.bpl: core.bpl\core.dpk
+  $(DCC)
+
+rtl70.rus: rtl70.rus\rtl70.dpr
+  $(DCC)
+
+vcl70.rus: vcl70.rus\vcl70.dpr
+  $(DCC)
+
+sqledit.exe: sqledit.exe\sqledit.dpr
+  $(DCC)
+
+oraado.dll: oraado.dll\oraado.dpr
+  $(DCC)
+
+tbledit.exe: tbledit.exe\tbledit.dpr
+  $(DCC)
+
+report.bpl: report.bpl\report.dpk
+  $(DCC)
+
+: core.bpl\1\SgtsFunSourceDataDetailFrm.pas
+  $(DCC)
+
+: core.bpl\1\SgtsFunSourceDataPointsIface.pas
+  $(DCC)
+
+: core.bpl\1\SgtsFunSourceDataPointsIface.pas
+  $(DCC)
+
+: E:\work\1stbasis\Source\United\tsvDbGrid.pas
+  $(DCC)
+
+: E:\work\1stbasis\Source\United\tsvDbGrid.pas
+  $(DCC)
+
+: E:\work\1stbasis\Source\United\tsvDbGrid.pas
+  $(DCC)
+
+vcldb70.rus: vcldb70.rus\vcldb70.dpr
+  $(DCC)
+
+kgesgraphs.dll: kgesgraphs.dll\kgesgraphs.dpr
+  $(DCC)
+
+

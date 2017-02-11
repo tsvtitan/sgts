@@ -1,0 +1,34 @@
+unit SgtsKgesGraphFltGmoIface;
+
+interface
+
+uses SysUtils,
+     SgtsKgesGraphPeriodPointsIface;
+
+type
+
+  TSgtsKgesGraphFltGmoIface=class(TSgtsKgesGraphPeriodPointsIface)
+  public
+    procedure Init; override;
+  end;
+
+
+implementation
+
+uses SgtsConsts, SgtsKgesGraphsConsts, SgtsProviderConsts,
+     SgtsKgesGraphFltGmoRefreshFm;
+
+{ TSgtsKgesGraphPzmPeriodIface }
+
+procedure TSgtsKgesGraphFltGmoIface.Init;
+begin
+  inherited Init;
+  InterfaceName:=SInterfaceGraphFltGmo;
+  RefreshClass:=TSgtsKgesGraphFltGmoRefreshIface;
+  ProviderName:=SProviderSelectFltJournalObservationsGmo;
+  MenuPath:=Format(SGraphMenu,['Фильтрация\Результаты наблюдений']);
+  Caption:='Фильтрация. Результаты наблюдений';
+end;
+
+end.
+

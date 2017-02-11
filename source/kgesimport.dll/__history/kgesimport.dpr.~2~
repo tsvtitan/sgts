@@ -1,0 +1,19 @@
+library kgesimport;
+
+{$R *.res}
+                           
+uses
+  SgtsFm in '..\core.bpl\SgtsFm.pas' {SgtsForm},
+  SgtsChildFm in '..\core.bpl\SgtsChildFm.pas' {SgtsChildForm},
+  SgtsDataFm in '..\core.bpl\SgtsDataFm.pas' {SgtsDataForm},
+  SgtsDataEditFm in '..\core.bpl\SgtsDataEditFm.pas' {SgtsDataEditForm},
+  SgtsDataGridFm in '..\core.bpl\SgtsDataGridFm.pas' {SgtsDataGridForm},
+  SgtsTest in '..\test.dll\SgtsTest.pas',
+  SgtsTestInterface in '..\test.dll\SgtsTestInterface.pas',
+  SgtsTestFm in '..\test.dll\SgtsTestFm.pas' {SgtsTestForm};
+
+exports
+  InitInterface;
+      
+begin
+end.

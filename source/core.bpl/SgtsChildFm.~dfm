@@ -1,0 +1,9 @@
+inherited SgtsChildForm: TSgtsChildForm
+  Left = 462
+  Top = 233
+  Height = 265
+  Caption = 'SgtsChildForm'
+  OldCreateOrder = True
+  PixelsPerInch = 96
+  TextHeight = 13
+end

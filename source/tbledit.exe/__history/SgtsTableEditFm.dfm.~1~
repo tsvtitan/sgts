@@ -1,0 +1,63 @@
+object SgtsTableEditForm: TSgtsTableEditForm
+  Left = 407
+  Top = 180
+  Width = 640
+  Height = 480
+  Caption = #1056#1077#1076#1072#1082#1090#1086#1088' XML '#1090#1072#1073#1083#1080#1094
+  Color = clBtnFace
+  Constraints.MinHeight = 480
+  Constraints.MinWidth = 640
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  Font.Style = []
+  OldCreateOrder = False
+  Position = poScreenCenter
+  PixelsPerInch = 96
+  TextHeight = 13
+  inline SgtsTableEditFrame1: TSgtsTableEditFrame
+    Left = 0
+    Top = 0
+    Width = 632
+    Height = 453
+    Align = alClient
+    TabOrder = 0
+    inherited Splitter: TSplitter
+      Top = 322
+      Width = 632
+    end
+    inherited PanelTop: TPanel
+      Width = 632
+    end
+    inherited PanelGrid: TPanel
+      Width = 632
+      Height = 263
+      inherited DBNavigator: TDBNavigator
+        Top = 235
+        Width = 626
+        Hints.Strings = ()
+      end
+    end
+    inherited PanelBottom: TPanel
+      Top = 325
+      Width = 632
+      inherited GroupBoxValue: TGroupBox
+        Width = 626
+        inherited PanelValue: TPanel
+          Width = 622
+          inherited DBMemoValue: TDBMemo
+            Width = 523
+          end
+          inherited PanelValueButton: TPanel
+            Left = 528
+          end
+        end
+      end
+    end
+  end
+  object XPManifest: TXPManifest
+    Left = 128
+    Top = 129
+  end
+end

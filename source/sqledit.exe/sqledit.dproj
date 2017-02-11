@@ -1,0 +1,68 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{3733a836-d8c7-42a7-abeb-a4175704296a}</ProjectGuid>
+    <MainSource>sqledit.dpr</MainSource>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <DCC_EnabledPackages>true</DCC_EnabledPackages>
+    <DCC_UsePackage>core</DCC_UsePackage>
+    <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+    <DCC_DependencyCheckOutputName>U:\bin\sqledit.exe</DCC_DependencyCheckOutputName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_DebugInformation>False</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+    <DCC_ExeOutput>U:\bin</DCC_ExeOutput>
+    <DCC_UnitSearchPath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_UnitSearchPath>
+    <DCC_ResourcePath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_ResourcePath>
+    <DCC_ObjPath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_ObjPath>
+    <DCC_IncludePath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_IncludePath>
+    <DCC_Define>RELEASE</DCC_Define>
+    <DCC_SYMBOL_DEPRECATED>False</DCC_SYMBOL_DEPRECATED>
+    <DCC_SYMBOL_LIBRARY>False</DCC_SYMBOL_LIBRARY>
+    <DCC_SYMBOL_PLATFORM>False</DCC_SYMBOL_PLATFORM>
+    <DCC_UNIT_LIBRARY>False</DCC_UNIT_LIBRARY>
+    <DCC_UNIT_PLATFORM>False</DCC_UNIT_PLATFORM>
+    <DCC_UNIT_DEPRECATED>False</DCC_UNIT_DEPRECATED>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_ExeOutput>U:\bin</DCC_ExeOutput>
+    <DCC_UnitSearchPath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_UnitSearchPath>
+    <DCC_ResourcePath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_ResourcePath>
+    <DCC_ObjPath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_ObjPath>
+    <DCC_IncludePath>U:\source\dcp;U:\source\report.bpl;U:\source\core.bpl;U:\source\imports\RX;U:\source\imports\VirtualTree;U:\source\imports\FastReport\Source;U:\source\imports\FastReport\FastScript;U:\source\imports\FastReport\Source\ExportPack</DCC_IncludePath>
+    <DCC_Define>DEBUG</DCC_Define>
+    <DCC_SYMBOL_DEPRECATED>False</DCC_SYMBOL_DEPRECATED>
+    <DCC_SYMBOL_LIBRARY>False</DCC_SYMBOL_LIBRARY>
+    <DCC_SYMBOL_PLATFORM>False</DCC_SYMBOL_PLATFORM>
+    <DCC_UNIT_LIBRARY>False</DCC_UNIT_LIBRARY>
+    <DCC_UNIT_PLATFORM>False</DCC_UNIT_PLATFORM>
+    <DCC_UNIT_DEPRECATED>False</DCC_UNIT_DEPRECATED>
+    <DCC_DcpOutput>U:\source\dcp</DCC_DcpOutput>
+  </PropertyGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Delphi.Personality</Borland.Personality>
+    <Borland.ProjectType>VCLApplication</Borland.ProjectType>
+    <BorlandProject>
+<BorlandProject><Delphi.Personality><Parameters><Parameters Name="UseLauncher">False</Parameters><Parameters Name="LoadAllSymbols">True</Parameters><Parameters Name="LoadUnspecifiedSymbols">False</Parameters></Parameters><VersionInfo><VersionInfo Name="IncludeVerInfo">True</VersionInfo><VersionInfo Name="AutoIncBuild">True</VersionInfo><VersionInfo Name="MajorVer">1</VersionInfo><VersionInfo Name="MinorVer">2</VersionInfo><VersionInfo Name="Release">0</VersionInfo><VersionInfo Name="Build">2</VersionInfo><VersionInfo Name="Debug">False</VersionInfo><VersionInfo Name="PreRelease">False</VersionInfo><VersionInfo Name="Special">False</VersionInfo><VersionInfo Name="Private">False</VersionInfo><VersionInfo Name="DLL">False</VersionInfo><VersionInfo Name="Locale">1049</VersionInfo><VersionInfo Name="CodePage">1251</VersionInfo></VersionInfo><VersionInfoKeys><VersionInfoKeys Name="CompanyName"></VersionInfoKeys><VersionInfoKeys Name="FileDescription"></VersionInfoKeys><VersionInfoKeys Name="FileVersion">1.2.0.2</VersionInfoKeys><VersionInfoKeys Name="InternalName"></VersionInfoKeys><VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys><VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys><VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys><VersionInfoKeys Name="ProductName"></VersionInfoKeys><VersionInfoKeys Name="ProductVersion">1.2</VersionInfoKeys></VersionInfoKeys><Source><Source Name="MainSource">sqledit.dpr</Source></Source></Delphi.Personality></BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
+  <ItemGroup>
+    <DelphiCompile Include="sqledit.dpr">
+      <MainSource>MainSource</MainSource>
+    </DelphiCompile>
+    <DCCReference Include="SgtsSqlEditFm.pas">
+      <Form>SgtsSqlEditForm</Form>
+    </DCCReference>
+    <DCCReference Include="SgtsTableEditFrm.pas">
+      <Form>SgtsTableEditFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="SgtsTableNewFm.pas">
+      <Form>SgtsTableNewForm</Form>
+    </DCCReference>
+  </ItemGroup>
+</Project>

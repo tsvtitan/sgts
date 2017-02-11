@@ -1,0 +1,402 @@
+unit SgtsExportSqlFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ExtCtrls, DB, StdCtrls, DBGrids, DBClient, Menus,
+  SgtsChildFm, SgtsCDS, SgtsSelectDefs, SgtsDatabaseIntf, SgtsLogIntf,
+  SgtsExportSqlFmIntf, SgtsCoreIntf, SgtsControls, SgtsDBGrid;
+
+type
+  TSgtsExportSqlForm = class(TSgtsChildForm)
+    PanelTop: TPanel;
+    LabelFileDesc: TLabel;
+    EditFileDesc: TEdit;
+    ButtonFileDesc: TButton;
+    LabelFileResult: TLabel;
+    EditFileResult: TEdit;
+    ButtonFileResult: TButton;
+    PanelGrid: TPanel;
+    PanelBottom: TPanel;
+    ButtonExport: TButton;
+    ButtonClose: TButton;
+    GroupBoxOption: TGroupBox;
+    PanelOption: TPanel;
+    OpenDialog: TOpenDialog;
+    DataSource: TDataSource;
+    SaveDialog: TSaveDialog;
+    PopupMenu: TPopupMenu;
+    MenuItemCheckAll: TMenuItem;
+    MenuItemUncheckAll: TMenuItem;
+    procedure ButtonCloseClick(Sender: TObject);
+    procedure ButtonFileDescClick(Sender: TObject);
+    procedure ButtonFileResultClick(Sender: TObject);
+    procedure ButtonExportClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure MenuItemCheckAllClick(Sender: TObject);
+    procedure MenuItemUncheckAllClick(Sender: TObject);
+  private
+    FDataSet: TSgtsCDS;
+    FGrid: TSgtsDBGrid;
+    FSelectDefs: TSgtsSelectDefs;
+    FCheckDef: TSgtsSelectDef;
+    FBreaked: Boolean;
+    FInProcess: Boolean;
+    function GetCountChecked: Integer;
+    procedure GridDblClick(Sender: TObject);
+    procedure GridKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure LoadFromFile(const FileName: String);
+    function ExportToFile(const FileName: String): Boolean;
+    procedure ExportProgressProc(Min,Max,Progress: Integer; var Breaked: Boolean);
+    procedure ButtonBreakClick(Sender: TObject);
+    procedure CheckAll(FlagCheck: Boolean);
+    procedure GridCellClick(Column: TColumn);
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+  end;
+
+  TSgtsExportSqlIface=class(TSgtsChildIface,ISgtsExportSqlForm)
+  public
+    destructor Destroy; override;
+    procedure Init; override;
+    function CanShow: Boolean; override;
+  end;
+
+var
+  SgtsExportSqlForm: TSgtsExportSqlForm;
+
+implementation
+
+uses SgtsFm, SgtsIface, SgtsConsts, SgtsUtils, SgtsDialogs,
+     SgtsDatabaseModulesIntf;
+
+{$R *.dfm}
+
+{ TSgtsExportSqlIface }
+
+destructor TSgtsExportSqlIface.Destroy; 
+begin
+  inherited Destroy;
+end;
+
+procedure TSgtsExportSqlIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsExportSqlForm;
+  InterfaceName:=SInterfaceExportSql;
+  with Permissions do begin
+    AddDefault(SPermissionNameShow);
+    AddDefault(SPermissionNameSelect);
+  end;
+end;
+
+function TSgtsExportSqlIface.CanShow: Boolean; 
+begin
+  Result:=PermissionExists(SPermissionNameShow)
+end;
+
+{ TSgtsExportSqlForm }
+
+constructor TSgtsExportSqlForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FDataSet:=TSgtsCDS.Create(Self);
+  with FDataSet do begin
+    FieldDefs.Clear;
+    FieldDefs.Add(SDb_Description,ftString,250);
+    FieldDefs.Add(SDb_Type,ftInteger);
+    FieldDefs.Add(SDb_Value,ftBlob);
+    FieldDefs.Add(SDb_Result,ftBlob);
+    FieldDefs.Add(SDb_Flag,ftInteger);
+    CreateDataSet;
+  end;
+  DataSource.DataSet:=FDataSet;
+
+  FSelectDefs:=TSgtsSelectDefs.Create;
+  with FSelectDefs do begin
+    FCheckDef:=AddDrawCheck(SDb_Flag_Ex,'Включено',SDb_Flag,30);
+    Find(FCheckDef.CalcName).Field:=FDataSet.FieldByName(SDb_Flag);
+    Add(SDb_Description,'Описание',250);
+  end;
+
+  FGrid:=TSgtsDBGrid.Create(Self);
+  with FGrid do begin
+    Align:=alClient;
+    Parent:=PanelOption;
+    ColumnSortEnabled:=false;
+    VisibleRowNumber:=true;
+    DataSource:=Self.DataSource;
+    Options:=Options-[dgEditing,dgTabs];
+    OnDblClick:=nil;
+    OnCellClick:=GridCellClick;
+    OnKeyDown:=GridKeyDown;
+    LocateEnabled:=true;
+    ColMoving:=false;
+    AutoFit:=true;
+  end;
+  FGrid.PopupMenu:=PopupMenu;
+  
+  CreateGridColumnsBySelectDefs(FGrid,FSelectDefs);
+end;
+
+procedure TSgtsExportSqlForm.ButtonCloseClick(Sender: TObject);
+begin
+  Close;
+end;
+
+procedure TSgtsExportSqlForm.LoadFromFile(const FileName: String);
+var
+  DS: TSgtsCDS;
+begin
+  Iface.LogWrite(Format(SExportSqlLoadFromFileStart,[FileName,GetFileSizeEx(FileName)]));
+  try
+    DS:=TSgtsCDS.Create(nil);
+    FDataSet.BeginUpdate(false);
+    try
+      DS.LoadFromFile(FileName);
+      Iface.LogWrite(Format(SExportSqlLoadFromFileSuccess,[FileName]));
+      if DS.Active then begin
+        FDataSet.EmptyDataSet;
+        DS.First;
+        while not DS.Eof do begin
+          FDataSet.Append;
+          FDataSet.FieldValuesBySource(DS,true,false);
+          FDataSet.Post;
+          DS.Next;
+        end;
+        FDataSet.First;
+      end;
+    finally
+      FDataSet.EndUpdate(false);
+      DS.Free;
+    end;
+  except
+    On E: Exception do begin
+      Iface.LogWrite(Format(SExportSqlLoadFromFileFailed,[FileName,E.Message]),ltError);
+      raise; 
+    end;
+  end;   
+end;
+
+procedure TSgtsExportSqlForm.ButtonFileDescClick(Sender: TObject);
+begin
+  OpenDialog.FilterIndex:=1;
+  OpenDialog.FileName:=EditFileDesc.Text;
+  if OpenDialog.Execute then begin
+    LoadFromFile(OpenDialog.FileName);
+    EditFileDesc.Text:=OpenDialog.FileName;
+  end;
+end;
+
+procedure TSgtsExportSqlForm.ButtonFileResultClick(Sender: TObject);
+begin
+  SaveDialog.FilterIndex:=1;
+  SaveDialog.FileName:=FormatDateTime(SFileExportFormat,Now);
+  if SaveDialog.Execute then begin
+    EditFileResult.Text:=SaveDialog.FileName;
+  end;
+end;
+
+function TSgtsExportSqlForm.GetCountChecked: Integer;
+begin
+  Result:=0;
+  if FDataSet.Active then begin
+    FDataSet.BeginUpdate(true);
+    try
+      FDataSet.First;
+      while not FDataSet.Eof do begin
+        Result:=Result+iff(FDataSet.FieldByName(SDb_Flag).AsInteger>0,1,0);
+        FDataSet.Next;
+      end;
+    finally
+      FDataSet.EndUpdate(false);
+    end;
+  end;
+end;
+
+procedure TSgtsExportSqlForm.ButtonExportClick(Sender: TObject);
+var
+  OldCaption: String;
+begin
+  if (Trim(EditFileDesc.Text)='') or not FileExists(EditFileDesc.Text) then begin
+    ShowError(Format(SNeedElementValue,[LabelFileDesc.Caption]));
+    EditFileDesc.SetFocus;
+    exit;
+  end;
+  if (Trim(EditFileResult.Text)='') then begin
+    ShowError(Format(SNeedElementValue,[LabelFileResult.Caption]));
+    EditFileResult.SetFocus;
+    exit;
+  end;
+  if AnsiSameText(Trim(EditFileDesc.Text),Trim(EditFileResult.Text)) then begin
+    ShowError(Format(SValueElementMustNotComply,[LabelFileResult.Caption,LabelFileDesc.Caption]));
+    EditFileResult.SetFocus;
+    exit;
+  end;
+  if GetCountChecked=0 then begin
+    ShowError(Format(SNeedElementValueCheck,[Trim(GroupBoxOption.Caption)]));
+    FGrid.SetFocus;
+    exit;
+  end;
+  ButtonExport.OnClick:=ButtonBreakClick;
+  OldCaption:=ButtonExport.Caption;
+  ButtonFileDesc.Enabled:=false;
+  ButtonFileResult.Enabled:=false;
+  FGrid.Enabled:=false;
+  try
+    ButtonExport.Caption:=SButtonCaptionAbort;
+    if ExportToFile(EditFileResult.Text) then
+      ShowInfo(SExportdDataSuccess);
+  finally
+    FGrid.Enabled:=true;
+    ButtonFileResult.Enabled:=true;
+    ButtonFileDesc.Enabled:=true;
+    ButtonExport.Caption:=OldCaption;
+    ButtonExport.OnClick:=ButtonExportClick;
+  end;    
+end;
+
+procedure TSgtsExportSqlForm.GridKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if Key=VK_SPACE then
+    GridDblClick(nil);
+end;
+
+procedure TSgtsExportSqlForm.GridDblClick(Sender: TObject);
+var
+  Flag: Boolean;
+begin
+  if FDataSet.Active and
+     not FDataSet.IsEmpty and
+     Iface.PermissionExists(SPermissionNameSelect) and
+     (FGrid.SelectedIndex=0) then begin
+    Flag:=Boolean(FDataSet.FieldByName(SDb_Flag).AsInteger);
+    FDataSet.Edit;
+    FDataSet.FieldByName(SDb_Flag).AsInteger:=Integer(not Flag);
+    FDataSet.Post;
+  end;
+end;
+
+procedure TSgtsExportSqlForm.ExportProgressProc(Min,Max,Progress: Integer; var Breaked: Boolean);
+begin
+  CoreIntf.MainForm.Progress2(Min,Max,Progress);
+  Application.ProcessMessages;
+  Breaked:=FBreaked;
+end;
+
+function TSgtsExportSqlForm.ExportToFile(const FileName: String): Boolean;
+var
+  Database: ISgtsDatabase;
+  ExportType: TSgtsDatabaseExportType;
+  Value: String;
+  i: Integer;
+  Flag: Boolean;
+  AResult: String;
+  OldCursor: TCursor;
+begin
+  Result:=false;
+  FBreaked:=false;
+  Database:=nil;
+  Iface.LogWrite(Format(SExportSqlExportToFileStart,[FileName]));
+  if Assigned(CoreIntf.DatabaseModules.Current) then
+    Database:=CoreIntf.DatabaseModules.Current.Database;
+  if Assigned(Database) then begin
+    OldCursor:=Screen.Cursor;
+    CoreIntf.MainForm.Progress(0,FDataSet.RecordCount,0);
+    CoreIntf.MainForm.Progress2(0,0,0);
+    FInProcess:=false;
+    try
+      FInProcess:=true;
+      Screen.Cursor:=crHourGlass;
+      i:=1;
+      FDataSet.First;
+      while not FDataSet.Eof do begin
+        Application.ProcessMessages;
+        if FBreaked then break;
+        ExportType:=TSgtsDatabaseExportType(FDataSet.FieldByName(SDb_Type).AsInteger);
+        Value:=FDataSet.FieldByName(SDb_Value).AsString;
+        Flag:=Boolean(FDataSet.FieldByName(SDb_Flag).AsInteger);
+        Iface.LogWrite(Format(SExportSqlExportToFileCurrentStart,[i,iff(Flag,STrue,SFalse),FDataSet.FieldByName(SDb_Description).AsString]));
+        if Flag then begin
+          AResult:='';
+          try
+            AResult:=Database.Export(Value,ExportType,ExportProgressProc);
+            Iface.LogWrite(Format(SExportSqlExportToFileCurrentSuccess,[i,FDataSet.FieldByName(SDb_Description).AsString]));
+          except
+            on E: Exception do begin
+              Iface.LogWrite(Format(SExportSqlExportToFileCurrentFailed,[i,FDataSet.FieldByName(SDb_Description).AsString,E.Message]),ltError);
+              AResult:=E.Message;
+            end;
+          end;
+          FDataSet.Edit;
+          FDataSet.FieldByName(SDb_Result).AsString:=AResult;
+          FDataSet.FieldByName(SDb_Flag).AsInteger:=Integer(False);
+          FDataSet.Post;
+        end;
+        CoreIntf.MainForm.Progress(0,FDataSet.RecordCount,i);
+        inc(i);
+        FGrid.UpdateRowNumber;
+        FDataSet.Next;
+      end;
+      if not FBreaked then begin
+        FDataSet.MergeChangeLog;
+        FDataSet.SaveToFile(FileName,dfXMLUTF8);
+        Iface.LogWrite(Format(SExportSqlExportToFileSuccess,[FileName,GetFileSizeEx(FileName)]));
+        Result:=true;
+      end;
+    finally
+      FInProcess:=false;
+      Screen.Cursor:=OldCursor;
+      CoreIntf.MainForm.Progress2(0,0,0);
+      CoreIntf.MainForm.Progress(0,0,0);
+    end;
+  end;
+end;
+
+procedure TSgtsExportSqlForm.ButtonBreakClick(Sender: TObject);
+begin
+  FBreaked:=true;
+end;
+
+procedure TSgtsExportSqlForm.FormCloseQuery(Sender: TObject;
+  var CanClose: Boolean);
+begin
+  CanClose:=not FInProcess;
+end;
+
+procedure TSgtsExportSqlForm.MenuItemCheckAllClick(Sender: TObject);
+begin
+  CheckAll(true);
+end;
+
+procedure TSgtsExportSqlForm.CheckAll(FlagCheck: Boolean);
+begin
+  if FDataSet.Active and
+     not FDataSet.IsEmpty then begin
+    FDataSet.BeginUpdate(true);
+    try
+      FDataSet.First;
+      while not FDataSet.Eof do begin
+        FDataSet.Edit;
+        FDataSet.FieldByName(SDb_Flag).Value:=Integer(FlagCheck);
+        FDataSet.Post;
+        FDataSet.Next;
+      end;
+    finally
+      FDataSet.EndUpdate(true);
+    end;
+  end;
+end;
+
+procedure TSgtsExportSqlForm.MenuItemUncheckAllClick(Sender: TObject);
+begin
+  CheckAll(False);
+end;
+
+procedure TSgtsExportSqlForm.GridCellClick(Column: TColumn);
+begin
+  GridDblClick(nil);
+end;
+
+end.

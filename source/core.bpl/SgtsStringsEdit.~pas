@@ -1,0 +1,13 @@
+unit SgtsStringsEdit;
+
+interface
+
+uses ELStringsEdit;
+
+type
+  TSgtsStringsEdit=class()
+  end;
+
+implementation
+
+end.

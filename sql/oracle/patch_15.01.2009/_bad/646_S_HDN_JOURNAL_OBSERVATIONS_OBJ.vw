@@ -1,0 +1,38 @@
+/* Создание просмотра журнала наблюдений гидронивелиров вместе с объектом 2 */
+
+CREATE OR REPLACE VIEW S_HDN_JOURNAL_OBSERVATIONS_OBJ
+AS 
+SELECT JO.CYCLE_ID,
+       JO.CYCLE_NUM,
+       JO.DATE_OBSERVATION,
+       JO.POINT_ID,
+       JO.POINT_NAME,
+       JO.CONVERTER_ID,
+       JO.CONVERTER_NAME,
+       JO.VALUE_MOTION_FORWARD,
+       JO.VALUE_MOTION_BACK,
+       JO.VALUE_AVERAGE,
+       JO.VALUE_ERROR,
+       JO.VALUE_DISPLACEMENT_BEGIN,
+       JO.VALUE_CURRENT_DISPLACEMENT,
+       JO.VALUE_MARK_POINT,
+       P.OBJECT_ID,
+       (CASE
+           WHEN P.COORDINATE_Y = 0
+              THEN GO.PRIORITY
+           ELSE GO.PRIORITY + 2
+        END) AS PRIORITY,
+       GO.GROUP_ID
+  FROM S_HDN_JOURNAL_OBSERVATIONS JO,
+       POINTS P,
+       GROUP_OBJECTS GO
+ WHERE JO.POINT_ID = P.POINT_ID
+   AND GO.OBJECT_ID = P.OBJECT_ID
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

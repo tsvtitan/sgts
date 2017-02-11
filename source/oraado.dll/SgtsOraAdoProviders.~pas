@@ -1,0 +1,40 @@
+unit SgtsOraAdoProviders;
+
+interface
+
+uses SgtsProviders, SgtsOraAdoDatabase;
+
+type
+
+  TSgtsOraAdoGetRecordsProvider=class(TSgtsGetRecordsProvider)
+  private
+    FDatabase: TSgtsOraAdoDatabase;
+  protected
+    property Database: TSgtsOraAdoDatabase read FDatabase;
+  public
+    procedure InitByDataBase(ADatabase: TSgtsOraAdoDatabase); virtual;
+  end;
+
+  TSgtsOraAdoGetRecordsProviders=class(TSgtsGetRecordsProviders)
+  public
+    function AddClass(AClass: TSgtsProviderClass): TSgtsOraAdoGetRecordsProvider; reintroduce;
+  end;
+
+implementation
+
+{ TSgtsOraAdoGetRecordsProvider }
+
+procedure TSgtsOraAdoGetRecordsProvider.InitByDataBase(ADatabase: TSgtsOraAdoDatabase);
+begin
+  FDatabase:=ADatabase;
+  ProviderType:=rptGetRecords;
+end;
+
+{ TSgtsOraAdoGetRecordsProviders }
+
+function TSgtsOraAdoGetRecordsProviders.AddClass(AClass: TSgtsProviderClass): TSgtsOraAdoGetRecordsProvider;
+begin
+  Result:=TSgtsOraAdoGetRecordsProvider(inherited AddClass(AClass));
+end;
+
+end.

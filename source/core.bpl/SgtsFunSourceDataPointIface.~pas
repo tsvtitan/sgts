@@ -1,0 +1,52 @@
+unit SgtsFunSourceDataPointIface;
+
+interface
+
+uses SgtsCoreIntf,
+     SgtsRbkPointsFm, SgtsRbkPointEditFm;
+
+type
+  TSgtsFunSourceDataPointIface=class(TSgtsDataIface)
+  private
+    FPointId: Variant;
+  public
+    constructor CreateByPointId(ACoreIntf: ISgtsCore; APointId: Variant);
+    procedure Init; override;
+    function NeedCreate: Boolean; override;
+  end;
+
+  TSgtsFunSourceDataPointDetailIface=class(TSgtsRbkPointUpdateIface)
+  public
+    constructor CreateByPointId(ACoreIntf: ISgtsCore; APointId: Variant);
+  end;
+
+implementation
+
+uses SgtsFm;
+
+{ TSgtsFunSourceDataPointIface }
+
+constructor TSgtsFunSourceDataPointIface.CreateByPointId(ACoreIntf: ISgtsCore; APointId: Variant);
+begin
+  inherited Create(ACoreIntf);
+  FPointId:=APointId;
+end;
+
+procedure TSgtsFunSourceDataPointIface.Init;
+begin
+  inherited Init;
+end;
+
+function TSgtsFunSourceDataPointIface.NeedCreate: Boolean; 
+begin
+  Result:=false;
+end;
+
+{ TSgtsFunSourceDataPointDetailIface }
+
+constructor TSgtsFunSourceDataPointDetailIface.CreateByPointId(ACoreIntf: ISgtsCore; APointId: Variant);
+begin
+  inherited Create(ACoreIntf,nil);
+end;
+
+end.

@@ -1,0 +1,79 @@
+unit SgtsRbkCriteriasFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Menus, ImgList, Grids, DBGrids, ExtCtrls, ComCtrls, ToolWin, DB,
+  StdCtrls, Mask, DBCtrls,
+  SgtsDataGridFm, SgtsDataFm, SgtsFm, SgtsSelectDefs,
+  SgtsCoreIntf;
+
+type
+  TSgtsRbkCriteriasForm = class(TSgtsDataGridForm)
+    PanelInfo: TPanel;
+    GroupBoxInfo: TGroupBox;
+    PanelNote: TPanel;
+    DBMemoNote: TDBMemo;
+    Splitter: TSplitter;
+  private
+    { Private declarations }
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+  end;
+
+  TSgtsRbkCriteriasIface=class(TSgtsDataGridIface)
+  public
+    procedure Init; override;
+  end;
+
+var
+  SgtsRbkCriteriasForm: TSgtsRbkCriteriasForm;
+
+implementation
+
+uses DBClient,
+     SgtsDbGrid, SgtsCDS, SgtsProviderConsts, SgtsDatabaseCDS,
+     SgtsRbkCriteriaEditFm, SgtsConsts, SgtsGetRecordsConfig;
+
+{$R *.dfm}
+
+{ TSgtsRbkCriteriasIface }
+
+procedure TSgtsRbkCriteriasIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkCriteriasForm;
+  InterfaceName:=SInterfaceCriterias;
+  InsertClass:=TSgtsRbkCriteriaInsertIface;
+  UpdateClass:=TSgtsRbkCriteriaUpdateIface;
+  DeleteClass:=TSgtsRbkCriteriaDeleteIface;
+  with DataSet do begin
+    ProviderName:=SProviderSelectCriterias;
+    with SelectDefs do begin
+      AddKey('CRITERIA_ID');
+      Add('NAME','Наименование',120);
+      Add('FIRST_MIN_VALUE','К1 минимальный',40);
+      Add('FIRST_MAX_VALUE','К1 максимальный',40);
+      Add('SECOND_MIN_VALUE','K2 минимальный',40);
+      Add('SECOND_MAX_VALUE','Порядок',40);
+      Add('PRIORITY','Порядок',40);
+      AddInvisible('DESCRIPTION');
+      AddInvisible('ALGORITHM_ID');
+      AddInvisible('ALGORITHM_NAME');
+      AddInvisible('ENABLED');
+    end;
+    Orders.Add('NAME',otAsc);
+    Orders.Add('PRIORITY',otAsc);
+  end;
+end;
+
+{ TSgtsRbkCriteriasForm }
+
+constructor TSgtsRbkCriteriasForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+end;
+
+
+end.

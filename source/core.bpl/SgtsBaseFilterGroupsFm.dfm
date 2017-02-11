@@ -1,0 +1,299 @@
+object SgtsBaseFilterGroupsForm: TSgtsBaseFilterGroupsForm
+  Left = 459
+  Top = 237
+  BorderStyle = bsDialog
+  Caption = #1060#1080#1083#1100#1090#1088#1072#1094#1080#1103
+  ClientHeight = 429
+  ClientWidth = 497
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  Position = poScreenCenter
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  PixelsPerInch = 96
+  TextHeight = 13
+  object Splitter: TSplitter
+    Left = 0
+    Top = 160
+    Width = 497
+    Height = 3
+    Cursor = crVSplit
+    Align = alTop
+  end
+  object PanelButton: TPanel
+    Left = 0
+    Top = 390
+    Width = 497
+    Height = 39
+    Align = alBottom
+    BevelOuter = bvNone
+    TabOrder = 2
+    DesignSize = (
+      497
+      39)
+    object ButtonCancel: TButton
+      Left = 415
+      Top = 8
+      Width = 75
+      Height = 25
+      Anchors = [akRight, akBottom]
+      Cancel = True
+      Caption = #1054#1090#1084#1077#1085#1072
+      TabOrder = 1
+      OnClick = ButtonCancelClick
+    end
+    object ButtonOk: TButton
+      Left = 333
+      Top = 8
+      Width = 75
+      Height = 25
+      Anchors = [akRight, akBottom]
+      Caption = #1054#1050
+      Default = True
+      TabOrder = 0
+      OnClick = ButtonOkClick
+    end
+  end
+  object PanelGroups: TPanel
+    Left = 0
+    Top = 0
+    Width = 497
+    Height = 160
+    Align = alTop
+    BevelOuter = bvNone
+    BorderWidth = 3
+    TabOrder = 0
+    object GroupBoxGroups: TGroupBox
+      Left = 3
+      Top = 3
+      Width = 390
+      Height = 154
+      Align = alLeft
+      Caption = ' '#1043#1088#1091#1087#1087#1099' '
+      TabOrder = 0
+      object PanelGridGroups: TPanel
+        Left = 2
+        Top = 15
+        Width = 386
+        Height = 137
+        Align = alClient
+        BevelOuter = bvNone
+        BorderWidth = 5
+        TabOrder = 0
+        object BevelGroups: TBevel
+          Left = 5
+          Top = 100
+          Width = 376
+          Height = 5
+          Align = alBottom
+          Shape = bsSpacer
+        end
+        object GridPatternGroups: TDBGrid
+          Left = 5
+          Top = 5
+          Width = 376
+          Height = 95
+          Align = alClient
+          DataSource = DataSourceGroups
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 0
+          TitleFont.Charset = DEFAULT_CHARSET
+          TitleFont.Color = clWindowText
+          TitleFont.Height = -11
+          TitleFont.Name = 'Tahoma'
+          TitleFont.Style = []
+        end
+        object NavigatorGroups: TDBNavigator
+          Left = 5
+          Top = 105
+          Width = 376
+          Height = 27
+          DataSource = DataSourceGroups
+          VisibleButtons = [nbFirst, nbPrior, nbNext, nbLast, nbInsert, nbDelete, nbEdit, nbPost, nbCancel]
+          Align = alBottom
+          Flat = True
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 1
+        end
+      end
+    end
+  end
+  object PanelFilters: TPanel
+    Left = 0
+    Top = 163
+    Width = 497
+    Height = 227
+    Align = alClient
+    BevelOuter = bvNone
+    BorderWidth = 3
+    TabOrder = 1
+    object GroupBoxFilters: TGroupBox
+      Left = 3
+      Top = 3
+      Width = 491
+      Height = 221
+      Align = alClient
+      Caption = ' '#1059#1089#1083#1086#1074#1080#1103' '
+      TabOrder = 0
+      object PanelGridFilters: TPanel
+        Left = 2
+        Top = 15
+        Width = 487
+        Height = 204
+        Align = alClient
+        BevelOuter = bvNone
+        BorderWidth = 5
+        TabOrder = 0
+        object BevelFilters: TBevel
+          Left = 5
+          Top = 167
+          Width = 477
+          Height = 5
+          Align = alBottom
+          Shape = bsSpacer
+        end
+        object BevelFiltersValue: TBevel
+          Left = 5
+          Top = 105
+          Width = 477
+          Height = 5
+          Align = alBottom
+          Shape = bsSpacer
+        end
+        object GridPatternFilters: TDBGrid
+          Left = 5
+          Top = 5
+          Width = 477
+          Height = 100
+          Align = alClient
+          DataSource = DataSourceFilters
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 0
+          TitleFont.Charset = DEFAULT_CHARSET
+          TitleFont.Color = clWindowText
+          TitleFont.Height = -11
+          TitleFont.Name = 'Tahoma'
+          TitleFont.Style = []
+        end
+        object Memo: TDBMemo
+          Left = 5
+          Top = 110
+          Width = 477
+          Height = 57
+          Align = alBottom
+          DataField = 'VALUE'
+          DataSource = DataSourceFilters
+          ScrollBars = ssVertical
+          TabOrder = 1
+        end
+        object Panel1: TPanel
+          Left = 5
+          Top = 172
+          Width = 477
+          Height = 27
+          Align = alBottom
+          BevelOuter = bvNone
+          TabOrder = 2
+          object Panel2: TPanel
+            Left = 0
+            Top = 0
+            Width = 384
+            Height = 27
+            Align = alClient
+            BevelOuter = bvNone
+            TabOrder = 0
+            object NavigatorFilters: TDBNavigator
+              Left = 0
+              Top = 0
+              Width = 384
+              Height = 27
+              DataSource = DataSourceFilters
+              VisibleButtons = [nbFirst, nbPrior, nbNext, nbLast, nbInsert, nbDelete, nbEdit, nbPost, nbCancel]
+              Align = alClient
+              Flat = True
+              ParentShowHint = False
+              ShowHint = True
+              TabOrder = 0
+            end
+          end
+          object Panel3: TPanel
+            Left = 384
+            Top = 0
+            Width = 93
+            Height = 27
+            Align = alRight
+            BevelOuter = bvNone
+            TabOrder = 1
+            object SpeedButtonUp: TSpeedButton
+              Left = 0
+              Top = 0
+              Width = 46
+              Height = 27
+              Hint = #1055#1077#1088#1077#1084#1077#1089#1090#1080#1090#1100' '#1074#1074#1077#1088#1093
+              Enabled = False
+              Flat = True
+              Glyph.Data = {
+                F6000000424DF600000000000000760000002800000010000000100000000100
+                0400000000008000000000000000000000001000000010000000000000000000
+                8000008000000080800080000000800080008080000080808000C0C0C0000000
+                FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00888888888888
+                8888888888888888888888888888888888888888888888888888888880000088
+                8888888880666088888888888066608888888888806660888888880000666000
+                0888888066666660888888880666660888888888806660888888888888060888
+                8888888888808888888888888888888888888888888888888888}
+              ParentShowHint = False
+              ShowHint = True
+              OnClick = SpeedButtonUpClick
+            end
+            object SpeedButtonDown: TSpeedButton
+              Left = 46
+              Top = 0
+              Width = 46
+              Height = 27
+              Hint = #1055#1077#1088#1077#1084#1077#1089#1090#1080#1090#1100' '#1074#1085#1080#1079
+              Enabled = False
+              Flat = True
+              Glyph.Data = {
+                F6000000424DF600000000000000760000002800000010000000100000000100
+                0400000000008000000000000000000000001000000010000000000000000000
+                8000008000000080800080000000800080008080000080808000C0C0C0000000
+                FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00888888888888
+                8888888888888888888888888888888888888888888888888888888888808888
+                8888888888060888888888888066608888888888066666088888888066666660
+                8888880000666000088888888066608888888888806660888888888880666088
+                8888888880000088888888888888888888888888888888888888}
+              ParentShowHint = False
+              ShowHint = True
+              OnClick = SpeedButtonDownClick
+            end
+          end
+        end
+      end
+    end
+  end
+  object DataSourceGroups: TDataSource
+    Left = 98
+    Top = 35
+  end
+  object DataSourceFilters: TDataSource
+    OnDataChange = DataSourceFiltersDataChange
+    Left = 98
+    Top = 203
+  end
+end

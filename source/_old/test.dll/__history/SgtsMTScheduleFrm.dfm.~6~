@@ -1,0 +1,28 @@
+object SgtsMTScheduleFrame: TSgtsMTScheduleFrame
+  Left = 0
+  Top = 0
+  Width = 451
+  Height = 304
+  Align = alClient
+  TabOrder = 0
+  object Panel1: TPanel
+    Left = 0
+    Top = 170
+    Width = 451
+    Height = 134
+    Align = alBottom
+    BevelOuter = bvNone
+    Caption = 'Panel1'
+    TabOrder = 0
+  end
+  object Panel2: TPanel
+    Left = 0
+    Top = 0
+    Width = 451
+    Height = 170
+    Align = alClient
+    BevelOuter = bvNone
+    Caption = 'Panel2'
+    TabOrder = 1
+  end
+end

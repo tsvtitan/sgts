@@ -1,0 +1,18 @@
+unit SgtsExportSqlFmIntf;
+
+interface
+
+uses SgtsChildFmIntf;
+
+type
+
+  ISgtsExportSqlForm=interface(ISgtsChildForm)
+  ['{035A5975-FDAA-4483-87DB-3EB359843E7F}']
+  { methods }
+    function Install: Boolean;
+    function Uninstall: Boolean;
+  end;
+
+implementation
+
+end.

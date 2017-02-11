@@ -1,0 +1,112 @@
+unit SgtsMTPlanFrm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, ToolWin, ImgList, ExtCtrls, Grids, DBGrids, DB, Menus,
+  SgtsDbGrid, SgtsDatabaseCDS, SgtsCoreIntf, SgtsCDS,
+  SgtsDataInsertFm, SgtsDataUpdateFm, SgtsDataDelete, SgtsDataFmIntf,
+  SgtsDataFm, SgtsDataIfaceIntf, SgtsExecuteDefs, SgtsGetRecordsConfig, SgtsMenus,
+  SgtsConfigIntf, StdCtrls, CheckLst;
+
+type
+  TSgtsMTPlanFrame = class(TFrame)
+    PanelPlan: TPanel;
+    GridPattern: TDBGrid;
+    DataSource: TDataSource;
+    Edit1: TEdit;
+    procedure GridPatternCellClick(Column: TColumn);
+    procedure GridPatternDblClick(Sender: TObject);
+
+  private
+    { Private declarations }
+    FGrid: TSgtsDbGrid;
+    FDataSet: TSgtsCDS;
+  public
+    { Public declarations }
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+  end;
+
+implementation
+
+{$R *.dfm}
+
+{ TSgtsMTPlanFrame }
+
+constructor TSgtsMTPlanFrame.Create(AOwner: TComponent);
+var
+  Column: TColumn;
+begin
+  inherited Create(AOwner);
+  FDataSet:=TSgtsCDS.Create(AOwner);
+
+  FGrid:=TSgtsDbGrid.Create(Self);
+  with FGrid do begin
+    Parent:=GridPattern.Parent;
+    Align:=GridPattern.Align;
+    SetBounds(GridPattern.Left,GridPattern.Top,GridPattern.Width,GridPattern.Height);
+    Constraints.Assign(GridPattern.Constraints);
+    Font.Assign(GridPattern.Font);
+    RowSelected.Font:=Font;
+    RowSelected.Font.Color:=clWindowText;
+    CellSelected.Font:=Font;
+    CellSelected.Font.Color:=clHighlightText;
+    TitleCellMouseDown.Font:=Font;
+    Options:=Options-[dgEditing]-[dgTabs];
+    //OnTitleClickWithSort:=GridTitleClickWithSort;
+    OnCellClick:=GridPatternCellClick;
+    OnDblClick:=GridPattern.OnDblClick;
+    TabOrder:=GridPattern.TabOrder;
+    LocateEnabled:=true;
+    PopupMenu:=GridPattern.PopupMenu;
+    ColumnSortEnabled:=true;
+    AutoFit:=true;
+    VisibleRowNumber:=true;
+  end;
+
+  FGrid.DataSource:=DataSource;
+  DataSource.DataSet:=FDataSet;
+
+  GridPattern.Free;
+  GridPattern:=nil;
+
+  Column:=FGrid.Columns.Add;
+  Column.Title.Caption:='Èìÿ';
+  Column.FieldName:='111';
+  Column:=FGrid.Columns.Add;
+  Column.Title.Caption:='Èìÿ2';
+  Column.FieldName:='222';
+
+
+
+   FDataSet.FieldDefs.Add('111', ftString, 30);
+   FDataSet.FieldDefs.Add('222', ftString, 30);
+   FDataSet.CreateDataSet;
+
+   FDataSet.Append;
+   FDataSet.FieldByName('111').AsString:='var1';
+   FDataSet.FieldByName('222').AsString:='var2';
+
+end;
+
+destructor TSgtsMTPlanFrame.Destroy;
+begin
+  {FDataSet.Free;
+  FDataSetPlan.Free;}
+  inherited Destroy;
+end;
+
+procedure TSgtsMTPlanFrame.GridPatternCellClick(Column: TColumn);
+begin
+
+  //Edit1.Text:=Column.Field.AsString;
+end;
+
+procedure TSgtsMTPlanFrame.GridPatternDblClick(Sender: TObject);
+begin
+     // Sender
+end;
+
+end.

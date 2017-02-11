@@ -1,0 +1,706 @@
+unit SgtsDatabaseCDS;
+
+interface
+
+uses DB, Classes, Contnrs,
+     SgtsCDS, SgtsGetRecordsConfig, SgtsExecuteConfig,
+     SgtsSelectDefs, SgtsExecuteDefs,
+     SgtsCoreIntf, SgtsDatabaseIntf;
+
+type
+  TSgtsOpenMode=TSgtsGetRecordsConfigOpenMode;
+
+  TSgtsDatabaseCDS=class(TSgtsCDS)
+  private
+    FCoreIntf: ISgtsCore;
+    FGetRecordsConfig: TSgtsGetRecordsConfig;
+    FExecuteConfig: TSgtsExecuteConfig;
+    FSavedData: OleVariant;
+    FIsLoadFromFile: Boolean;
+    FClientRecordCount: Integer;
+    FServerRecordCount: Integer;
+    FSelectDefs: TSgtsSelectDefs;
+    FExecuteDefs: TSgtsExecuteDefs;
+    FKeyFieldName: String;
+    FViewFieldName: String;
+    FParentFieldName: String;
+    FCheckProvider: Boolean;
+    FStopException: Boolean;
+    FExecuteSuccess: Boolean;
+    FProgressProc: TSgtsDatabaseProgressProc;
+    FWithWaitCursor: Boolean;
+    FOpenMode: TSgtsOpenMode;
+
+    function GetClientRecordCount: Integer;
+    procedure CreateFieldDefsBySelectDefs;
+    procedure CreateFieldNamesBySelectDefs;
+    procedure CreateIndexesBySelectDefs;
+    function GetProviderName: String;
+    procedure SetProviderName(Value: String);
+    procedure SetExecuteParams;
+    procedure GetExecuteParams;
+    procedure GetFieldsValues(AExecuteDefs: TSgtsExecuteDefs; var AFields: string; var AValues: Variant);
+    function GetFilterGroups: TSgtsGetRecordsConfigFilterGroups;
+    function GetOrders: TSgtsGetRecordsConfigOrders;
+    function GetParams: TSgtsGetRecordsConfigParams;
+  protected
+    procedure CreateFields; override;
+    procedure InternalInitFieldDefs; override;
+    procedure DoBeforeOpen; override;
+    function DoGetRecords(Count: Integer; out RecsOut: Integer;
+                          Options: Integer; const CommandText:
+                          WideString; Params: OleVariant): OleVariant; override;
+    procedure DoExecute(Params: OleVariant); override;
+    procedure DoOnCalcFields; override;
+
+  public
+    constructor Create(ACoreIntf: ISgtsCore); reintroduce; virtual;
+    destructor Destroy; override;
+    procedure InitByCore(ACoreIntf: ISgtsCore);
+    procedure Execute; override;
+    procedure Assign(Source: TPersistent); override;
+    procedure GetFieldNames(List: TStrings); override;
+
+    function Locate(const KeyFields: string; const KeyValues: Variant): Boolean; reintroduce;
+
+    procedure InsertByDefs(AExecuteDefs: TSgtsExecuteDefs);
+    procedure UpdateByDefs(AExecuteDefs: TSgtsExecuteDefs);
+    procedure DeleteByDefs(AExecuteDefs: TSgtsExecuteDefs);
+
+    procedure GetExecuteDefsByDataSet(DataSet: TDataSet);
+    procedure GetExecuteDefsByDefs(AExecuteDefs: TSgtsExecuteDefs);
+
+    property SelectDefs: TSgtsSelectDefs read FSelectDefs;
+    property ExecuteDefs: TSgtsExecuteDefs read FExecuteDefs;
+    property Orders: TSgtsGetRecordsConfigOrders read GetOrders;
+    property FilterGroups: TSgtsGetRecordsConfigFilterGroups read GetFilterGroups;
+    property Params: TSgtsGetRecordsConfigParams read GetParams;
+    property CheckProvider: Boolean read FCheckProvider write FCheckProvider;
+
+    property KeyFieldName: String read FKeyFieldName write FKeyFieldName;
+    property ViewFieldName: String read FViewFieldName write FViewFieldName;
+    property ParentFieldName: String read FParentFieldName write FParentFieldName;
+
+    property StopException: Boolean read FStopException write FStopException;
+    property ServerRecordCount: Integer read FServerRecordCount;
+    property ClientRecordCount: Integer read FClientRecordCount;
+    property CoreIntf: ISgtsCore read FCoreIntf;
+    property ProgressProc: TSgtsDatabaseProgressProc read FProgressProc write FProgressProc;
+    property ExecuteSuccess: Boolean read FExecuteSuccess;
+    property WithWaitCursor: Boolean read FWithWaitCursor write FWithWaitCursor;
+    property OpenMode: TSgtsOpenMode read FOpenMode write FOpenMode;
+  published
+    property ProviderName: String read GetProviderName write SetProviderName;
+  end;
+
+  TSgtsDatabaseCDSs=class(TObjectList)
+  private
+    function GetItems(Index: Integer): TSgtsDatabaseCDS;
+    procedure SetItems(Index: Integer; Value: TSgtsDatabaseCDS);
+  public
+    procedure ClearSelectDefs;
+
+    property Items[Index: Integer]: TSgtsDatabaseCDS read GetItems write SetItems;
+  end;
+
+implementation
+
+uses Variants, DBClient, TypInfo, SysUtils, Controls, Forms,
+     SgtsDatabaseModulesIntf, SgtsConsts, SgtsUtils,
+     SgtsDialogs;
+
+{ TSgtsDatabaseCDSs }
+
+function TSgtsDatabaseCDSs.GetItems(Index: Integer): TSgtsDatabaseCDS;
+begin
+  Result:=TSgtsDatabaseCDS(inherited Items[Index]);
+end;
+
+procedure TSgtsDatabaseCDSs.SetItems(Index: Integer; Value: TSgtsDatabaseCDS);
+begin
+  inherited Items[Index]:=Value;
+end;
+
+procedure TSgtsDatabaseCDSs.ClearSelectDefs;
+var
+  i: Integer;
+begin
+  for i:=0 to Count-1 do
+    Items[i].SelectDefs.Clear; 
+end;
+ 
+{ TSgtsDatabaseCDS }
+
+constructor TSgtsDatabaseCDS.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(nil);
+  FCoreIntf:=ACoreIntf;
+  FGetRecordsConfig:=TSgtsGetRecordsConfig.Create;
+  FExecuteConfig:=TSgtsExecuteConfig.Create;
+  FSelectDefs:=TSgtsSelectDefs.Create;
+  FExecuteDefs:=TSgtsExecuteDefs.Create(ACoreIntf);
+  FCheckProvider:=true;
+  FStopException:=false;
+  FProgressProc:=nil;
+end;
+
+destructor TSgtsDatabaseCDS.Destroy;
+begin
+  FExecuteDefs.Free;
+  FSelectDefs.Free;
+  FGetRecordsConfig.Free;
+  inherited Destroy;
+end;
+
+procedure TSgtsDatabaseCDS.InitByCore(ACoreIntf: ISgtsCore);
+begin
+  FCoreIntf:=ACoreIntf;
+  FExecuteDefs.CoreIntf:=FCoreIntf;
+end;
+
+procedure TSgtsDatabaseCDS.Assign(Source: TPersistent); 
+begin
+  if Assigned(Source) then
+    if Source is TSgtsDatabaseCDS then begin
+      ProviderName:=TSgtsDatabaseCDS(Source).ProviderName;
+      SelectDefs.CopyFrom(TSgtsDatabaseCDS(Source).SelectDefs,true);
+      Orders.CopyFrom(TSgtsDatabaseCDS(Source).Orders,true);
+      FilterGroups.CopyFrom(TSgtsDatabaseCDS(Source).FilterGroups,true);
+    end;
+end;
+
+procedure TSgtsDatabaseCDS.CreateFields;
+var
+  i: Integer;
+  Def: TSgtsSelectDef;
+begin
+  inherited CreateFields;
+  with FSelectDefs do
+    for i:=0 to Fields.Count-1 do begin
+      Def:=Find(Fields[i].FullName);
+      if Assigned(Def) then begin
+        Def.Field:=Fields[i];
+        case Def.FieldKind of
+          fkCalculated: begin
+            Fields[i].FieldKind:=fkCalculated;
+          end;
+          fkData: begin
+            Fields[i].ReadOnly:=false;
+          end;
+        end;
+        if IsPublishedProp(Fields[i],SPropertyDisplayFormat) then begin
+          SetPropValue(Fields[i],SPropertyDisplayFormat,Def.DisplayFormat);
+        end;
+      end;
+    end;
+end;
+
+procedure TSgtsDatabaseCDS.CreateFieldDefsBySelectDefs;
+var
+  i: Integer;
+  FieldDef: TFieldDef;
+  Def: TSgtsSelectDef;
+begin
+  with FSelectDefs do begin
+    for i:=0 to Count-1 do begin
+      Def:=Items[i];
+      case Def.FieldKind of
+        fkCalculated: begin
+          FieldDef:=FieldDefs.AddFieldDef;
+          with FieldDef do begin
+            Name:=Def.Name;
+            DataType:=Def.DataType;
+            Size:=Def.Size;
+            Precision:=Def.Precision;
+            ReadOnly:=true;
+          end;
+        end;
+        fkData: begin
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsDatabaseCDS.InternalInitFieldDefs; 
+begin
+  inherited InternalInitFieldDefs;
+  CreateFieldDefsBySelectDefs;
+end;
+
+procedure TSgtsDatabaseCDS.CreateFieldNamesBySelectDefs;
+var
+  i: Integer;
+  Def: TSgtsSelectDef;
+  FuncType: TSgtsGetRecordsConfigFieldNameFuncType;
+begin
+  FGetRecordsConfig.FieldNames.Clear;
+  with FSelectDefs do begin
+    for i:=0 to Count-1 do begin
+      Def:=Items[i];
+      FuncType:=fftNone;
+      case Def.FuncType of
+        ftSum: FuncType:=fftSum;
+      end;
+      case Def.FieldKind of
+        fkData: FGetRecordsConfig.FieldNames.Add(Def.Name,FuncType);
+      end;
+    end;
+  end;
+end;
+
+function TSgtsDatabaseCDS.GetFilterGroups: TSgtsGetRecordsConfigFilterGroups;
+begin
+  Result:=FGetRecordsConfig.FilterGroups;
+end;
+
+function TSgtsDatabaseCDS.GetOrders: TSgtsGetRecordsConfigOrders;
+begin
+  Result:=FGetRecordsConfig.Orders;
+end;
+
+procedure TSgtsDatabaseCDS.CreateIndexesBySelectDefs;
+var
+  i: Integer;
+  Def: TSgtsSelectDef;
+begin
+  IndexDefs.Clear;
+  InitDefaultIndexDefs;
+  with FSelectDefs do begin
+    for i:=0 to Count-1 do begin
+      Def:=Items[i];
+      if Def.Visible then begin
+        case Def.FieldKind of
+          fkData: begin
+            AddIndexDef(Def.Name,tsAsc);
+            AddIndexDef(Def.Name,tsDesc);
+          end;
+          fkCalculated: begin
+            AddIndexDef(Def.CalcName,tsAsc);
+            AddIndexDef(Def.CalcName,tsDesc);
+          end;
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsDatabaseCDS.DoBeforeOpen;
+begin
+  CreateIndexesBySelectDefs;
+  inherited DoBeforeOpen;
+end;
+
+function TSgtsDatabaseCDS.DoGetRecords(Count: Integer; out RecsOut: Integer;
+                                       Options: Integer; const CommandText:
+                                       WideString; Params: OleVariant): OleVariant;
+var
+  OldPacketRecords: Integer;
+  OldCursor: TCursor;
+begin
+  Result:=Null;
+  if Assigned(FCoreIntf) then begin
+    with FCoreIntf.DatabaseModules do begin
+      OldCursor:=Screen.Cursor;
+      if FWithWaitCursor then
+        Screen.Cursor:=crHourGlass;
+      try
+        if FIsLoadFromFile then begin
+          Result:=FSavedData;
+          FSavedData:=Null;
+          RecsOut:=FClientRecordCount;
+          FIsLoadFromFile:=false;
+        end else begin
+          if Assigned(Current) and
+             Assigned(Current.Database) then begin
+            with Current.Database do begin
+              if Connected then begin
+                FClientRecordCount:=GetClientRecordCount;
+                OldPacketRecords:=PacketRecords;
+                try
+                  with FGetRecordsConfig do begin
+                    StartPos:=FClientRecordCount;
+                    FetchCount:=PacketRecords;
+                  end;
+                  FGetRecordsConfig.CheckProvider:=FCheckProvider;
+                  FGetRecordsConfig.OpenMode:=FOpenMode;
+                  CreateFieldNamesBySelectDefs;
+//                  CreateOrdersByOrders;
+                  try
+                    Result:=GetRecords(ProviderName,FGetRecordsConfig,FProgressProc);
+                  except
+                    On E: Exception do begin
+                      if FStopException then
+                        ShowError(E.Message)
+                      else
+                        raise;
+                    end;
+                  end;
+                finally
+                  PacketRecords:=OldPacketRecords;
+                end;
+                RecsOut:=FGetRecordsConfig.RecsOut;
+                FServerRecordCount:=FGetRecordsConfig.AllCount;
+              end;
+            end;
+          end;
+        end;
+      finally
+        if Active then
+          FClientRecordCount:=GetClientRecordCount+RecsOut
+        else FClientRecordCount:=RecsOut;
+        Screen.Cursor:=OldCursor;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsDatabaseCDS.DoExecute(Params: OleVariant);
+var
+  OldCursor: TCursor; 
+begin
+  if Assigned(FCoreIntf) then begin
+    with FCoreIntf.DatabaseModules do begin
+      if Assigned(Current) and
+         Assigned(Current.Database) then begin
+        with Current.Database do begin
+          if Connected then begin
+            OldCursor:=Screen.Cursor;
+            if WithWaitCursor then
+              Screen.Cursor:=crHourGlass;
+            try
+              FExecuteSuccess:=false;
+              FExecuteConfig.CheckProvider:=FCheckProvider;
+              try
+                Execute(ProviderName,FExecuteConfig);
+                FExecuteSuccess:=true;
+              except
+                On E: Exception do begin
+                  FExecuteSuccess:=false;
+                  if FStopException then
+                    ShowError(E.Message)
+                  else
+                    raise;
+                end;
+              end;
+            finally
+              Screen.Cursor:=OldCursor;
+            end;  
+          end;
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsDatabaseCDS.SetExecuteParams;
+var
+  i,j: Integer;
+  Def: TSgtsExecuteDef;
+  Param: TSgtsExecuteConfigParam;
+begin
+  FExecuteConfig.Params.Clear;
+  with FExecuteDefs do begin
+    for i:=0 to Count-1 do begin
+      Def:=Items[i];
+      Def.StoredValue:=Def.Value;
+      if Def.ParamType in [ptInput,ptOutput,ptInputOutput] then begin
+
+        Param:=FExecuteConfig.Params.Add(Def.Name,Def.Value,Def.Empty,true);
+        if Assigned(Param) then begin
+          Param.DataType:=Def.DataType;
+          Param.ParamType:=Def.ParamType;
+          Param.IsKey:=iff(Def.Keys.Count>0,false,Def.IsKey);
+          Param.Size:=Def.Size;
+        end;
+
+        if Def.Keys.Count>0 then begin
+        //  Def.StoredValue:=Def.KeyValue;
+          for j:=0 to Def.Keys.Count-1 do begin
+            Param:=FExecuteConfig.Params.Add(Def.Keys.Strings[j],Def.KeyValue,VarIsNull(Def.KeyValue),false);
+            if Assigned(Param) then begin
+              Param.DataType:=Def.DataType;
+              Param.ParamType:=Def.ParamType;
+              Param.IsKey:=Def.IsKey;
+              Param.Size:=Def.Size;
+            end;
+          end;
+        end;
+
+      end;  
+    end;
+  end;
+end;
+
+procedure TSgtsDatabaseCDS.GetExecuteParams;
+var
+  i: Integer;
+  Param: TSgtsExecuteConfigParam;
+  Def: TSgtsExecuteDef;
+begin
+  with FExecuteConfig.Params do begin
+    for i:=0 to Count-1 do begin
+      Param:=Items[i];
+      if Param.ParamType in [ptOutput,ptInputOutput] then begin
+        Def:=FExecuteDefs.Find(Param.FieldName);
+        if Assigned(Def) then begin
+          Def.Value:=Param.Value;
+          Def.StoredValue:=Param.Value;
+        end;  
+      end;    
+    end;
+  end;
+end;
+
+procedure TSgtsDatabaseCDS.Execute;
+begin
+  SetExecuteParams;
+  inherited Execute;
+  GetExecuteParams;
+end;
+
+function TSgtsDatabaseCDS.GetClientRecordCount: Integer;
+begin
+  Result:=0;
+  if Assigned(DSCursor) then
+    DSCursor.GetRecordCount(Result);
+end;
+
+function TSgtsDatabaseCDS.GetParams: TSgtsGetRecordsConfigParams;
+begin
+  Result:=
+end;
+
+function TSgtsDatabaseCDS.GetProviderName: String;
+begin
+  Result:=inherited ProviderName;
+end;
+
+procedure TSgtsDatabaseCDS.SetProviderName(Value: String);
+begin
+  inherited ProviderName:=Value;
+  FExecuteDefs.ProviderName:=Value;
+end;
+
+procedure TSgtsDatabaseCDS.InsertByDefs(AExecuteDefs: TSgtsExecuteDefs);
+var
+  i: Integer;
+  Def: TSgtsExecuteDef;
+begin
+  if Assigned(AExecuteDefs) and Active then begin
+    BeginUpdate(false);
+    try
+      Append;
+      for i:=0 to Fields.Count-1 do begin
+        Def:=AExecuteDefs.FindByFieldName(Fields[i].FieldName);
+        if Assigned(Def) then begin
+          if Def.Empty then
+            Fields[i].Value:=Null
+          else
+            Fields[i].Value:=Def.StoredValue;
+        end;    
+      end;
+      Post;
+      Inc(FServerRecordCount);
+      Inc(FClientRecordCount);
+    finally
+      EndUpdate(true);
+    end;
+  end;
+end;
+
+procedure TSgtsDatabaseCDS.GetFieldNames(List: TStrings);
+var
+  OldPacketRecords: Integer;
+begin
+  inherited GetFieldNames(List);
+  if List.Count=0 then begin
+    OldPacketRecords:=PacketRecords;
+    try
+      PacketRecords:=0;
+      Open;
+      inherited GetFieldNames(List);
+    finally
+      PacketRecords:=OldPacketRecords; 
+    end;
+  end;
+end;
+
+procedure TSgtsDatabaseCDS.GetFieldsValues(AExecuteDefs: TSgtsExecuteDefs; var AFields: string; var AValues: Variant);
+var
+  i: Integer;
+  Def: TSgtsExecuteDef;
+  Field: TField;
+  ACount: Integer;
+  AValue: Variant;
+begin
+  if Assigned(AExecuteDefs) and (AExecuteDefs.Count>0) then begin
+    with AExecuteDefs do begin
+      ACount:=0;
+      for i:=0 to Count-1 do begin
+        Def:=Items[i];
+        Field:=FindField(Def.FieldName);
+        if Assigned(Field) and Def.IsKey then
+          Inc(ACount);
+      end;
+
+      if ACount>0 then begin
+        AValues:=VarArrayCreate([0,ACount-1],varVariant);
+        ACount:=0;
+        for i:=0 to Count-1 do begin
+          Def:=Items[i];
+          Field:=FindField(Def.FieldName);
+          if Assigned(Field) and Def.IsKey then begin
+            if ACount=0 then AFields:=Def.FieldName
+            else AFields:=AFields+';'+Def.FieldName;
+            AValues[ACount]:=Def.KeyValue;
+            AValue:=AValues[ACount];
+            AValues[ACount]:=AValue;
+            inc(ACount);
+          end;
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsDatabaseCDS.UpdateByDefs(AExecuteDefs: TSgtsExecuteDefs);
+var
+  i: Integer;
+  AFields: string;
+  AValues: Variant;
+  Def: TSgtsExecuteDef;
+  Field: TField;
+begin
+  if Assigned(AExecuteDefs) and Active then begin
+    BeginUpdate(false);
+    try
+      GetFieldsValues(AExecuteDefs,AFields,AValues);
+      if Locate(AFields,AValues) then begin
+        Edit;
+        for i:=0 to Fields.Count-1 do begin
+          Field:=Fields[i];
+          Def:=AExecuteDefs.FindByFieldName(Field.FieldName);
+          if Assigned(Def) then
+            if Def.Empty then
+              Field.Value:=Null
+            else
+              Field.Value:=Def.StoredValue;
+        end;
+        Post;
+      end;
+    finally
+      EndUpdate(true);
+    end;
+  end;
+end;
+
+procedure TSgtsDatabaseCDS.GetExecuteDefsByDataSet(DataSet: TDataSet);
+var
+  i,j: Integer;
+  Def: TSgtsExecuteDef;
+  Field: TField;
+
+  procedure LocalSet;
+  var
+    NewValue: Variant;
+  begin
+    if Assigned(Field) then begin
+      NewValue:=Field.Value;
+      Def.DefaultValue:=NewValue;
+      Def.Value:=NewValue;
+      Def.DefaultValue:=Def.Value;
+    end;
+  end;
+  
+begin
+  if Assigned(DataSet) then begin
+    if DataSet.Active and not DataSet.IsEmpty then begin
+      DataSet.DisableControls;
+      try
+        for i:=0 to FExecuteDefs.Count-1 do begin
+          Def:=FExecuteDefs.Items[i];
+          Field:=DataSet.FindField(Def.FieldName);
+          if not Assigned(Field) then begin
+            for j:=0 to Def.Twins.Count-1 do begin
+              Field:=DataSet.FindField(Def.Twins[j]);
+              LocalSet;
+            end;
+          end else LocalSet;
+        end;
+      finally
+        DataSet.EnableControls;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsDatabaseCDS.GetExecuteDefsByDefs(AExecuteDefs: TSgtsExecuteDefs);
+var
+  i: Integer;
+  FromDef,ToDef: TSgtsExecuteDef;
+
+  procedure LocalSet;
+  var
+    NewValue: Variant;
+  begin
+    NewValue:=FromDef.Value;
+    ToDef.DefaultValue:=NewValue;
+    ToDef.Value:=NewValue;
+    ToDef.DefaultValue:=ToDef.Value;
+  end;
+  
+begin
+  if Assigned(AExecuteDefs) then begin
+    for i:=0 to AExecuteDefs.Count-1 do begin
+      FromDef:=AExecuteDefs.Items[i];
+      ToDef:=FExecuteDefs.Find(FromDef.Name);
+      if Assigned(ToDef) then
+        LocalSet;
+    end;
+  end;
+end;
+
+function TSgtsDatabaseCDS.Locate(const KeyFields: string; const KeyValues: Variant): Boolean;
+begin
+  Result:=inherited Locate(KeyFields,KeyValues,[loCaseInsensitive,loPartialKey]);
+end;
+
+procedure TSgtsDatabaseCDS.DeleteByDefs(AExecuteDefs: TSgtsExecuteDefs);
+var
+  AFields: string;
+  AValues: Variant;
+begin
+  if Active then begin
+    BeginUpdate;
+    try
+      GetFieldsValues(AExecuteDefs,AFields,AValues);
+      if Locate(AFields,AValues) then begin
+        Delete;
+        Dec(FServerRecordCount);
+        Dec(FClientRecordCount);
+      end;
+    finally
+      EndUpdate(true);
+    end;
+  end;
+end;
+
+procedure TSgtsDatabaseCDS.DoOnCalcFields;
+var
+  i: Integer;
+  Def: TSgtsSelectDef;
+begin
+  inherited DoOnCalcFields;
+  with FSelectDefs do begin
+    for i:=0 to Count-1 do begin
+      Def:=Items[i];
+      if Def.FieldKind=fkCalculated then
+        if Assigned(Def.CalcProc) then begin
+          FieldByName(Def.Name).Value:=Def.CalcProc(Def);
+        end;
+    end;
+  end;  
+end;
+
+end.

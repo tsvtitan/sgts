@@ -1,0 +1,11 @@
+File: mdbft.zip
+Product: MiTeC DBFTable
+Version: 1.5
+Author: MichaL MutL
+E-Mail: michal.mutl@atlas.cz
+Target: Delphi 3.x, Delphi 4.x, Delphi 5.x, Delphi 6.x
+Platform: W95, W98, NT, W2000, Windows ME, Windows XP
+Status: Fully Functional 
+Source: Included 
+Description: Data-aware component providing access to DBF
+files without BDE.

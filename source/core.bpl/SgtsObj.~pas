@@ -1,0 +1,55 @@
+unit SgtsObj;
+
+interface
+
+uses Classes,
+     SgtsObjIntf;
+
+type
+
+  TSgtsObj=class(TComponent,ISgtsObj)
+  private
+    FName: String;
+    FCaption: String;
+  protected
+    function _GetName: String;
+  public
+    constructor Create; reintroduce; virtual;
+    procedure Init; virtual;
+    procedure Done; virtual;
+    procedure Start; virtual;
+
+    property Name: String read FName write FName;
+    property Caption: String read FCaption write FCaption;
+  end;
+
+  TSgtsObjClass=class of TSgtsObj;
+
+implementation
+
+{ TSgtsObj }
+
+constructor TSgtsObj.Create;
+begin
+  inherited Create(nil);
+  FName:=Copy(ClassName,6,Length(ClassName));
+end;
+
+function TSgtsObj._GetName: String;
+begin
+  Result:=FName;
+end;
+
+procedure TSgtsObj.Init;
+begin
+end;
+
+procedure TSgtsObj.Done;
+begin
+end;
+
+procedure TSgtsObj.Start;
+begin
+end;
+
+end.

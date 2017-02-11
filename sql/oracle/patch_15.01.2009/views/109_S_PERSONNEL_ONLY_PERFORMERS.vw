@@ -1,0 +1,30 @@
+/* Создание просмотра персонала входящего в группу исполнителей */
+
+CREATE OR REPLACE VIEW S_PERSONNEL_ONLY_PERFORMERS
+AS 
+SELECT P.PERSONNEL_ID,
+       P.DIVISION_ID,
+       P.FNAME,
+       P.NAME,
+       P.SNAME,
+       P.DATE_ACCEPT,
+       P.DATE_SACK,
+       D.NAME AS DIVISION_NAME
+  FROM PERSONNELS P,
+       DIVISIONS D,
+       ACCOUNTS A1,
+       ACCOUNTS_ROLES AR,
+       ACCOUNTS A2
+ WHERE D.DIVISION_ID = P.DIVISION_ID
+   AND A1.PERSONNEL_ID = P.PERSONNEL_ID
+   AND AR.ACCOUNT_ID = A1.ACCOUNT_ID
+   AND A2.ACCOUNT_ID = AR.ROLE_ID
+   AND A2.NAME LIKE '%Исполнители%'
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

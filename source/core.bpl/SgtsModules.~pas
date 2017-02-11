@@ -1,0 +1,290 @@
+unit SgtsModules;
+
+interface
+
+uses Classes, Contnrs,
+     SgtsCoreObj, SgtsConfigIntf, SgtsLogIntf,
+     SgtsCoreIntf, SgtsModulesIntf;
+
+type
+
+  TSgtsInitProc = procedure (ACoreIntf: ISgtsCore; AModuleIntf: ISgtsModule); stdcall;
+
+  TSgtsModule=class(TSgtsCoreObj,ISgtsModule)
+  private
+    FEnabled: Boolean;
+    FFileName: String;
+    FHandle: THandle;
+    FInitProcName: String;
+    FInitProc: TSgtsInitProc;
+  protected
+    function _GetEnabled: Boolean;
+    function _GetCaption: String;
+    function _GetFileName: String;
+
+    procedure DoInitProc(AProc: TSgtsInitProc); virtual;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    procedure Init; override;
+    procedure Load; virtual;
+    procedure Unload; virtual;
+    procedure BeforeStart; override;
+
+    property Enabled: Boolean read FEnabled write FEnabled;
+    property FileName: String read FFileName;
+    property InitProcName: String read FInitProcName write FInitProcName; 
+  end;
+
+  TSgtsModuleClass=class of TSgtsModule;
+
+  TSgtsModuleList=class(TComponentList)
+  private
+    function GetItems(Index: Integer): TSgtsModule;
+    procedure SetItems(Index: Integer; AModule: TSgtsModule);
+  public
+    property Items[Index: Integer]: TSgtsModule read GetItems write SetItems;
+  end;
+
+  TSgtsModuleListClass=class of TSgtsModuleList;
+
+  TSgtsModules=class(TSgtsCoreObj,ISgtsModules)
+  private
+    FModuleList: TSgtsModuleList;
+    FCurrent: ISgtsModule;
+    function GetItems(Index: Integer): TSgtsModule;
+    procedure SetItems(Index: Integer; Value: TSgtsModule);
+    function GetCount: Integer;
+  protected
+    function _GetCount: Integer;
+    function GetModuleListClass: TSgtsModuleListClass; virtual;
+    function GetModuleClass: TSgtsModuleClass; virtual;
+
+    property ModuleList: TSgtsModuleList read FModuleList;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+    procedure Init; override;
+    procedure Load; virtual;
+    procedure Unload; virtual;
+    procedure BeforeStart; override;
+    function Add(AName: String): TSgtsModule;
+    function Find(AName: String): TSgtsModule;
+
+    property Items[Index: Integer]: TSgtsModule read GetItems write SetItems;
+    property Count: Integer read GetCount;
+  end;
+
+implementation
+
+uses Windows, SysUtils,
+     SgtsObj, SgtsUtils, SgtsConsts, SgtsDialogs;
+
+{ TSgtsModule }
+
+constructor TSgtsModule.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FInitProcName:='';
+end;
+
+procedure TSgtsModule.Init;
+begin
+  inherited Init;
+  with CoreIntf.Config do begin
+    Caption:=Read(Self.Name,SConfigParamCaption,Caption);
+    FFileName:=Read(Self.Name,SConfigParamFileName,FFileName);
+  end;  
+end;
+
+procedure TSgtsModule.Load;
+begin
+  LogWrite(Format(SModuleLoadStart,[FFileName]));
+  FHandle:=SafeLoadLibrary(FFileName);
+  if FHandle<>0 then begin
+    LogWrite(Format(SModuleLoadSucess,[FFileName,GetFileVersionEx(FFileName),GetFileSizeEx(FFileName)]));
+    @FInitProc:=GetProcAddress(FHandle,PChar(FInitProcName));
+    if Assigned(@FInitProc) then begin
+      try
+        DoInitProc(FInitProc);
+        LogWrite(Format(SModuleLoadInitSuccess,[FFileName]));
+      except
+        On E: Exception do begin
+          LogWrite(Format(SModuleLoadInitFailed,[FFileName,E.Message]),ltError);
+          ShowError(E.Message);
+        end;
+      end;
+    end;
+  end else
+    LogWrite(Format(SModuleLoadFailed,[FFileName,E.Message]),ltError);
+end;
+
+procedure TSgtsModule.Unload;
+begin
+  LogWrite(Format(SModuleUnLoadStart,[FFileName]));
+  if FreeLibrary(FHandle) then begin
+    FHandle:=0;
+    LogWrite(Format(SModuleUnLoadSuccess,[FFileName]));
+  end else
+    LogWrite(Format(SModuleUnloadFailed,[FFileName,SysErrorMessage(GetLastError)]),ltError);
+end;
+
+procedure TSgtsModule.BeforeStart;
+begin
+  inherited BeforeStart;
+end;
+
+procedure TSgtsModule.DoInitProc(AProc: TSgtsInitProc);
+begin
+end;
+
+function TSgtsModule._GetEnabled: Boolean;
+begin
+  Result:=FEnabled;
+end;
+
+function TSgtsModule._GetCaption: String;
+begin
+  Result:=Caption;
+end;
+
+function TSgtsModule._GetFileName: String;
+begin
+  Result:=FFileName;
+end;
+
+{ TSgtsModuleList }
+
+function TSgtsModuleList.GetItems(Index: Integer): TSgtsModule;
+begin
+  Result:=TSgtsModule(inherited Items[Index]);
+end;
+
+procedure TSgtsModuleList.SetItems(Index: Integer; AModule: TSgtsModule);
+begin
+  inherited Items[Index]:=AModule;
+end;
+
+{ TSgtsModules }
+
+constructor TSgtsModules.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FModuleList:=GetModuleListClass.Create(false);
+  FCurrent:=nil;
+end;
+
+destructor TSgtsModules.Destroy;
+begin
+  FModuleList.Free;
+  inherited Destroy;
+end;
+
+function TSgtsModules.GetItems(Index: Integer): TSgtsModule;
+begin
+  Result:=FModuleList.Items[Index];
+end;
+
+procedure TSgtsModules.SetItems(Index: Integer; Value: TSgtsModule);
+begin
+  FModuleList.Items[Index]:=Value;
+end;
+
+function TSgtsModules.GetCount: Integer;
+begin
+  Result:=FModuleList.Count;
+end;
+
+function TSgtsModules.GetModuleListClass: TSgtsModuleListClass;
+begin
+  Result:=TSgtsModuleList;
+end;
+
+function TSgtsModules.GetModuleClass: TSgtsModuleClass; 
+begin
+  Result:=TSgtsModule;
+end;
+
+function TSgtsModules._GetCount: Integer;
+begin
+  Result:=FModuleList.Count;
+end;
+
+function TSgtsModules.Find(AName: String): TSgtsModule;
+var
+  i: Integer;
+begin
+  Result:=nil;
+  for i:=0 to FModuleList.Count-1 do begin
+    if AnsiSameText(FModuleList.Items[i].Name,AName) then begin
+      Result:=FModuleList.Items[i];
+      exit;
+    end;
+  end;
+end;
+
+function TSgtsModules.Add(AName: String): TSgtsModule;
+begin
+  Result:=nil;
+  if not Assigned(Find(AName)) then begin
+    Result:=GetModuleClass.Create(CoreIntf);
+    Result.Name:=AName;
+    Result.Init;
+    FModuleList.Add(Result);
+  end;  
+end;
+
+procedure TSgtsModules.Init;
+var
+  Strings: TStringList;
+  Module: TSgtsModule;
+  i: Integer;
+begin
+  inherited Init;
+  with CoreIntf do begin
+    Strings:=TStringList.Create;
+    try
+      Config.ReadSection(Self.Name,Strings);
+      for i:=0 to Strings.Count-1 do begin
+        Module:=Add(Strings.Strings[i]);
+        if Assigned(Module) then begin
+          Module.Enabled:=Config.Read(Self.Name,Module.Name,false);
+        end;
+      end;
+    finally
+      Strings.Free;
+    end; 
+  end;  
+end;
+
+procedure TSgtsModules.Load;
+var
+  i: Integer;
+begin
+  for i:=0 to FModuleList.Count-1 do
+    with FModuleList.Items[i] do
+      if Enabled then
+        Load;
+end;
+
+procedure TSgtsModules.Unload;
+var
+  i: Integer;
+begin
+  for i:=0 to FModuleList.Count-1 do
+    with FModuleList.Items[i] do
+      if Enabled then
+        Unload;
+end;
+
+procedure TSgtsModules.BeforeStart;
+var
+  i: Integer;
+begin
+  inherited BeforeStart;
+  for i:=0 to FModuleList.Count-1 do
+    with FModuleList.Items[i] do
+      if Enabled then
+        BeforeStart;
+end;
+
+end.

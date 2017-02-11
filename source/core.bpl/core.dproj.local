@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2008.05.27 16:17:41.265.pas,U:\source\imports\Indy\Protocols\IdCoder3to4.pas=</Transaction>
+    <Transaction>2008.05.27 16:41:12.046.pas,U:\source\imports\ExtLib\ELControls.pas=</Transaction>
+    <Transaction>2008.05.27 16:41:12.187.pas,U:\source\imports\ExtLib\ELPropInsp.pas=</Transaction>
+    <Transaction>2008.05.27 16:41:12.343.pas,U:\source\imports\ExtLib\ELSConsts.pas=</Transaction>
+    <Transaction>2008.05.27 16:41:12.484.pas,U:\source\imports\ExtLib\ELStringsEdit.pas=</Transaction>
+    <Transaction>2008.05.27 16:41:12.484.dfm,U:\source\imports\ExtLib\ELStringsEdit.dfm=</Transaction>
+    <Transaction>2008.05.27 16:41:12.640.pas,U:\source\imports\ExtLib\ELUtils.pas=</Transaction>
+    <Transaction>2008.08.04 15:28:16.502.pas,U:\source\core.bpl\Unit1.pas=U:\source\core.bpl\SgtsFunPointManagementFilterFm.pas</Transaction>
+    <Transaction>2008.08.04 15:28:16.502.dfm,U:\source\core.bpl\Unit1.dfm=U:\source\core.bpl\SgtsFunPointManagementFilterFm.dfm</Transaction>
+    <Transaction>2008.10.24 15:49:21.187.pas,U:\source\core.bpl\SgtsRbkDefectViewsEditFm.pas=U:\source\core.bpl\SgtsRbkDefectViewEditFm.pas</Transaction>
+    <Transaction>2008.10.24 15:49:21.187.dfm,U:\source\core.bpl\SgtsRbkDefectViewsEditFm.dfm=U:\source\core.bpl\SgtsRbkDefectViewEditFm.dfm</Transaction>
+    <Transaction>2008.10.25 12:07:14.531.pas,U:\source\core.bpl\Unit1.pas=U:\source\core.bpl\SgtsFunSourceDataMeasureVisualFrm.pas</Transaction>
+    <Transaction>2008.10.25 12:07:14.531.dfm,U:\source\core.bpl\Unit1.dfm=U:\source\core.bpl\SgtsFunSourceDataMeasureVisualFrm.dfm</Transaction>
+    <Transaction>2008.10.27 12:17:07.125.pas,U:\source\core.bpl\SgtsFunSourceDataMeasureVisualFrm.pas=</Transaction>
+    <Transaction>2008.10.27 12:17:07.125.dfm,U:\source\core.bpl\SgtsFunSourceDataMeasureVisualFrm.dfm=</Transaction>
+    <Transaction>2009.01.12 14:55:45.140.pas,U:\source\core.bpl\Unit1.pas=U:\source\core.bpl\SgtsMenuIface.pas</Transaction>
+    <Transaction>2009.01.12 15:04:10.703.pas,U:\source\core.bpl\SgtsMenuIface.pas=U:\source\core.bpl\SgtsFileIface.pas</Transaction>
+  </Transactions>
+</BorlandProject>

@@ -1,0 +1,16 @@
+/* Создание таблицы объектов */
+
+CREATE TABLE OBJECTS
+(
+  OBJECT_ID INTEGER NOT NULL, 
+  NAME VARCHAR2(100) NOT NULL,
+  DESCRIPTION VARCHAR2(250),
+  SHORT_NAME VARCHAR2(30),
+  PRIMARY KEY (OBJECT_ID)
+)
+
+--
+
+/* Фиксация изменений */
+
+COMMIT

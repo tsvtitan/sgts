@@ -1,0 +1,1043 @@
+unit SgtsFunSourceDataFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, ExtCtrls, ToolWin, ImgList, Menus, Grids, DBGrids, StdCtrls,
+  Contnrs,
+  SgtsChildFm, SgtsGetRecordsConfig, SgtsCoreIntf, SgtsFm, SgtsMenus,
+  SgtsFunSourceDataFrm, SgtsFunSourceDataMeasureGeneralFrm, SgtsCDS,
+  SgtsBaseReportFm, SgtsFunSourceDataMeasureDetailFrm, SgtsFunSourceDataMeasureVisualFrm;
+
+type
+  TSgtsFunSourceDataIface=class;
+
+  TSgtsFunSourceDataForm = class(TSgtsChildForm)
+    BevelStatus: TBevel;
+    StatusBar: TStatusBar;
+    ImageList: TImageList;
+    ToolBar: TToolBar;
+    ToolButtonConfirm: TToolButton;
+    ToolButtonRefresh: TToolButton;
+    ToolButtonInsert: TToolButton;
+    ToolButtonUpdate: TToolButton;
+    ToolButtonDelete: TToolButton;
+    ToolButtonDetail: TToolButton;
+    ToolButtonFirst: TToolButton;
+    ToolButtonPrior: TToolButton;
+    ToolButtonNext: TToolButton;
+    ToolButtonLast: TToolButton;
+    ToolButtonReport: TToolButton;
+    MainMenu: TMainMenu;
+    MenuData: TMenuItem;
+    PopupMenuView: TPopupMenu;
+    PanelView: TPanel;
+    BevelTop: TBevel;
+    PageControl: TPageControl;
+    TabSheetMeasureGeneral: TTabSheet;
+    TabSheetMeasureVisual: TTabSheet;
+    TabSheetMeasureDetail: TTabSheet;
+    PopupMenuReport: TPopupMenu;
+    ToolButtonSave: TToolButton;
+    ToolButtonRecalculation: TToolButton;
+    procedure PageControlChange(Sender: TObject);
+    procedure ToolButtonRefreshClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure PageControlChanging(Sender: TObject;
+      var AllowChange: Boolean);
+    procedure ToolButtonInsertClick(Sender: TObject);
+    procedure ToolButtonUpdateClick(Sender: TObject);
+    procedure ToolButtonDeleteClick(Sender: TObject);
+    procedure ToolButtonFirstClick(Sender: TObject);
+    procedure ToolButtonPriorClick(Sender: TObject);
+    procedure ToolButtonNextClick(Sender: TObject);
+    procedure ToolButtonLastClick(Sender: TObject);
+    procedure ToolButtonConfirmClick(Sender: TObject);
+    procedure ToolButtonDetailClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure ToolButtonReportClick(Sender: TObject);
+    procedure ToolButtonSaveClick(Sender: TObject);
+    procedure ToolButtonRecalculationClick(Sender: TObject);
+  private
+    FIfaces: TObjectList;
+    FOldCaption: String;
+    FMeasureGeneralFrame: TSgtsFunSourceDataMeasureGeneralFrame;
+    FMeasureDetailFrame: TSgtsFunSourceDataMeasureDetailFrame;
+    FMeasureVisualFrame: TSgtsFunSourceDataMeasureVisualFrame;
+    procedure SetStatusInfo;
+    function GetIface: TSgtsFunSourceDataIface;
+    function GetCurrentFrame: TSgtsFunSourceDataFrame;
+    procedure FrameUpdateButtons(Sender: TObject);
+    function GetChangeArePresent: Boolean;
+    procedure SetChangeArePresent(Value: Boolean);
+    procedure MenuItemReportClick(Sender: TObject);
+    procedure CreatePopupMenuReport(MenuParent: TMenuItem);
+    procedure UpdatePopupMenuReport(MenuParent: TMenuItem);
+    procedure CMDialogKey(var Message: TCMDialogKey); message CM_DIALOGKEY;
+  protected
+    property CurrentFrame: TSgtsFunSourceDataFrame read GetCurrentFrame;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+    procedure InitByIface(AIface: TSgtsFormIface); override;
+    procedure UpdateButtons;
+    procedure ViewTabSheets;
+    procedure Refresh(CheckChanges: Boolean);
+    function CanRefresh: Boolean;
+    function Save: Boolean;
+    function CanSave: Boolean;
+    procedure Insert;
+    function CanInsert: Boolean;
+    procedure Update; reintroduce;
+    function CanUpdate: Boolean;
+    procedure Delete;
+    function CanDelete: Boolean;
+    function CanFirst: Boolean;
+    procedure First;
+    function CanPrior: Boolean;
+    procedure Prior;
+    function CanNext: Boolean;
+    procedure Next;
+    function CanLast: Boolean;
+    procedure Last;
+    procedure Confirm;
+    function CanConfirm: Boolean;
+    procedure Detail;
+    function CanDetail: Boolean;
+    function CanReport: Boolean;
+    function CanRecalculation: Boolean;
+    procedure Recalculation;
+
+    procedure Report;
+
+    function GetCycleNum: String;
+    function GetRouteName: String;
+
+    property Iface: TSgtsFunSourceDataIface read GetIface;
+    property ChangeArePresent: Boolean read GetChangeArePresent write SetChangeArePresent;
+    property OldCaption: String read FOldCaption write FOldCaption;
+  end;
+
+  TSgtsFunSourceDataIface=class(TSgtsChildIface)
+  private
+    FTempDataSet: TSgtsCDS;
+    FFilterGroups: TSgtsGetRecordsConfigFilterGroups;
+    FCycleNum: String;
+    FMeasureTypePath: String;
+    FMeasureTypeIsVisual: Boolean;
+    FMeasureTypeId: Variant;
+    FRouteName: String;
+    FObjectPaths: String;
+    FPresentation: Integer;
+    FJournalNum: String;
+    FRestrictIsBase: Boolean;
+    FReportClassInfos: TSgtsBaseReportIfaceClassInfos;
+    procedure RefreshFormCaption;
+    function GetForm: TSgtsFunSourceDataForm;
+    function GetDataSet: TSgtsCDS;
+  protected
+    procedure AfterCreateForm(AForm: TSgtsForm); override;
+    procedure BeforeShowForm(AForm: TSgtsForm); override;
+
+    property FilterGroups: TSgtsGetRecordsConfigFilterGroups read FFilterGroups;
+    property CycleNum: String read FCycleNum write FCycleNum;
+    property MeasureTypePath: String read FMeasureTypePath write FMeasureTypePath;
+    property MeasureTypeIsVisual: Boolean read FMeasureTypeIsVisual write FMeasureTypeIsVisual;
+    property MeasureTypeId: Variant read FMeasureTypeId write FMeasureTypeId;
+    property RouteName: String read FRouteName write FRouteName;
+    property ObjectName: String read FObjectPaths write FObjectPaths;
+    property Presentation: Integer read FPresentation write FPresentation;
+    property JournalNum: String read FJournalNum write FJournalNum;
+    property RestrictIsBase: Boolean read FRestrictIsBase write FRestrictIsBase;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+    procedure Init; override;
+    procedure Show; override;
+    function CanShow: Boolean; override;
+    procedure DatabaseLink; override;
+    procedure UpdateContents; override;
+
+    property Form: TSgtsFunSourceDataForm read GetForm;
+    property DataSet: TSgtsCDS read GetDataSet;
+    property ReportClassInfos: TSgtsBaseReportIfaceClassInfos read FReportClassInfos;
+  end;
+
+var
+  SgtsFunSourceDataForm: TSgtsFunSourceDataForm;
+
+implementation
+
+uses SgtsConsts, SgtsFunSourceDataConditionFm, SgtsUtils, SgtsDialogs;
+
+{$R *.dfm}
+
+type
+
+  TSgtsMenuItemReport=class(TMenuItem)
+  private
+    FReportClassInfo: TSgtsBaseReportIfaceClassInfo;
+  public
+    property ReportClassInfo: TSgtsBaseReportIfaceClassInfo read FReportClassInfo write FReportClassInfo;
+  end;
+
+{ TSgtsFunSourceDataIface }
+
+constructor TSgtsFunSourceDataIface.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FTempDataSet:=TSgtsCDS.Create(nil);
+  FTempDataSet.Name:=Format(SSDataSet,[GetNameByClass(ClassName)]);
+  FMeasureTypeIsVisual:=false;
+  FFilterGroups:=TSgtsGetRecordsConfigFilterGroups.Create;
+  FReportClassInfos:=TSgtsBaseReportIfaceClassInfos.Create;
+end;
+
+destructor TSgtsFunSourceDataIface.Destroy;
+begin
+  FReportClassInfos.Free;
+  FFilterGroups.Free;
+  FTempDataSet.Free;
+  inherited Destroy;
+end;
+
+procedure TSgtsFunSourceDataIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsFunSourceDataForm;
+  InterfaceName:=SInterfaceFunSourceData;
+  with Permissions do begin
+    AddDefault(SPermissionNameShow);
+    AddDefault(SPermissionNameInsert);
+    AddDefault(SPermissionNameUpdate);
+    AddDefault(SPermissionNameDelete);
+    AddDefault(SPermissionNameConfirm);
+    AddDefault(SPermissionNameDetail);
+    AddDefault(SPermissionNameInfo);
+  end;
+end;
+
+procedure TSgtsFunSourceDataIface.DatabaseLink;
+var
+  AIface: TSgtsBaseReportIface;
+  Str: TStringList;
+  i: Integer;
+  Index: Integer;
+begin
+  inherited DatabaseLink;
+  Str:=TStringList.Create;
+  try
+    FReportClassInfos.Clear;
+    Str.Sorted:=false;
+    CoreIntf.GetInterfaceNames(Str,TSgtsBaseReportIface);
+    for i:=0 to Str.Count-1 do begin
+      AIface:=TSgtsBaseReportIface(Str.Objects[i]);
+      if Assigned(AIface) and
+         AIface.ReportExists then begin
+        Index:=AIface.Interfaces.IndexOf(InterfaceName);
+        if Index<>-1 then
+          FReportClassInfos.AddByIface(AIface);
+      end;  
+    end;
+  finally
+    Str.Free;
+  end;
+end;
+
+procedure TSgtsFunSourceDataIface.AfterCreateForm(AForm: TSgtsForm);
+begin
+  inherited AfterCreateForm(AForm);
+end;
+
+procedure TSgtsFunSourceDataIface.Show;
+var
+  Iface: TSgtsFunSourceDataConditionIface;
+begin
+  if CanShow then begin
+    if Assigned(Form) and
+      Form.ChangeArePresent then begin
+      Form.Refresh(true);
+      Form.Repaint;
+    end;
+    Iface:=TSgtsFunSourceDataConditionIface.Create(CoreIntf);
+    try
+      Iface.Init;
+      Iface.ReadParams;
+      Iface.FilterGroups.CopyFrom(FFilterGroups);
+      Iface.Presentation:=FPresentation;
+      Iface.JournalNum:=FJournalNum;
+      Iface.RestrictIsBase:=FRestrictIsBase;
+      if Iface.ShowModal=mrOk then begin
+        FCycleNum:=Iface.CycleNum;
+        FMeasureTypePath:=Iface.MeasureTypePath;
+        FMeasureTypeIsVisual:=Iface.MeasureTypeIsVisual;
+        FMeasureTypeId:=Iface.MeasureTypeId;
+        FRouteName:=Iface.RouteName;
+        FObjectPaths:=Iface.ObjectPaths;
+        FPresentation:=Iface.Presentation;
+        FJournalNum:=Iface.JournalNum;
+        FRestrictIsBase:=Iface.RestrictIsBase;
+        FFilterGroups.Clear;
+        FFilterGroups.CopyFrom(Iface.FilterGroups);
+        inherited Show;
+      end;
+    finally
+      Iface.WriteParams;
+      Iface.Free;
+    end;
+  end;
+end;
+
+function TSgtsFunSourceDataIface.CanShow: Boolean;
+begin
+  Result:=PermissionExists(SPermissionNameShow);
+end;
+
+function TSgtsFunSourceDataIface.GetForm: TSgtsFunSourceDataForm;
+begin
+  Result:=TSgtsFunSourceDataForm(inherited Form);
+end;
+
+procedure TSgtsFunSourceDataIface.RefreshFormCaption;
+begin
+  if Assigned(Form) then begin
+    Form.Caption:=Form.OldCaption;
+    if Trim(FMeasureTypePath)<>'' then
+      Form.Caption:=Format('%s: %s',[Form.OldCaption,FMeasureTypePath]);
+  end;
+end;
+
+procedure TSgtsFunSourceDataIface.BeforeShowForm(AForm: TSgtsForm);
+begin
+  inherited BeforeShowForm(AForm);
+  with Form do begin
+    RefreshFormCaption;
+    ViewTabSheets;
+    Refresh(false);
+    UpdateButtons;
+  end;
+end;
+
+function TSgtsFunSourceDataIface.GetDataSet: TSgtsCDS;
+begin
+  Result:=FTempDataSet;
+  if Assigned(Form) and
+     Assigned(Form.CurrentFrame) then begin
+    Result:=Form.CurrentFrame.GetDataSet;
+    if Assigned(Result) then
+      Result.Name:=FTempDataSet.Name;
+  end;
+end;
+
+procedure TSgtsFunSourceDataIface.UpdateContents;
+begin
+  inherited UpdateContents;
+  if Assigned(Form) then begin
+    with Form do begin
+      CreatePopupMenuReport(TMenuItem(PopupMenuReport.Items));
+      MenuData.Clear;
+      CreateMenuByToolBar(TMenuItem(MenuData),ToolBar);
+      PopupMenuView.Items.Clear;
+      CreateMenuByToolBar(TMenuItem(PopupMenuView.Items),ToolBar);
+      UpdateButtons;
+    end;
+  end;
+end;
+
+{ TSgtsFunSourceDataForm }
+
+constructor TSgtsFunSourceDataForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FIfaces:=TObjectList.Create;
+  FMeasureGeneralFrame:=TSgtsFunSourceDataMeasureGeneralFrame.Create(ACoreIntf);
+  FMeasureGeneralFrame.Parent:=TabSheetMeasureGeneral;
+  FMeasureGeneralFrame.Align:=alClient;
+  FMeasureGeneralFrame.OnUpdateButtons:=FrameUpdateButtons;
+  FMeasureGeneralFrame.DefaultPopupMenu:=PopupMenuView;
+
+  FMeasureDetailFrame:=TSgtsFunSourceDataMeasureDetailFrame.Create(ACoreIntf);
+  FMeasureDetailFrame.Parent:=TabSheetMeasureDetail;
+  FMeasureDetailFrame.Align:=alClient;
+  FMeasureDetailFrame.OnUpdateButtons:=FrameUpdateButtons;
+  FMeasureDetailFrame.DefaultPopupMenu:=PopupMenuView;
+
+  FMeasureVisualFrame:=TSgtsFunSourceDataMeasureVisualFrame.Create(ACoreIntf);
+  FMeasureVisualFrame.Parent:=TabSheetMeasureVisual;
+  FMeasureVisualFrame.Align:=alClient;
+  FMeasureVisualFrame.OnUpdateButtons:=FrameUpdateButtons;
+  FMeasureVisualFrame.DefaultPopupMenu:=PopupMenuView;
+
+  PageControl.ActivePageIndex:=0;
+
+  FOldCaption:=Caption;
+end;
+
+destructor TSgtsFunSourceDataForm.Destroy;
+begin
+
+  FMeasureVisualFrame.Free;
+  FMeasureDetailFrame.Free;
+  FMeasureGeneralFrame.Free;
+  FIfaces.Free;
+  inherited Destroy;
+end;
+
+procedure TSgtsFunSourceDataForm.InitByIface(AIface: TSgtsFormIface);
+begin
+  inherited InitByIface(AIface);
+  FMeasureGeneralFrame.FilterGroups:=Iface.FilterGroups;
+  FMeasureDetailFrame.FilterGroups:=Iface.FilterGroups;
+  FMeasureVisualFrame.FilterGroups:=Iface.FilterGroups;
+  Iface.UpdateContents;
+end;
+
+function TSgtsFunSourceDataForm.GetIface: TSgtsFunSourceDataIface;
+begin
+  Result:=TSgtsFunSourceDataIface(inherited Iface);
+end;
+
+procedure TSgtsFunSourceDataForm.SetStatusInfo;
+begin
+  with Iface do begin
+    StatusBar.Panels[0].Text:=Format(SSourceDataCycleNum,[GetCycleNum]);
+    StatusBar.Panels[1].Text:=Format(SSourceDataMeasureTypeName,[MeasureTypePath]);
+    StatusBar.Panels[2].Text:=Format(SSourceDataRouteName,[GetRouteName]);
+    StatusBar.Panels[3].Text:=Format(SSourceDataObjectName,[ObjectName]);
+  end;
+end;
+
+procedure TSgtsFunSourceDataForm.UpdateButtons;
+begin
+  SetStatusInfo;
+  
+  ToolButtonRefresh.Enabled:=CanRefresh;
+  ToolButtonSave.Enabled:=CanSave;
+  ToolButtonRecalculation.Enabled:=CanRecalculation;
+  ToolButtonConfirm.Enabled:=CanConfirm;
+  ToolButtonDetail.Enabled:=CanDetail;
+  ToolButtonInsert.Enabled:=CanInsert;
+  ToolButtonUpdate.Enabled:=CanUpdate;
+  ToolButtonDelete.Enabled:=CanDelete;
+
+  UpdatePopupMenuReport(TMenuItem(PopupMenuReport.Items));
+  ToolButtonReport.Enabled:=CanReport;
+  if Iface.ReportClassInfos.Count>1 then
+    ToolButtonReport.DropdownMenu:=PopupMenuReport
+  else ToolButtonReport.DropdownMenu:=nil;
+
+  ToolButtonFirst.Enabled:=CanFirst;
+  ToolButtonPrior.Enabled:=CanPrior;
+  ToolButtonNext.Enabled:=CanNext;
+  ToolButtonLast.Enabled:=CanLast;
+
+  UpdateMenuByButtons(MenuData);
+  UpdateMenuByButtons(TMenuItem(PopupMenuView.Items));
+end;
+
+procedure TSgtsFunSourceDataForm.ViewTabSheets;
+begin
+  TabSheetMeasureGeneral.TabVisible:=false;
+  TabSheetMeasureDetail.TabVisible:=false;
+  TabSheetMeasureVisual.TabVisible:=false;
+  if not Iface.MeasureTypeIsVisual then begin
+    TabSheetMeasureGeneral.TabVisible:=true;
+    TabSheetMeasureDetail.TabVisible:=true;
+    PageControl.ActivePageIndex:=Iface.Presentation;
+  end else begin
+    TabSheetMeasureVisual.TabVisible:=true;
+    PageControl.ActivePageIndex:=2;
+  end;
+end;
+
+function TSgtsFunSourceDataForm.GetCurrentFrame: TSgtsFunSourceDataFrame;
+begin
+  Result:=nil;
+  case PageControl.ActivePageIndex of
+    0: Result:=FMeasureGeneralFrame;
+    1: Result:=FMeasureDetailFrame;
+    2: Result:=FMeasureVisualFrame;
+  end;
+end;
+
+procedure TSgtsFunSourceDataForm.Refresh(CheckChanges: Boolean);
+
+  procedure RefreshLocal;
+  var
+    FOldScreen: TCursor;
+  begin
+    FOldScreen:=Screen.Cursor;
+    Screen.Cursor:=crHourGlass;
+    CurrentFrame.BeforeRefresh;
+    try
+      inherited Update;
+      CurrentFrame.Refresh;
+    finally
+      CurrentFrame.AfterRefresh;
+      CurrentFrame.Visible:=true;
+      Screen.Cursor:=FOldScreen;
+    end;
+  end;
+
+var
+  Ret: Integer;
+begin
+  // ????
+  FMeasureGeneralFrame.JournalNum:=Iface.JournalNum;
+  FMeasureGeneralFrame.RestrictIsBase:=Iface.RestrictIsBase;
+  FMeasureGeneralFrame.MeasureTypePath:=Iface.MeasureTypePath;
+  FMeasureGeneralFrame.ObjectName:=Iface.ObjectName;
+  FMeasureGeneralFrame.IsCanInsert:=Iface.PermissionExists(SPermissionNameInsert);
+  FMeasureGeneralFrame.IsCanUpdate:=Iface.PermissionExists(SPermissionNameUpdate);
+  FMeasureGeneralFrame.IsCanDelete:=Iface.PermissionExists(SPermissionNameDelete);
+  FMeasureGeneralFrame.IsCanConfirm:=Iface.PermissionExists(SPermissionNameConfirm);
+  FMeasureGeneralFrame.IsCanDetail:=Iface.PermissionExists(SPermissionNameDetail);
+  FMeasureGeneralFrame.IsCanInfo:=Iface.PermissionExists(SPermissionNameInfo);
+
+  FMeasureDetailFrame.JournalNum:=Iface.JournalNum;
+  FMeasureDetailFrame.RestrictIsBase:=Iface.RestrictIsBase;
+  FMeasureDetailFrame.MeasureTypePath:=Iface.MeasureTypePath;
+  FMeasureDetailFrame.ObjectName:=Iface.ObjectName;
+  FMeasureDetailFrame.IsCanInsert:=Iface.PermissionExists(SPermissionNameInsert);
+  FMeasureDetailFrame.IsCanUpdate:=Iface.PermissionExists(SPermissionNameUpdate);
+  FMeasureDetailFrame.IsCanDelete:=Iface.PermissionExists(SPermissionNameDelete);
+  FMeasureDetailFrame.IsCanConfirm:=Iface.PermissionExists(SPermissionNameConfirm);
+  FMeasureDetailFrame.IsCanDetail:=Iface.PermissionExists(SPermissionNameDetail);
+  FMeasureDetailFrame.IsCanInfo:=Iface.PermissionExists(SPermissionNameInfo);
+
+  FMeasureVisualFrame.JournalNum:=Iface.JournalNum;
+  FMeasureVisualFrame.RestrictIsBase:=Iface.RestrictIsBase;
+  FMeasureVisualFrame.MeasureTypePath:=Iface.MeasureTypePath;
+  FMeasureVisualFrame.ObjectName:=Iface.ObjectName;
+  FMeasureVisualFrame.IsCanInsert:=Iface.PermissionExists(SPermissionNameInsert);
+  FMeasureVisualFrame.IsCanUpdate:=Iface.PermissionExists(SPermissionNameUpdate);
+  FMeasureVisualFrame.IsCanDelete:=Iface.PermissionExists(SPermissionNameDelete);
+  FMeasureVisualFrame.IsCanConfirm:=Iface.PermissionExists(SPermissionNameConfirm);
+  FMeasureVisualFrame.IsCanDetail:=Iface.PermissionExists(SPermissionNameDetail);
+  FMeasureVisualFrame.IsCanInfo:=Iface.PermissionExists(SPermissionNameInfo);
+
+  if CanRefresh then begin
+    if CheckChanges then begin
+      if ChangeArePresent then begin
+        Ret:=ShowQuestionCancel(SSaveChanges);
+        case Ret of
+          mrYes: begin
+            if Save then
+              RefreshLocal;
+          end;
+          mrNo: begin
+            ChangeArePresent:=false;
+            RefreshLocal;
+          end;  
+        end;
+      end else
+        RefreshLocal;
+    end else
+      RefreshLocal;
+  end;
+end;
+
+function TSgtsFunSourceDataForm.CanRefresh: Boolean;
+begin
+  Result:=Assigned(Iface) and
+          Iface.CanShow and 
+          Assigned(CurrentFrame) and
+          CurrentFrame.CanRefresh;
+end;
+
+procedure TSgtsFunSourceDataForm.PageControlChange(Sender: TObject);
+var
+  Control: TWinControl;
+begin
+  Iface.Presentation:=PageControl.ActivePageIndex;
+  if Assigned(CurrentFrame) then begin
+    Control:=CurrentFrame.GetActiveControl;
+    if Assigned(Control) and Control.CanFocus then
+      ActiveControl:=Control;
+  end;  
+  Refresh(false);
+  UpdateButtons;
+end;
+
+function TSgtsFunSourceDataForm.Save: Boolean;                          
+var
+  FOldScreen: TCursor;
+begin
+  Result:=true;
+  FOldScreen:=Screen.Cursor;
+  Screen.Cursor:=crHourGlass;
+  try
+    if CanSave then begin
+      Result:=CurrentFrame.Save;
+    end;
+  finally
+    Screen.Cursor:=FOldScreen;
+  end;
+end;
+
+function TSgtsFunSourceDataForm.CanSave: Boolean;
+begin
+  Result:=Assigned(Iface) and
+          Iface.CanShow and
+          Assigned(CurrentFrame) and
+          CurrentFrame.CanSave;
+end;
+
+procedure TSgtsFunSourceDataForm.ToolButtonRecalculationClick(Sender: TObject);
+begin
+  Recalculation;
+end;
+
+procedure TSgtsFunSourceDataForm.ToolButtonRefreshClick(Sender: TObject);
+begin
+  Refresh(true);
+end;
+
+procedure TSgtsFunSourceDataForm.FrameUpdateButtons(Sender: TObject);
+begin
+  UpdateButtons;
+end;
+
+procedure TSgtsFunSourceDataForm.FormCloseQuery(Sender: TObject;
+  var CanClose: Boolean);
+var
+  Ret: Integer;
+begin
+  if ChangeArePresent then begin
+    Ret:=ShowQuestionCancel(SSaveChanges);
+    case Ret of
+      mrYes: CanClose:=Save;
+      mrNo: CanClose:=true;
+    end;
+  end else
+    CanClose:=true;
+end;
+
+procedure TSgtsFunSourceDataForm.PageControlChanging(Sender: TObject;
+  var AllowChange: Boolean);
+var
+  Ret: Integer;
+begin
+  if ChangeArePresent then begin
+    Ret:=ShowQuestionCancel(SSaveChanges);
+    case Ret of
+      mrYes: AllowChange:=Save;
+      mrNo: begin
+        ChangeArePresent:=false;
+        AllowChange:=true;
+      end;
+      mrCancel: AllowChange:=false;
+    end;
+  end else
+    AllowChange:=True;
+end;
+
+function TSgtsFunSourceDataForm.GetChangeArePresent: Boolean;
+begin
+  Result:=false;
+  if Assigned(CurrentFrame) then
+    Result:=CurrentFrame.ChangeArePresent;
+end;
+
+procedure TSgtsFunSourceDataForm.SetChangeArePresent(Value: Boolean);
+begin
+  if Assigned(CurrentFrame) then
+    CurrentFrame.ChangeArePresent:=Value;
+end;
+
+procedure TSgtsFunSourceDataForm.Insert;
+begin
+  if CanInsert then begin
+    CurrentFrame.Insert;
+  end;
+end;
+
+function TSgtsFunSourceDataForm.CanInsert: Boolean;
+begin
+  Result:=Assigned(Iface) and
+          Iface.CanShow and
+          Iface.PermissionExists(SPermissionNameInsert) and
+          Assigned(CurrentFrame) and
+          CurrentFrame.CanInsert;
+end;
+
+procedure TSgtsFunSourceDataForm.ToolButtonInsertClick(Sender: TObject);
+begin
+  Insert;
+end;
+
+procedure TSgtsFunSourceDataForm.Update;
+begin
+  if CanUpdate then
+     CurrentFrame.Update;
+end;
+
+function TSgtsFunSourceDataForm.CanUpdate: Boolean;
+begin
+  Result:=Assigned(Iface) and
+          Iface.CanShow and
+          Iface.PermissionExists(SPermissionNameUpdate) and
+          Assigned(CurrentFrame) and
+          CurrentFrame.CanUpdate;
+end;
+
+procedure TSgtsFunSourceDataForm.CMDialogKey(var Message: TCMDialogKey);
+begin
+  with Message do
+    if  (CharCode = VK_ESCAPE) and
+        (KeyDataToShiftState(Message.KeyData) = []) and
+        Assigned(CurrentFrame)  then begin  
+      if CurrentFrame.InProgress then
+        CurrentFrame.CancelProgress:=true;
+    end else
+      inherited;
+end;
+
+procedure TSgtsFunSourceDataForm.ToolButtonUpdateClick(Sender: TObject);
+begin
+  Update;
+end;
+
+procedure TSgtsFunSourceDataForm.Delete;
+var
+  FOldScreen: TCursor;
+begin
+  FOldScreen:=Screen.Cursor;
+  Screen.Cursor:=crHourGlass;
+  try
+    if CanDelete then begin
+      if ShowQuestion(SDeleteCurrentRecord,mbNo)=mrYes then
+        CurrentFrame.Delete;
+    end;
+  finally
+    Screen.Cursor:=FOldScreen;
+  end;
+end;
+
+function TSgtsFunSourceDataForm.CanDelete: Boolean;
+begin
+  Result:=Assigned(Iface) and
+          Iface.CanShow and
+          Iface.PermissionExists(SPermissionNameDelete) and
+          Assigned(CurrentFrame) and
+          CurrentFrame.CanDelete;
+end;
+
+procedure TSgtsFunSourceDataForm.ToolButtonDeleteClick(Sender: TObject);
+begin
+  Delete;
+end;
+
+function TSgtsFunSourceDataForm.CanFirst: Boolean;
+begin
+  Result:=Assigned(Iface) and
+          Iface.CanShow and
+          Assigned(CurrentFrame) and
+          CurrentFrame.CanFirst;
+end;
+
+procedure TSgtsFunSourceDataForm.First;
+begin
+  if CanFirst then
+    CurrentFrame.First;
+end;
+
+function TSgtsFunSourceDataForm.CanPrior: Boolean;
+begin
+  Result:=Assigned(Iface) and
+          Iface.CanShow and
+          Assigned(CurrentFrame) and
+          CurrentFrame.CanPrior;
+end;
+
+procedure TSgtsFunSourceDataForm.Prior;
+begin
+  if CanPrior then
+    CurrentFrame.Prior;
+end;
+
+function TSgtsFunSourceDataForm.CanNext: Boolean;
+begin
+  Result:=Assigned(Iface) and
+          Iface.CanShow and
+          Assigned(CurrentFrame) and
+          CurrentFrame.CanNext;
+end;
+
+procedure TSgtsFunSourceDataForm.Next;
+begin
+  if CanNext then
+    CurrentFrame.Next;
+end;
+
+function TSgtsFunSourceDataForm.CanLast: Boolean;
+begin
+  Result:=Assigned(Iface) and
+          Iface.CanShow and
+          Assigned(CurrentFrame) and
+          CurrentFrame.CanLast;
+end;
+
+procedure TSgtsFunSourceDataForm.Last;
+begin
+  if CanLast then
+    CurrentFrame.Last;
+end;
+
+procedure TSgtsFunSourceDataForm.ToolButtonFirstClick(Sender: TObject);
+begin
+  First;
+end;
+
+procedure TSgtsFunSourceDataForm.ToolButtonPriorClick(Sender: TObject);
+begin
+  Prior;
+end;
+
+procedure TSgtsFunSourceDataForm.ToolButtonNextClick(Sender: TObject);
+begin
+  Next;
+end;
+
+procedure TSgtsFunSourceDataForm.ToolButtonLastClick(Sender: TObject);
+begin
+  Last;
+end;
+
+procedure TSgtsFunSourceDataForm.Confirm;
+begin
+  if CanConfirm then begin
+    CurrentFrame.Confirm;
+  end;
+end;
+
+function TSgtsFunSourceDataForm.CanConfirm: Boolean;
+begin
+  Result:=Assigned(Iface) and
+          Iface.CanShow and
+          Iface.PermissionExists(SPermissionNameConfirm) and
+          Assigned(CurrentFrame) and
+          CurrentFrame.CanConfirm;
+end;
+
+procedure TSgtsFunSourceDataForm.ToolButtonConfirmClick(Sender: TObject);
+begin
+  Confirm;
+end;
+
+procedure TSgtsFunSourceDataForm.Detail;
+begin
+  if CanDetail then begin
+    CurrentFrame.Detail;
+  end;
+end;
+
+function TSgtsFunSourceDataForm.CanDetail: Boolean;
+begin
+  Result:=Assigned(Iface) and
+          Iface.CanShow and
+          Iface.PermissionExists(SPermissionNameDetail) and
+          Assigned(CurrentFrame) and
+          CurrentFrame.CanDetail;
+end;
+
+procedure TSgtsFunSourceDataForm.ToolButtonDetailClick(Sender: TObject);
+begin
+  Detail;
+end;
+
+procedure TSgtsFunSourceDataForm.FormKeyDown(Sender: TObject;
+  var Key: Word; Shift: TShiftState);
+var
+  AControl: TWinControl;
+begin
+  if Assigned(CurrentFrame) then begin
+    AControl:=CurrentFrame.GetActiveControl;
+    if Assigned(AControl) then begin
+      case Key of
+        VK_F5: if AControl.Focused then ToolButtonRefresh.Click;
+        VK_F3: if AControl.Focused then ToolButtonDetail.Click;
+        VK_INSERT: if AControl.Focused then ToolButtonInsert.Click;
+        VK_F2: if AControl.Focused then ToolButtonUpdate.Click;
+        VK_DELETE: if AControl.Focused then ToolButtonDelete.Click;
+      end;
+
+      if (ssCtrl in Shift) and (Char(Key) in ['s','S']) then
+        Save;
+      
+    end;
+  end;
+end;
+
+function TSgtsFunSourceDataForm.GetCycleNum: String;
+begin
+  Result:=Iface.CycleNum;
+  if Assigned(CurrentFrame) then begin
+    Result:=CurrentFrame.CycleNum;
+    if Trim(Result)='' then
+      Result:=Iface.CycleNum;
+  end;
+end;
+
+function TSgtsFunSourceDataForm.GetRouteName: String;
+begin
+  Result:=Iface.RouteName;
+  if Assigned(CurrentFrame) then begin
+    Result:=CurrentFrame.RouteName;
+    if Trim(Result)='' then
+      Result:=Iface.RouteName;
+  end;
+end;
+
+function TSgtsFunSourceDataForm.CanReport: Boolean;
+begin
+  Result:=Assigned(Iface) and
+          Assigned(Iface.DataSet) and
+          Assigned(GetFirstDefaultMenu(TMenuItem(PopupMenuReport.Items))) and
+          Iface.DataSet.Active and
+          not Iface.DataSet.IsEmpty;
+end;
+
+procedure TSgtsFunSourceDataForm.Report;
+var
+  MenuItem: Menus.TMenuItem;
+begin
+  if CanReport then begin
+    MenuItem:=GetFirstDefaultMenu(TMenuItem(PopupMenuReport.Items));
+    if Assigned(MenuItem) then
+      MenuItemReportClick(MenuItem);
+  end;
+end;
+
+procedure TSgtsFunSourceDataForm.MenuItemReportClick(Sender: TObject);
+var
+  MenuItem: TSgtsMenuItemReport;
+  AClassInfo: TSgtsBaseReportIfaceClassInfo;
+  AIface: TSgtsBaseReportIface;
+begin
+  MenuItem:=nil;
+  if Assigned(Sender) then
+    if Sender is TSgtsMenuItemReport then
+      MenuItem:=TSgtsMenuItemReport(Sender)
+    else begin
+      MenuItem:=TSgtsMenuItemReport(Pointer(TMenuItem(Sender).Tag));
+    end;
+  if Assigned(MenuItem) then begin
+    AClassInfo:=MenuItem.ReportClassInfo;
+    if Assigned(AClassInfo) then begin
+      AIface:=AClassInfo.ReportClass.Create(CoreIntf);
+      FIfaces.Add(AIface);
+      AIface.Init(AClassInfo.ReportId,AClassInfo.Name,AClassInfo.Description,'','',true,Iface.DataSet,CurrentFrame.GetActiveControl);
+      AIface.ReadParams;
+      AIface.DatabaseLink;
+      AIface.Show;
+      MenuItem.Default:=true;
+    end;
+  end;
+end;
+
+procedure TSgtsFunSourceDataForm.CreatePopupMenuReport(MenuParent: TMenuItem);
+var
+  i: Integer;
+  AClassInfo: TSgtsBaseReportIfaceClassInfo;
+  AIface: TSgtsBaseReportIface;
+  MenuItem: TSgtsMenuItemReport;
+  Flag: Boolean;
+begin
+  MenuParent.Clear;
+  Flag:=false;
+  for i:=0 to Iface.ReportClassInfos.Count-1 do begin
+    AClassInfo:=Iface.ReportClassInfos.Items[i];
+    AIface:=AClassInfo.ReportClass.Create(CoreIntf);
+    try
+      AIface.Init(AClassInfo.ReportId,AClassInfo.Name,AClassInfo.Description,'','',true);
+      AIface.ReadParams;
+      AIface.DatabaseLink;
+      MenuItem:=TSgtsMenuItemReport.Create(MenuParent);
+      MenuItem.Caption:=AIface.Caption;
+      MenuItem.Hint:=MenuItem.Caption;
+      MenuItem.Enabled:=AIface.CanShow;
+      MenuItem.OnClick:=MenuItemReportClick;
+      MenuItem.ReportClassInfo:=AClassInfo;
+      if not Flag and MenuItem.Enabled then begin
+        MenuItem.Default:=true;
+        Flag:=true;
+      end;
+      MenuParent.Add(MenuItem);
+    finally
+      AIface.Free;
+    end;
+  end;
+end;
+
+procedure TSgtsFunSourceDataForm.UpdatePopupMenuReport(MenuParent: TMenuItem);
+var
+  i: Integer;
+  AClassInfo: TSgtsBaseReportIfaceClassInfo;
+  AIface: TSgtsBaseReportIface;
+  MenuItem: TSgtsMenuItemReport;
+  Flag: Boolean;
+begin
+  Flag:=false;
+  for i:=0 to MenuParent.Count-1 do begin
+    if MenuParent.Items[i] is TSgtsMenuItemReport then begin
+      MenuItem:=TSgtsMenuItemReport(MenuParent.Items[i]);
+      AClassInfo:=MenuItem.ReportClassInfo;
+      if Assigned(AClassInfo) then begin
+        AIface:=AClassInfo.ReportClass.Create(CoreIntf);
+        try
+          AIface.Init(AClassInfo.ReportId,AClassInfo.Name,AClassInfo.Description,'','',true);
+          AIface.ReadParams;
+          AIface.DatabaseLink;
+          MenuItem.Enabled:=AIface.CanShow;
+          if not Flag and MenuItem.Enabled then begin
+            MenuItem.Default:=true;
+            Flag:=true;
+          end;
+        finally
+          AIface.Free;
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsFunSourceDataForm.ToolButtonReportClick(Sender: TObject);
+begin
+  Report;
+end;
+
+procedure TSgtsFunSourceDataForm.ToolButtonSaveClick(Sender: TObject);
+begin
+  Save;
+end;
+
+function TSgtsFunSourceDataForm.CanRecalculation: Boolean;
+begin
+  Result:=Assigned(Iface) and
+          Iface.CanShow and
+          Assigned(CurrentFrame) and
+          CurrentFrame.CanRecalculation;
+end;
+
+procedure TSgtsFunSourceDataForm.Recalculation;
+var
+  FOldScreen: TCursor;
+begin
+  FOldScreen:=Screen.Cursor;
+  Screen.Cursor:=crHourGlass;
+  try
+    if CanRecalculation then begin
+      CurrentFrame.Recalculation;
+    end;
+  finally
+    Screen.Cursor:=FOldScreen;
+  end;
+end;
+
+
+end.
+
+

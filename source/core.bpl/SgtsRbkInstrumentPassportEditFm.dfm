@@ -1,0 +1,122 @@
+inherited SgtsRbkInstrumentPassportEditForm: TSgtsRbkInstrumentPassportEditForm
+  Left = 450
+  Top = 209
+  Width = 363
+  Height = 248
+  Caption = #1056#1077#1076#1072#1082#1090#1080#1088#1086#1074#1072#1085#1080#1077' '#1087#1072#1089#1087#1086#1088#1090#1072' '#1087#1088#1080#1073#1086#1088#1072
+  Constraints.MinHeight = 210
+  Constraints.MinWidth = 310
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited StatusBar: TStatusBar
+    Top = 183
+    Width = 355
+  end
+  inherited ToolBar: TToolBar
+    Height = 144
+  end
+  inherited PanelEdit: TPanel
+    Width = 320
+    Height = 144
+    object LabelDescription: TLabel
+      Left = 31
+      Top = 67
+      Width = 71
+      Height = 13
+      Alignment = taRightJustify
+      Caption = #1050#1086#1084#1084#1077#1085#1090#1072#1088#1080#1081':'
+      FocusControl = MemoDescription
+    end
+    object LabelInstrument: TLabel
+      Left = 61
+      Top = 16
+      Width = 41
+      Height = 13
+      Alignment = taRightJustify
+      Caption = #1055#1088#1080#1073#1086#1088':'
+      FocusControl = EditInstrument
+    end
+    object LabelDateTest: TLabel
+      Left = 9
+      Top = 42
+      Width = 93
+      Height = 13
+      Alignment = taRightJustify
+      Caption = #1044#1072#1090#1072' '#1082#1072#1083#1080#1073#1088#1086#1074#1082#1080':'
+      FocusControl = DateTimePickerTest
+    end
+    object LabelRatio: TLabel
+      Left = 28
+      Top = 120
+      Width = 74
+      Height = 13
+      Alignment = taRightJustify
+      Caption = #1050#1086#1101#1092#1092#1080#1094#1080#1077#1085#1090':'
+      FocusControl = EditRatio
+    end
+    object MemoDescription: TMemo
+      Left = 110
+      Top = 64
+      Width = 198
+      Height = 48
+      TabOrder = 3
+    end
+    object EditInstrument: TEdit
+      Left = 110
+      Top = 12
+      Width = 171
+      Height = 21
+      Color = clBtnFace
+      ReadOnly = True
+      TabOrder = 0
+    end
+    object ButtonInstrument: TButton
+      Left = 287
+      Top = 12
+      Width = 21
+      Height = 21
+      Hint = #1042#1099#1073#1088#1072#1090#1100' '#1087#1088#1080#1073#1086#1088
+      Caption = '...'
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 1
+    end
+    object DateTimePickerTest: TDateTimePicker
+      Left = 110
+      Top = 38
+      Width = 100
+      Height = 21
+      Date = 38987.504579895830000000
+      Time = 38987.504579895830000000
+      TabOrder = 2
+    end
+    object EditRatio: TEdit
+      Left = 110
+      Top = 117
+      Width = 94
+      Height = 21
+      TabOrder = 4
+    end
+  end
+  inherited PanelButton: TPanel
+    Top = 144
+    Width = 355
+    DesignSize = (
+      355
+      39)
+    inherited ButtonCancel: TButton
+      Left = 274
+    end
+    inherited ButtonOk: TButton
+      Left = 192
+    end
+  end
+  inherited MainMenu: TMainMenu
+    Left = 176
+    Top = 48
+  end
+  inherited ImageList: TImageList
+    Left = 216
+    Top = 50
+  end
+end

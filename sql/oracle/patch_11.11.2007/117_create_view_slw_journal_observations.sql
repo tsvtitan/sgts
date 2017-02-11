@@ -1,0 +1,299 @@
+/* Создание типа объекта Настенных щелемеров журнала наблюдений */
+
+CREATE OR REPLACE TYPE SLW_JOURNAL_OBSERVATION_OBJECT AS OBJECT
+(
+  CYCLE_ID INTEGER,
+  CYCLE_NUM INTEGER,
+  JOURNAL_NUM VARCHAR2(100),
+  DATE_OBSERVATION DATE,
+  MEASURE_TYPE_ID INTEGER,
+  POINT_ID INTEGER,
+  POINT_NAME INTEGER,
+  CONVERTER_ID INTEGER,
+  CONVERTER_NAME VARCHAR2(100),
+  OBJECT_PATHS VARCHAR2(1000),
+  COORDINATE_Z FLOAT,
+  VALUE_X FLOAT,
+  VALUE_Y FLOAT,
+  VALUE_Z FLOAT,
+  OPENING_X FLOAT,
+  OPENING_Y FLOAT,
+  OPENING_Z FLOAT,
+  CURRENT_OPENING_X FLOAT,
+  CURRENT_OPENING_Y FLOAT,
+  CURRENT_OPENING_Z FLOAT,
+  CYCLE_NULL_OPENING_X FLOAT,
+  CYCLE_NULL_OPENING_Y FLOAT,
+  CYCLE_NULL_OPENING_Z FLOAT
+)
+
+--
+
+/* Создание типа таблицы Настенных щелемеров журнала наблюдений */
+
+CREATE OR REPLACE TYPE SLW_JOURNAL_OBSERVATION_TABLE 
+AS TABLE OF SLW_JOURNAL_OBSERVATION_OBJECT
+
+--
+
+/* Создание функции просмотра Настенных щелемеров в журнале наблюдений */
+
+CREATE OR REPLACE FUNCTION GET_SLW_JOURNAL_OBSERVATIONS
+(
+  MEASURE_TYPE_ID INTEGER,
+  IS_CLOSE INTEGER
+)
+RETURN SLW_JOURNAL_OBSERVATION_TABLE
+PIPELINED
+IS
+  INC2 SLW_JOURNAL_OBSERVATION_OBJECT:=SLW_JOURNAL_OBSERVATION_OBJECT(NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+                                                                      NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+  NUM_MIN INTEGER:=NULL;
+  NUM_MAX INTEGER:=NULL;
+BEGIN
+  FOR INC IN (SELECT MIN(CYCLE_NUM) AS NUM_MIN, MAX(CYCLE_NUM) AS NUM_MAX 
+                FROM CYCLES
+               WHERE IS_CLOSE=GET_SLW_JOURNAL_OBSERVATIONS.IS_CLOSE) LOOP
+    NUM_MIN:=INC.NUM_MIN;
+	NUM_MAX:=INC.NUM_MAX;    			   
+    EXIT;			   
+  END LOOP;			    
+   
+  FOR INC1 IN (SELECT /*+ INDEX (JO) INDEX (JF) INDEX (C) INDEX (P) INDEX (RP) INDEX (CR) */
+                      JO.DATE_OBSERVATION, 
+                      JO.MEASURE_TYPE_ID,
+                      JO.CYCLE_ID,
+                      C.CYCLE_NUM,
+                      JO.POINT_ID,
+                      P.NAME AS POINT_NAME,
+                      CR.CONVERTER_ID,
+                      CR.NAME AS CONVERTER_NAME,
+                      JO.GROUP_ID,
+                      MIN(DECODE(JO.PARAM_ID,30006,JO.VALUE,NULL)) AS VALUE_X,
+					  MIN(DECODE(JO.PARAM_ID,30008,JO.VALUE,NULL)) AS VALUE_Y,
+					  MIN(DECODE(JO.PARAM_ID,30009,JO.VALUE,NULL)) AS VALUE_Z,
+					  MIN(DECODE(JO.PARAM_ID,30010,JO.VALUE,NULL)) AS OPENING_X,
+					  MIN(DECODE(JO.PARAM_ID,30011,JO.VALUE,NULL)) AS OPENING_Y,
+					  MIN(DECODE(JO.PARAM_ID,30012,JO.VALUE,NULL)) AS OPENING_Z,
+					  MIN(DECODE(JO.PARAM_ID,30035,JO.VALUE,NULL)) AS CURRENT_OPENING_X,
+					  MIN(DECODE(JO.PARAM_ID,30036,JO.VALUE,NULL)) AS CURRENT_OPENING_Y,
+					  MIN(DECODE(JO.PARAM_ID,30037,JO.VALUE,NULL)) AS CURRENT_OPENING_Z,
+					  MIN(DECODE(JO.PARAM_ID,30039,JO.VALUE,NULL)) AS CYCLE_NULL_OPENING_X,
+					  MIN(DECODE(JO.PARAM_ID,30040,JO.VALUE,NULL)) AS CYCLE_NULL_OPENING_Y,
+					  MIN(DECODE(JO.PARAM_ID,30041,JO.VALUE,NULL)) AS CYCLE_NULL_OPENING_Z,
+					  OT.OBJECT_PATHS,
+					  P.COORDINATE_Z,
+					  JF.JOURNAL_NUM
+                 FROM JOURNAL_OBSERVATIONS JO, JOURNAL_FIELDS JF, CYCLES C, POINTS P,
+                      ROUTE_POINTS RP, CONVERTERS CR,
+                      (SELECT OT1.OBJECT_ID, SUBSTR(MAX(SYS_CONNECT_BY_PATH(O1.NAME,'\')),2) AS OBJECT_PATHS
+                         FROM OBJECT_TREES OT1, OBJECTS O1
+                        WHERE OT1.OBJECT_ID=O1.OBJECT_ID
+                        START WITH OT1.PARENT_ID IS NULL
+                      CONNECT BY OT1.PARENT_ID=PRIOR OT1.OBJECT_TREE_ID
+					    GROUP BY OT1.OBJECT_ID) OT
+                WHERE JO.JOURNAL_FIELD_ID=JF.JOURNAL_FIELD_ID
+				  AND JO.CYCLE_ID=C.CYCLE_ID
+                  AND JO.POINT_ID=P.POINT_ID
+                  AND RP.POINT_ID=JO.POINT_ID
+                  AND CR.CONVERTER_ID=P.POINT_ID 
+				  AND P.OBJECT_ID=OT.OBJECT_ID
+                  AND JO.MEASURE_TYPE_ID=GET_SLW_JOURNAL_OBSERVATIONS.MEASURE_TYPE_ID
+				  AND JF.MEASURE_TYPE_ID=JO.MEASURE_TYPE_ID
+                  AND JO.PARAM_ID IN (30006, /* Отсчет по X */
+				                      30008, /* Отсчет по Y */
+									  30009, /* Отсчет по Z */
+                                      30010, /* Раскрытие с начала наблюдений по X*/
+                                      30011, /* Раскрытие с начала наблюдений по Y*/
+                                      30012, /* Раскрытие с начала наблюдений по Z*/
+                                      30035, /* Текущее раскрытие по X */
+                                      30036, /* Текущее раскрытие по Y */
+                                      30037, /* Текущее раскрытие по Z */
+                                      30039, /* Раскрытие с нулевого цикла по X */
+                                      30040, /* Раскрытие с нулевого цикла по Y */
+                                      30041 /* Раскрытие с нулевого цикла по Z */)
+                  AND C.CYCLE_NUM>=NUM_MIN AND C.CYCLE_NUM<=NUM_MAX
+				  AND C.IS_CLOSE=GET_SLW_JOURNAL_OBSERVATIONS.IS_CLOSE
+                GROUP BY JO.DATE_OBSERVATION, JO.MEASURE_TYPE_ID, JO.CYCLE_ID, C.CYCLE_NUM, JO.POINT_ID, 
+				         P.NAME, CR.CONVERTER_ID, CR.NAME, JO.GROUP_ID, RP.PRIORITY, CR.DATE_ENTER, 
+						 OT.OBJECT_PATHS, P.COORDINATE_Z, JF.JOURNAL_NUM				  								  
+                ORDER BY JO.DATE_OBSERVATION, JO.GROUP_ID, RP.PRIORITY) LOOP
+    INC2.CYCLE_ID:=INC1.CYCLE_ID;
+    INC2.CYCLE_NUM:=INC1.CYCLE_NUM;
+    INC2.JOURNAL_NUM:=INC1.JOURNAL_NUM;
+	INC2.DATE_OBSERVATION:=INC1.DATE_OBSERVATION;
+	INC2.MEASURE_TYPE_ID:=INC1.MEASURE_TYPE_ID;
+	INC2.POINT_ID:=INC1.POINT_ID;
+	INC2.POINT_NAME:=INC1.POINT_NAME;
+	INC2.CONVERTER_ID:=INC1.CONVERTER_ID;
+	INC2.CONVERTER_NAME:=INC1.CONVERTER_NAME;
+    INC2.OBJECT_PATHS:=INC1.OBJECT_PATHS;
+    INC2.COORDINATE_Z:=INC1.COORDINATE_Z;
+    INC2.VALUE_X:=INC1.VALUE_X;
+	INC2.VALUE_Y:=INC1.VALUE_Y;
+	INC2.VALUE_Z:=INC1.VALUE_Z;
+	INC2.OPENING_X:=INC1.OPENING_X;
+	INC2.OPENING_Y:=INC1.OPENING_Y;
+	INC2.OPENING_Z:=INC1.OPENING_Z;
+	INC2.CURRENT_OPENING_X:=INC1.CURRENT_OPENING_X;
+	INC2.CURRENT_OPENING_Y:=INC1.CURRENT_OPENING_Y;
+	INC2.CURRENT_OPENING_Z:=INC1.CURRENT_OPENING_Z;
+	INC2.CYCLE_NULL_OPENING_X:=INC1.CYCLE_NULL_OPENING_X;
+	INC2.CYCLE_NULL_OPENING_Y:=INC1.CYCLE_NULL_OPENING_Y;
+	INC2.CYCLE_NULL_OPENING_Z:=INC1.CYCLE_NULL_OPENING_Z;
+	  						
+    PIPE ROW (INC2);
+  END LOOP;
+  RETURN;
+END;
+
+--
+
+
+
+/* Создание просмотра Плотина в журнале наблюдений старых данных */
+
+CREATE MATERIALIZED VIEW S_SLW_JOURNAL_OBSERVATIONS_O1
+NOLOGGING
+NOCACHE
+NOPARALLEL
+BUILD DEFERRED
+REFRESH COMPLETE
+START WITH TO_DATE('01.06.2007','DD.MM.YYYY')
+DISABLE QUERY REWRITE AS
+SELECT * FROM TABLE(GET_SLW_JOURNAL_OBSERVATIONS(30006,1))
+
+--
+
+/* Обновление просмотра Плотина в журнале наблюдений старых данных */
+
+BEGIN
+  DBMS_REFRESH.REFRESH('S_SLW_JOURNAL_OBSERVATIONS_O1');
+END;
+
+--
+
+/* Создание индекса на цикл просмотра Плотина в журнале наблюдений старых данных */
+
+CREATE INDEX IDX_SLW_JO_O1_1
+ ON S_SLW_JOURNAL_OBSERVATIONS_O1(CYCLE_ID)
+
+--
+
+/* Создание индекса на дату наблюдения просмотра Плотина в журнале наблюдений старых данных */
+
+CREATE INDEX IDX_SLW_JO_O1_2
+ ON S_SLW_JOURNAL_OBSERVATIONS_O1(DATE_OBSERVATION)
+
+--
+
+/* Создание индекса на вид измерения просмотра Плотина в журнале наблюдений старых данных */
+
+CREATE INDEX IDX_SLW_JO_O1_3
+ ON S_SLW_JOURNAL_OBSERVATIONS_O1(MEASURE_TYPE_ID)
+
+--
+
+/* Создание просмотра Плотина в журнале наблюдений новых данных */
+
+CREATE OR REPLACE VIEW S_SLW_JOURNAL_OBSERVATIONS_N1
+AS
+  SELECT * FROM TABLE(GET_SLW_JOURNAL_OBSERVATIONS(30006,0))
+
+--
+
+/* Создание просмотра Плотина в журнале наблюдений */
+
+CREATE OR REPLACE VIEW S_SLW_JOURNAL_OBSERVATIONS_1
+AS
+  SELECT JOO1.*
+    FROM S_SLW_JOURNAL_OBSERVATIONS_O1 JOO1
+   UNION
+  SELECT JON1.*
+    FROM S_SLW_JOURNAL_OBSERVATIONS_N1 JON1
+
+--
+
+
+
+/* Создание просмотра Здание ГЭС в журнале наблюдений старых данных */
+
+CREATE MATERIALIZED VIEW S_SLW_JOURNAL_OBSERVATIONS_O2
+NOLOGGING
+NOCACHE
+NOPARALLEL
+BUILD DEFERRED
+REFRESH COMPLETE
+START WITH TO_DATE('01.06.2007','DD.MM.YYYY')
+DISABLE QUERY REWRITE AS
+SELECT * FROM TABLE(GET_SLW_JOURNAL_OBSERVATIONS(30007,1))
+
+--
+
+/* Обновление просмотра Здание ГЭС в журнале наблюдений старых данных */
+
+BEGIN
+  DBMS_REFRESH.REFRESH('S_SLW_JOURNAL_OBSERVATIONS_O2');
+END;
+
+--
+
+/* Создание индекса на цикл просмотра Здание ГЭС в журнале наблюдений старых данных */
+
+CREATE INDEX IDX_SLW_JO_O2_1
+ ON S_SLW_JOURNAL_OBSERVATIONS_O2(CYCLE_ID)
+
+--
+
+/* Создание индекса на дату наблюдения просмотра Здание ГЭС в журнале наблюдений старых данных */
+
+CREATE INDEX IDX_SLW_JO_O2_2
+ ON S_SLW_JOURNAL_OBSERVATIONS_O2(DATE_OBSERVATION)
+
+--
+
+/* Создание индекса на вид измерения просмотра Здание ГЭС в журнале наблюдений старых данных */
+
+CREATE INDEX IDX_SLW_JO_O2_3
+ ON S_SLW_JOURNAL_OBSERVATIONS_O2(MEASURE_TYPE_ID)
+
+--
+
+/* Создание просмотра Здание ГЭС в журнале наблюдений новых данных */
+
+CREATE OR REPLACE VIEW S_SLW_JOURNAL_OBSERVATIONS_N2
+AS
+  SELECT * FROM TABLE(GET_SLW_JOURNAL_OBSERVATIONS(30007,0))
+
+--
+
+/* Создание просмотра Здание ГЭС в журнале наблюдений */
+
+CREATE OR REPLACE VIEW S_SLW_JOURNAL_OBSERVATIONS_2
+AS
+  SELECT JOO2.*
+    FROM S_SLW_JOURNAL_OBSERVATIONS_O2 JOO2
+   UNION
+  SELECT JON2.*
+    FROM S_SLW_JOURNAL_OBSERVATIONS_N2 JON2
+
+--
+
+
+
+/* Создание просмотра Настенных щелемеров в журнале наблюдений */
+
+CREATE OR REPLACE VIEW S_SLW_JOURNAL_OBSERVATIONS
+AS
+  SELECT JO1.*
+    FROM S_SLW_JOURNAL_OBSERVATIONS_1 JO1
+   UNION
+  SELECT JO2.*
+    FROM S_SLW_JOURNAL_OBSERVATIONS_2 JO2
+
+--
+
+
+/* Фиксация изменений БД */
+
+COMMIT

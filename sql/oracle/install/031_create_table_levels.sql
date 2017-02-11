@@ -1,0 +1,102 @@
+/* Создание последовательности для таблицы уровней */
+
+CREATE SEQUENCE SEQ_LEVELS
+INCREMENT BY 1 
+START WITH 2500 
+MAXVALUE 1.0E28 
+MINVALUE 2500
+NOCYCLE 
+CACHE 20 
+NOORDER
+
+--
+
+/* Создание фунции генерации идентификатора для уровней */
+
+
+CREATE OR REPLACE FUNCTION GET_LEVEL_ID RETURN INTEGER IS
+  ID INTEGER;
+BEGIN
+  SELECT SEQ_LEVELS.NEXTVAL INTO ID FROM DUAL;
+  RETURN ID;
+END;
+
+--
+
+/* Создание таблицы уровней */
+
+CREATE TABLE LEVELS
+(
+  LEVEL_ID INTEGER NOT NULL, 
+  NAME VARCHAR2(100) NOT NULL,
+  DESCRIPTION VARCHAR2(250),
+  PRIMARY KEY (LEVEL_ID)
+)
+
+--
+
+/* Создание просмотра таблицы уровней */
+
+CREATE VIEW S_LEVELS
+AS
+  SELECT L.*
+    FROM LEVELS L
+
+--
+
+/* Создание процедуры создания уровня */
+
+CREATE OR REPLACE PROCEDURE I_LEVEL
+(
+  LEVEL_ID IN INTEGER,
+  NAME IN VARCHAR2,
+  DESCRIPTION IN VARCHAR2
+)
+AS
+BEGIN
+  INSERT INTO LEVELS (LEVEL_ID,NAME,DESCRIPTION)
+       VALUES (LEVEL_ID,NAME,DESCRIPTION);
+  COMMIT;
+END;
+
+--
+
+/* Создание процедуры изменения уровня */
+
+CREATE PROCEDURE U_LEVEL
+(
+  LEVEL_ID IN INTEGER,
+  NAME IN VARCHAR2,
+  DESCRIPTION IN VARCHAR2,
+  OLD_LEVEL_ID IN INTEGER
+)
+AS
+BEGIN
+  UPDATE LEVELS 
+     SET LEVEL_ID=U_LEVEL.LEVEL_ID,
+         NAME=U_LEVEL.NAME, 
+         DESCRIPTION=U_LEVEL.DESCRIPTION 
+   WHERE LEVEL_ID=OLD_LEVEL_ID;
+  COMMIT;        
+END;
+
+--
+
+/* Создание процедуры удаления уровня */
+
+CREATE PROCEDURE D_LEVEL
+(
+  OLD_LEVEL_ID IN INTEGER
+)
+AS
+BEGIN
+  DELETE FROM LEVELS
+        WHERE LEVEL_ID=OLD_LEVEL_ID;
+  COMMIT;        
+END;
+
+--
+
+/* Фиксация изменений БД */
+
+COMMIT

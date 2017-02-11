@@ -1,0 +1,27 @@
+unit SgtsMTPlanGridFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, SgtsDataGridFm, ExtCtrls, DB, Menus, ImgList, StdCtrls, Grids,
+  DBGrids, ComCtrls, ToolWin;
+
+type
+  TSgtsDataGridForm2 = class(TSgtsDataGridForm)
+    Panel1: TPanel;
+    Splitter1: TSplitter;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  SgtsDataGridForm2: TSgtsDataGridForm2;
+
+implementation
+
+{$R *.dfm}
+
+end.

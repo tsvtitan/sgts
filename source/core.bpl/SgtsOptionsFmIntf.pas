@@ -1,0 +1,35 @@
+unit SgtsOptionsFmIntf;
+
+interface
+
+uses SgtsDialogFmIntf;
+
+type
+
+  TSgtsOptionsWindowOpen=(woMaximized,woTopLeft,woCascade);
+
+  ISgtsOptionsForm=interface(ISgtsDialogForm)
+  ['{194102DB-8A3C-4990-A541-BC3DA99B8BDA}']
+  { methods }
+  { properties }
+    function _GetWindowOpen: TSgtsOptionsWindowOpen;
+    procedure _SetWindowOpen(Value: TSgtsOptionsWindowOpen);
+    function _GetOpenFunSourceData: Boolean;
+    procedure _SetOpenFunSourceData(Value: Boolean);
+    function _GetSaveSizes: Boolean;
+    procedure _SetSaveSizes(Value: Boolean);
+    function _GetDocumentCatalog: String;
+    function _GetDrawingCatalog: String;
+    function _GetReportCatalog: String;
+
+    property WindowOpen: TSgtsOptionsWindowOpen read _GetWindowOpen write _SetWindowOpen;
+    property OpenFunSourceData: Boolean read _GetOpenFunSourceData write _SetOpenFunSourceData;
+    property SaveSizes: Boolean read _GetSaveSizes write _SetSaveSizes;
+    property DocumentCatalog: String read _GetDocumentCatalog;
+    property DrawingCatalog: String read _GetDrawingCatalog;
+    property ReportCatalog: String read _GetReportCatalog;
+  end;
+
+implementation
+
+end.

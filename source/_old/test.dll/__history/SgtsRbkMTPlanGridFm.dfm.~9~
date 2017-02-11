@@ -1,0 +1,42 @@
+inherited SgtsRbkMTPlanGridForm: TSgtsRbkMTPlanGridForm
+  Caption = #1055#1083#1072#1085' - '#1075#1088#1072#1092#1080#1082#1080
+  ClientHeight = 420
+  ExplicitHeight = 474
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited BevelStatus: TBevel
+    Top = 356
+    Height = 5
+    ExplicitTop = 356
+    ExplicitHeight = 5
+  end
+  inherited StatusBar: TStatusBar
+    Top = 399
+    ExplicitTop = 399
+  end
+  inherited ToolBar: TToolBar
+    Height = 356
+    ExplicitHeight = 356
+  end
+  inherited PanelView: TPanel
+    Height = 356
+    ExplicitHeight = 356
+    inherited GridPattern: TDBGrid
+      Height = 350
+    end
+  end
+  inherited PanelButton: TPanel
+    Top = 361
+    Height = 38
+    ExplicitTop = 361
+    ExplicitHeight = 38
+    inherited ButtonCancel: TButton
+      Top = 7
+      ExplicitTop = 7
+    end
+    inherited ButtonOk: TButton
+      Top = 7
+      ExplicitTop = 7
+    end
+  end
+end

@@ -1,0 +1,20 @@
+/* Создание процедуры добавления группы */
+
+CREATE OR REPLACE PROCEDURE I_GROUP
+( 
+  GROUP_ID IN INTEGER, 
+  NAME IN VARCHAR2, 
+  DESCRIPTION IN VARCHAR2 
+) 
+AS 
+BEGIN 
+  INSERT INTO GROUPS (GROUP_ID,NAME,DESCRIPTION) 
+       VALUES (GROUP_ID,NAME,DESCRIPTION); 
+  COMMIT; 
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT

@@ -1,0 +1,35 @@
+unit SgtsKgesGraphPzmPeriodIface;
+
+interface
+
+uses SysUtils,
+     SgtsKgesGraphPeriodIface;
+
+type
+
+  TSgtsKgesGraphPzmPeriodIface=class(TSgtsKgesGraphPeriodIface)
+  public
+    procedure Init; override;
+  end;
+
+
+implementation
+
+uses SgtsConsts, SgtsKgesGraphsConsts, SgtsProviderConsts{,
+     SgtsKgesGraphPzmPeriodRefreshFm};
+
+{ TSgtsKgesGraphPzmPeriodIface }
+
+procedure TSgtsKgesGraphPzmPeriodIface.Init;
+begin
+  inherited Init;
+  InterfaceName:=SInterfaceGraphPzmPeriod;
+  Caption:='Гидрометеорология';
+  MenuPath:=Format(SGraphMenu,[Caption]);
+  MenuHint:='Гидрометеорологические данные по Красноярской ГЭС1';
+//  RefreshClass:=TSgtsKgesGraphPzmPeriodRefreshIface;
+  DataSet.ProviderName:=SProviderSelectPzmObservations;
+end;
+
+end.
+

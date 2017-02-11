@@ -1,0 +1,75 @@
+unit SgtsTestInterface;
+
+interface
+
+uses Classes,
+     SgtsCoreIntf, SgtsInterfaceModulesIntf,
+     SgtsInterface, SgtsMenus,
+     SgtsTestFm, SgtsRbkTestFm, SgtsMyFm, Unit2;
+
+type
+
+  TSgtsTestInterface=class(TSgtsInterface)
+  private
+    FTestIface: TSgtsTestIface;
+    FTest2Iface: TSgtsRbkTestsIface;
+    FMyIface:TSgtsMyIface;
+    FMTPlanIface: TSgtsMTPlanIface;
+  public
+    constructor Create; override;
+    destructor Destroy; override;
+    procedure InitByModule(ACoreIntf: ISgtsCore; AModuleIntf: ISgtsInterfaceModule); override;
+    procedure Start; override;
+  end;
+
+
+implementation
+
+uses SgtsDialogs, SgtsCoreObj;
+
+{ TSgtsTestInterface }
+
+constructor TSgtsTestInterface.Create;
+begin
+  inherited Create;
+  FTestIface:=TSgtsTestIface.Create(nil);
+  FTest2Iface:=TSgtsRbkTestsIface.Create(nil);
+  FMyIface:=TSgtsMyIface.Create(nil);
+  FMTPlanIface:=TSgtsMTPlanIface.Create(nil);
+end;
+
+destructor TSgtsTestInterface.Destroy;
+begin
+  FTest2Iface.Free;
+  FTestIface.Free;
+  FMyIface.Free;
+  FMTPlanIface.Free;
+  inherited Destroy;
+end;
+
+procedure TSgtsTestInterface.InitByModule(ACoreIntf: ISgtsCore; AModuleIntf: ISgtsInterfaceModule);
+
+  procedure InitByModuleLocal(Obj: TSgtsCoreObj);
+  begin
+    Obj.CoreIntf:=ACoreIntf; 
+    ACoreIntf.RegisterObj(Obj);
+  end;
+
+begin
+  inherited InitByModule(ACoreIntf,AModuleIntf);
+  if Assigned(ACoreIntf) then begin
+    InitByModuleLocal(FTestIface);
+    InitByModuleLocal(FTest2Iface);
+    InitByModuleLocal(FMyIface);
+    InitByModuleLocal(FMTPlanIface);
+  end;
+end;
+
+procedure TSgtsTestInterface.Start;
+begin
+  if Assigned(CoreIntf) then begin
+    // 
+  end;
+end;
+
+end.

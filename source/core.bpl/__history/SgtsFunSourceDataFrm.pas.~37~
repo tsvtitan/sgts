@@ -1,0 +1,569 @@
+unit SgtsFunSourceDataFrm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, ExtCtrls, Menus, DBGrids, Grids,
+  SgtsGetRecordsConfig, SgtsCoreIntf, SgtsDatabaseIntf, SgtsCDS, SgtsSelectDefs,
+  SgtsDbGrid;
+
+type
+  TSgtsFunSourceDataCDS=class(TSgtsCDS)
+  private
+    FSelectDefs: TSgtsSelectDefs;
+  protected
+    procedure DoOnCalcFields; override;
+  public
+    property SelectDefs: TSgtsSelectDefs read FSelectDefs write FSelectDefs;
+  end;
+
+  TSgtsFunSourceEditList=class(TInplaceEditList)
+  public
+    FAlignment: TAlignment;
+    procedure SetAlignment(Value: TAlignment);
+  protected
+    procedure CreateParams(var Params: TCreateParams); override;
+  public
+    procedure CloseUp(Accept: Boolean); override;
+    procedure DropDown; override;
+    procedure UpdateContents; override;
+
+    property Alignment: TAlignment read FAlignment write SetAlignment;
+  end;
+
+  TSgtsFunSourceDBGrid=class(TSgtsDBGrid)
+  private
+    FInplaceEdit: TInplaceEditList;
+  protected
+    function CreateEditor: TInplaceEdit; override;
+    function CanEditShow: Boolean; override;
+  public
+    procedure UpdateInplaceEdit;
+
+    property InplaceEdit: TInplaceEditList read FInplaceEdit;
+  end;
+
+  TSgtsFunSourceDataFrame = class(TFrame)
+    PanelStatus: TPanel;
+  private
+    FFilterGroups: TSgtsGetRecordsConfigFilterGroups;
+    FCoreIntf: ISgtsCore;
+    FOnUpdateButtons: TNotifyEvent;
+    FDefaultPopupMenu: TPopupMenu;
+    FJournalNum: String;
+    FRestrictIsBase: Boolean;
+    FMeasureTypeName: String;
+    FObjectName: String;
+    FIsCanInsert: Boolean;
+    FIsCanUpdate: Boolean;
+    FIsCanDelete: Boolean;
+    FIsCanConfirm: Boolean;
+    FIsCanInfo: Boolean;
+    FIsCanDetail: Boolean;
+    FMeasureTypePath: String;
+    FInProgress: Boolean;
+    FCancelProgress: Boolean;
+    function GetDatabase: ISgtsDatabase;
+  protected
+    function GetChangeArePresent: Boolean; virtual;
+    procedure SetChangeArePresent(Value: Boolean); virtual;
+    function GetCycleNum: String; virtual;
+    function GetRouteName: String; virtual;
+    function GetValueByCounter(FieldName: String; Counter: Integer): Variant;
+    procedure UpdateFrame;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); reintroduce; virtual;
+    function GetDataSet: TSgtsCDS; virtual;
+    procedure Refresh; virtual;
+    function CanRefresh: Boolean; virtual;
+    function Save: Boolean; virtual;
+    function CanSave: Boolean; virtual;
+    function IsEdit: Boolean; virtual;
+    procedure BeforeRefresh; virtual;
+    procedure AfterRefresh; virtual;
+    function GetActiveControl: TWinControl; virtual;
+
+    procedure Insert; virtual;
+    function CanInsert: Boolean; virtual;
+    procedure Update; reintroduce; virtual;
+    function CanUpdate: Boolean; virtual;
+    procedure Delete; virtual;
+    function CanDelete: Boolean; virtual;
+    procedure Confirm; virtual;
+    function CanConfirm: Boolean; virtual;
+    procedure Detail; virtual;
+    function CanDetail: Boolean; virtual;
+    procedure Recalculation; virtual;
+    function CanRecalculation: Boolean; virtual;
+
+    function CanFirst: Boolean;
+    procedure First;
+    function CanPrior: Boolean;
+    procedure Prior;
+    function CanNext: Boolean;
+    procedure Next;
+    function CanLast: Boolean;
+    procedure Last;
+    function GetDateBegin: Variant;
+    function GetDateEnd: Variant;
+
+    procedure SetFilterGroupsTo(AFilterGroups: TSgtsGetRecordsConfigFilterGroups;
+                                FieldName: String; Operator: TSgtsGetRecordsConfigFilterOperator);
+    procedure SetDataSetTo(ADataSet: TSgtsCDS; AFilterGroups: TSgtsGetRecordsConfigFilterGroups;
+                           FieldName: String; Operator: TSgtsGetRecordsConfigFilterOperator);
+
+    procedure UpdateButtons; virtual;
+
+    property FilterGroups: TSgtsGetRecordsConfigFilterGroups read FFilterGroups write FFilterGroups;
+    property Database: ISgtsDatabase read GetDatabase;
+    property CoreIntf: ISgtsCore read FCoreIntf;
+    property OnUpdateButtons: TNotifyEvent read FOnUpdateButtons write FOnUpdateButtons;
+    property ChangeArePresent: Boolean read GetChangeArePresent write SetChangeArePresent;
+    property CycleNum: String read GetCycleNum;
+    property RouteName: String read GetRouteName;
+    property DefaultPopupMenu: TPopupMenu read FDefaultPopupMenu write FDefaultPopupMenu;
+    property JournalNum: String read FJournalNum write FJournalNum;
+    property RestrictIsBase: Boolean read FRestrictIsBase write FRestrictIsBase; 
+    property MeasureTypeName: String read FMeasureTypeName write FMeasureTypeName;
+    property MeasureTypePath: String read FMeasureTypePath write FMeasureTypePath;
+    property ObjectName: String read FObjectName write FObjectName;
+
+    property IsCanInsert: Boolean read FIsCanInsert write FIsCanInsert;
+    property IsCanUpdate: Boolean read FIsCanUpdate write FIsCanUpdate;
+    property IsCanDelete: Boolean read FIsCanDelete write FIsCanDelete;
+    property IsCanConfirm: Boolean read FIsCanConfirm write FIsCanConfirm;
+    property IsCanInfo: Boolean read FIsCanInfo write FIsCanInfo;
+    property IsCanDetail: Boolean read FIsCanDetail write FIsCanDetail;
+
+    property InProgress: Boolean read FInProgress write FInProgress;
+    property CancelProgress: Boolean read FCancelProgress write FCancelProgress; 
+  end;
+
+implementation
+
+{$R *.dfm}
+
+{ TSgtsFunSourceDataCDS }
+
+procedure TSgtsFunSourceDataCDS.DoOnCalcFields;
+var
+  i: Integer;
+  Def: TSgtsSelectDef;
+begin
+  inherited DoOnCalcFields;
+  with FSelectDefs do begin
+    for i:=0 to Count-1 do begin
+      Def:=Items[i];
+      if Def.FieldKind=fkCalculated then
+        if Assigned(Def.CalcProc) then begin
+          FieldByName(Def.Name).Value:=Def.CalcProc(Def);
+        end;
+    end;
+  end;
+end;
+
+{ TSgtsFunSourceEditList }
+
+procedure TSgtsFunSourceEditList.CreateParams(var Params: TCreateParams);
+begin
+  inherited CreateParams(Params);
+  if Assigned(Parent) then
+    case FAlignment of
+      taLeftJustify:
+        Params.Style := Params.Style or ES_LEFT;
+      taRightJustify:
+        Params.Style := Params.Style or ES_RIGHT;
+      taCenter:
+        Params.Style := Params.Style or ES_CENTER;
+    end;
+end;
+
+procedure TSgtsFunSourceEditList.SetAlignment(Value: TAlignment);
+begin
+  if Value<>FAlignment then begin
+    FAlignment:=Value;
+    RecreateWnd;
+  end;
+end;
+
+procedure TSgtsFunSourceEditList.UpdateContents;
+begin
+  if Assigned(Grid) then
+    if Assigned(Grid.SelectedField) then
+      Alignment:=SelectedField.Alignment;
+  inherited UpdateContents;
+end;
+
+procedure TSgtsFunSourceEditList.CloseUp(Accept: Boolean);
+var
+  ListValue: Variant;
+begin
+  if ListVisible then begin
+    if GetCapture <> 0 then SendMessage(GetCapture, WM_CANCELMODE, 0, 0);
+    if PickList.ItemIndex <> -1 then
+      ListValue := PickList.Items[Picklist.ItemIndex];
+    SetWindowPos(ActiveList.Handle, 0, 0, 0, 0, 0, SWP_NOZORDER or SWP_NOMOVE or SWP_NOSIZE or SWP_NOACTIVATE or SWP_HIDEWINDOW);
+    ListVisible := False;
+    Invalidate;
+    if Accept then
+      if (not VarIsNull(ListValue)) and EditCanModify then begin
+        with TSgtsFunSourceDbGrid(Grid) do begin
+          SetEditText(Row, Col, ListValue);
+          Columns[SelectedIndex].Field.Text := ListValue;
+          InvalidateEditor;
+        end;
+        Text:=ListValue;
+        SelStart:=Length(Text);
+      end;
+  end;
+end;
+
+procedure TSgtsFunSourceEditList.DropDown;
+var
+  Column: TColumn;
+begin
+  if not ListVisible then begin
+    with TSgtsFunSourceDbGrid(Grid) do
+      Column := Columns[SelectedIndex];
+    if ActiveList = PickList then begin
+      PickList.Items.Assign(Column.PickList);
+      DropDownRows := Column.DropDownRows;
+    end;
+  end;
+  inherited DropDown;
+end;
+
+
+{ TSgtsFunSourceDbGrid }
+
+function TSgtsFunSourceDbGrid.CanEditShow: Boolean;
+begin
+  Result:=inherited CanEditShow;
+end;
+
+function TSgtsFunSourceDbGrid.CreateEditor: TInplaceEdit;
+begin
+  FInplaceEdit:=TSgtsFunSourceEditList.Create(Self);
+  Result:=FInplaceEdit;
+end;
+
+
+procedure TSgtsFunSourceDBGrid.UpdateInplaceEdit;
+begin
+  if Assigned(FInplaceEdit) then begin
+    if Assigned(SelectedField) then
+      TSgtsFunSourceEditList(FInplaceEdit).Alignment:=SelectedField.Alignment;
+  end;
+end;
+
+{ TSgtsFunSourceDataFrame }
+
+constructor TSgtsFunSourceDataFrame.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(nil);
+  FCoreIntf:=ACoreIntf;
+end;
+
+procedure TSgtsFunSourceDataFrame.Refresh;
+begin
+  if CanRefresh then begin
+
+  end;
+end;
+
+function TSgtsFunSourceDataFrame.CanRefresh: Boolean;
+begin
+  Result:=Assigned(FFilterGroups) and
+          Assigned(FCoreIntf) and
+          Assigned(Database);
+end;
+
+function TSgtsFunSourceDataFrame.Save: Boolean;
+begin
+  Result:=true;
+  if CanSave then begin
+  end;
+end;
+
+function TSgtsFunSourceDataFrame.CanSave: Boolean; 
+begin
+  Result:=true;
+end;
+
+function TSgtsFunSourceDataFrame.GetDatabase: ISgtsDatabase;
+begin
+  Result:=nil;
+  if Assigned(FCoreIntf) and
+     Assigned(FCoreIntf.DatabaseModules.Current) then
+    Result:=FCoreIntf.DatabaseModules.Current.Database;  
+end;
+
+procedure TSgtsFunSourceDataFrame.SetFilterGroupsTo(AFilterGroups: TSgtsGetRecordsConfigFilterGroups;
+                                                    FieldName: String; Operator: TSgtsGetRecordsConfigFilterOperator);
+var
+  i,j: Integer;
+  NewFilterGroup: TSgtsGetRecordsConfigFilterGroup;
+  NewFilter: TSgtsGetRecordsConfigFilter;
+begin
+  for i:=0 to FilterGroups.Count-1 do begin
+    NewFilterGroup:=AFilterGroups.Add(FilterGroups.Items[i].Operator);
+    for j:=0 to FilterGroups.Items[i].Filters.Count-1 do begin
+      with FilterGroups.Items[i].Filters do begin
+        if AnsiSameText(Items[j].FieldName,FieldName) then begin
+          NewFilter:=NewFilterGroup.Filters.Add(Items[j].FieldName,Items[j].Condition,Items[j].Value);
+          NewFilter.Operator:=Operator;
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsFunSourceDataFrame.SetDataSetTo(ADataSet: TSgtsCDS; AFilterGroups: TSgtsGetRecordsConfigFilterGroups;
+                                               FieldName: String; Operator: TSgtsGetRecordsConfigFilterOperator);
+var
+  NewFilterGroup: TSgtsGetRecordsConfigFilterGroup;
+  NewFilter: TSgtsGetRecordsConfigFilter;
+  Field: TField;
+begin
+  if ADataSet.Active and not ADataSet.IsEmpty then begin
+    NewFilterGroup:=AFilterGroups.Add;
+    ADataSet.First;
+    while not ADataSet.Eof do begin
+      Field:=ADataSet.FindField(FieldName);
+      if Assigned(Field) then begin
+        NewFilter:=NewFilterGroup.Filters.Add(FieldName,fcEqual,Field.Value);
+        NewFilter.Operator:=Operator;
+      end;
+      ADataSet.Next;
+    end;
+  end;  
+end;
+
+procedure TSgtsFunSourceDataFrame.UpdateButtons;
+begin
+  if Assigned(FOnUpdateButtons) then
+    FOnUpdateButtons(Self);
+end;
+
+procedure TSgtsFunSourceDataFrame.UpdateFrame;
+begin
+  inherited Update;
+end;
+
+function TSgtsFunSourceDataFrame.IsEdit: Boolean;
+var
+  i,j: Integer;
+  AFilterGroup: TSgtsGetRecordsConfigFilterGroup;
+begin
+  Result:=false;
+  if Assigned(FFilterGroups) then
+    for i:=0 to FFilterGroups.Count-1 do begin
+      AFilterGroup:=FFilterGroups.Items[i];
+      for j:=0 to AFilterGroup.Filters.Count-1 do begin
+        with AFilterGroup.Filters do begin
+          if AnsiSameText(Items[j].FieldName,'VIEW_EDIT') then begin
+            Result:=Boolean(Items[j].Value);
+            break;
+          end;
+        end;
+      end;
+    end;
+end;
+
+procedure TSgtsFunSourceDataFrame.BeforeRefresh;
+begin
+  PanelStatus.Update;
+end;
+
+procedure TSgtsFunSourceDataFrame.AfterRefresh;
+begin
+
+end;
+
+function TSgtsFunSourceDataFrame.GetActiveControl: TWinControl;
+begin
+  Result:=nil;
+end;
+
+function TSgtsFunSourceDataFrame.GetChangeArePresent: Boolean;
+begin
+  Result:=false;
+end;
+
+procedure TSgtsFunSourceDataFrame.SetChangeArePresent(Value: Boolean);
+begin
+end;
+
+procedure TSgtsFunSourceDataFrame.Insert;
+begin
+  if CanInsert then begin
+  end;
+end;
+
+function TSgtsFunSourceDataFrame.CanInsert: Boolean;
+begin
+  Result:=FIsCanInsert;
+end;
+
+procedure TSgtsFunSourceDataFrame.Update;
+begin
+  if CanUpdate then begin
+  end;
+end;
+
+function TSgtsFunSourceDataFrame.CanUpdate: Boolean;
+begin
+  Result:=FIsCanUpdate;
+end;
+
+procedure TSgtsFunSourceDataFrame.Delete;
+begin
+  if CanDelete then begin
+  end;
+end;
+
+function TSgtsFunSourceDataFrame.CanDelete: Boolean;
+begin
+  Result:=FIsCanDelete;
+end;
+
+function TSgtsFunSourceDataFrame.CanRecalculation: Boolean;
+begin
+  Result:=false;
+end;
+
+procedure TSgtsFunSourceDataFrame.Recalculation;
+begin
+  if CanRecalculation then begin
+
+  end;
+end;
+
+
+function TSgtsFunSourceDataFrame.GetDataSet: TSgtsCDS;
+begin
+  Result:=nil;
+end;
+
+function TSgtsFunSourceDataFrame.CanFirst: Boolean;
+var
+  FDataSet: TSgtsCDS;
+begin
+  FDataSet:=GetDataSet;
+  Result:=Assigned(FDataSet) and
+          FDataSet.Active and
+          not FDataSet.Bof;
+end;
+
+procedure TSgtsFunSourceDataFrame.First;
+begin
+  if CanFirst then
+    GetDataSet.First;
+end;
+
+function TSgtsFunSourceDataFrame.CanPrior: Boolean;
+begin
+  Result:=CanFirst;
+end;
+
+procedure TSgtsFunSourceDataFrame.Prior;
+begin
+  if CanPrior then
+    GetDataSet.Prior;
+end;
+
+function TSgtsFunSourceDataFrame.CanNext: Boolean;
+var
+  FDataSet: TSgtsCDS;
+begin
+  FDataSet:=GetDataSet;
+  Result:=Assigned(FDataSet) and
+          FDataSet.Active and
+          not FDataSet.Eof;
+end;
+
+procedure TSgtsFunSourceDataFrame.Next;
+begin
+  if CanNext then
+    GetDataSet.Next;
+end;
+
+function TSgtsFunSourceDataFrame.CanLast: Boolean;
+begin
+  Result:=CanNext;
+end;
+
+procedure TSgtsFunSourceDataFrame.Last;
+begin
+  if CanLast then
+    GetDataSet.Last;
+end;
+
+procedure TSgtsFunSourceDataFrame.Confirm;
+begin
+  if CanConfirm then begin
+  end;
+end;
+
+function TSgtsFunSourceDataFrame.CanConfirm: Boolean;
+begin
+  Result:=FIsCanConfirm;
+end;
+
+procedure TSgtsFunSourceDataFrame.Detail;
+begin
+  if CanDetail then begin
+  end;
+end;
+
+function TSgtsFunSourceDataFrame.CanDetail: Boolean;
+begin
+  Result:=FIsCanDetail;
+end;
+
+function TSgtsFunSourceDataFrame.GetCycleNum: String; 
+begin
+  Result:='';
+end;
+
+function TSgtsFunSourceDataFrame.GetRouteName: String; 
+begin
+  Result:='';
+end;
+
+function TSgtsFunSourceDataFrame.GetValueByCounter(FieldName: String; Counter: Integer): Variant;
+var
+  FilterGroup: TSgtsGetRecordsConfigFilterGroup;
+  i,j: Integer;
+  Filter: TSgtsGetRecordsConfigFilter;
+  Cnt: Integer;
+begin
+  Result:=Null;
+  Cnt:=0;
+  for i:=0 to FilterGroups.Count-1 do begin
+    FilterGroup:=FilterGroups.Items[i];
+    for j:=0 to FilterGroup.Filters.Count-1 do begin
+      Filter:=FilterGroup.Filters.Items[j];
+      if AnsiSameText(Filter.FieldName,FieldName) then begin
+        if Cnt=Counter then begin
+          Result:=Filter.Value;
+          exit;
+        end;
+        Inc(Cnt);
+      end;
+    end;
+  end;
+end;
+
+function TSgtsFunSourceDataFrame.GetDateBegin: Variant;
+begin
+  Result:=GetValueByCounter('DATE_BEGIN',0);
+end;
+
+function TSgtsFunSourceDataFrame.GetDateEnd: Variant;
+begin
+  Result:=GetValueByCounter('DATE_END',0);
+end;
+
+end.

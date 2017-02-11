@@ -1,0 +1,640 @@
+unit SgtsRecalcJournalObservationsFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ExtCtrls, DB, StdCtrls, DBGrids, DBClient, Menus, Contnrs,
+  SgtsChildFm, SgtsCDS, SgtsSelectDefs, SgtsDatabaseIntf,
+  SgtsCoreIntf, SgtsControls, SgtsDBGrid, SgtsDatabaseCDS, Buttons;
+
+type
+  TSgtsRecalcJournalObservationsForm = class(TSgtsChildForm)
+    PanelGrid: TPanel;
+    PanelBottom: TPanel;
+    ButtonRecalc: TButton;
+    ButtonClose: TButton;
+    GroupBoxOption: TGroupBox;
+    PanelOption: TPanel;
+    DataSource: TDataSource;
+    PanelPeriod: TPanel;
+    LabelCycleBegin: TLabel;
+    LabelCycleEnd: TLabel;
+    EditCycleBegin: TEdit;
+    ButtonCycleBegin: TButton;
+    EditCycleEnd: TEdit;
+    ButtonCycleEnd: TButton;
+    PopupMenu: TPopupMenu;
+    MenuItemCheckAll: TMenuItem;
+    MenuItemUncheckAll: TMenuItem;
+    btUpColumns: TBitBtn;
+    btDownColumns: TBitBtn;
+    MemoStatus: TMemo;
+    Splitter: TSplitter;
+    procedure ButtonCloseClick(Sender: TObject);
+    procedure ButtonRecalcClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure PopupMenuPopup(Sender: TObject);
+    procedure ButtonCycleEndClick(Sender: TObject);
+    procedure ButtonCycleBeginClick(Sender: TObject);
+    procedure MenuItemCheckAllClick(Sender: TObject);
+    procedure MenuItemUncheckAllClick(Sender: TObject);
+    procedure btUpColumnsClick(Sender: TObject);
+    procedure btDownColumnsClick(Sender: TObject);
+  private
+    FDataSet: TSgtsCDS;
+    FDataSetCycles: TSgtsDatabaseCDS;
+    FGrid: TSgtsDBGrid;
+    FSelectDefs: TSgtsSelectDefs;
+    FCheckDef: TSgtsSelectDef;
+    FSuccessDef: TSgtsSelectDef;
+    FBreaked: Boolean;
+    FInProcess: Boolean;
+    procedure ButtonBreakClick(Sender: TObject);
+    procedure LoadData;
+    function Recalc: Boolean;
+    function RecalcCurrent(CycleId: Variant): Boolean;
+    function SelectCycle(var CycleNum: Variant): Boolean;
+    procedure GridCellClick(Column: TColumn);
+    procedure GridDblClick(Sender: TObject);
+    procedure GridKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure CheckAll(FlagCheck: Boolean; FieldName: String);
+    function CheckCount: Integer;
+    procedure AddStatus(S: String);
+    procedure CMDialogKey(var Message: TCMDialogKey); message CM_DIALOGKEY; 
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+
+  end;
+
+  TSgtsRecalcJournalObservationsIface=class(TSgtsChildIface)
+  public
+    procedure Init; override;
+    function CanShow: Boolean; override;
+  end;
+
+var
+  SgtsRecalcJournalObservationsForm: TSgtsRecalcJournalObservationsForm;
+
+implementation
+
+uses SgtsFm, SgtsIface, SgtsConsts, SgtsUtils, SgtsDialogs,
+     SgtsDatabaseModulesIntf, SgtsProviderConsts, SgtsGetRecordsConfig,
+     SgtsProviders, SgtsRbkCyclesFm, SgtsVariants;
+
+{$R *.dfm}
+
+{ TSgtsRecalcJournalObservationsIface }
+
+procedure TSgtsRecalcJournalObservationsIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRecalcJournalObservationsForm;
+  InterfaceName:=SInterfaceRecalcJournalObservations;
+  with Permissions do begin
+    AddDefault(SPermissionNameShow);
+  end;
+end;
+
+function TSgtsRecalcJournalObservationsIface.CanShow: Boolean;
+begin
+  Result:=PermissionExists(SPermissionNameShow)
+end;
+
+{ TSgtsRecalcJournalObservationsForm }
+
+constructor TSgtsRecalcJournalObservationsForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+
+  FDataSet:=TSgtsCDS.Create(Self);
+  with FDataSet do begin
+    FieldDefs.Clear;
+    FieldDefs.Add('MEASURE_TYPE_ID',ftInteger);
+    FieldDefs.Add('PATH',ftString,250);
+    FieldDefs.Add('CHECK',ftInteger);
+    FieldDefs.Add('SUCCESS',ftInteger);
+    CreateDataSet;
+  end;
+  DataSource.DataSet:=FDataSet;
+
+  FSelectDefs:=TSgtsSelectDefs.Create;
+  with FSelectDefs do begin
+    FCheckDef:=AddDrawCheck('CHECK_EX','Включен','CHECK',30);
+    Find(FCheckDef.CalcName).Field:=FDataSet.FieldByName('CHECK');
+    Add('PATH','Вид измерения',250);
+    FSuccessDef:=AddDrawCheck('SUCCESS_EX','Расчитан','SUCCESS',30);
+    Find(FSuccessDef.CalcName).Field:=FDataSet.FieldByName('SUCCESS');
+  end;
+
+  FGrid:=TSgtsDBGrid.Create(Self);
+  with FGrid do begin
+    Align:=alClient;
+    Parent:=PanelOption;
+    ColumnSortEnabled:=false;
+    VisibleRowNumber:=true;
+    DataSource:=Self.DataSource;
+    Options:=Options-[dgEditing,dgTabs];
+    OnDblClick:=nil;
+    OnCellClick:=GridCellClick;
+    OnKeyDown:=GridKeyDown;
+    LocateEnabled:=true;
+    ColMoving:=false;
+    AutoFit:=true;
+  end;
+  FGrid.PopupMenu:=PopupMenu;
+
+  CreateGridColumnsBySelectDefs(FGrid,FSelectDefs);
+
+  FDataSetCycles:=TSgtsDatabaseCDS.Create(CoreIntf);
+  with FDataSetCycles do begin
+    ProviderName:=SProviderSelectCycles;
+    SelectDefs.AddInvisible('CYCLE_ID');
+    SelectDefs.AddInvisible('CYCLE_NUM');
+    Orders.Add('CYCLE_NUM',otAsc);
+  end;
+
+  LoadData;
+end;
+
+destructor TSgtsRecalcJournalObservationsForm.Destroy;
+begin
+  FDataSetCycles.Free;
+  inherited Destroy;
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.LoadData;
+type
+  PInfoNode=^TInfoNode;
+  TInfoNode=packed record
+    Id: Variant;
+    ParentId: Variant;
+    Path: String;
+    List: TList;
+  end;
+
+  function FindNode(Id: Variant; List: TList): PInfoNode;
+  var
+    P: PInfoNode;
+    i: Integer;
+  begin
+    Result:=nil;
+    for i:=0 to List.Count-1 do begin
+      P:=PInfoNode(List.Items[i]);
+      if VarSameValue(P.Id,Id) then begin
+        Result:=P;
+        break;
+      end else begin
+        Result:=FindNode(Id,P.List);
+        if Assigned(Result) then
+          break;
+      end;
+    end;
+  end;
+
+  function AddNode(Id,ParentId: Variant; Path: String; List: TList): PInfoNode;
+  var
+    P: PInfoNode;
+  begin
+    New(P);
+    P.Id:=Id;
+    P.ParentId:=ParentId;
+    P.Path:=Path;
+    P.List:=TList.Create;
+    List.Add(P);
+    Result:=P;
+  end;
+
+  procedure FillDataSet(List: TList);
+  var
+    i: Integer;
+    P: PInfoNode;
+  begin
+    for i:=0 to List.Count - 1 do begin
+      P:=PInfoNode(List.Items[i]);
+      if P.List.Count=0 then begin
+        FDataSet.Append;
+        FDataSet.FieldByName('MEASURE_TYPE_ID').Value:=P.Id;
+        FDataSet.FieldByName('PATH').Value:=P.Path;
+        FDataSet.FieldByName('CHECK').Value:=Integer(False);
+        FDataSet.FieldByName('SUCCESS').Value:=Integer(False);
+        FDataSet.Post;
+      end else
+        FillDataSet(P.List);
+    end;
+  end;
+
+  procedure ClearTree(List: TList);
+  var
+    i: Integer;
+    P: PInfoNode;
+  begin
+    if Assigned(List) then begin
+      for i:=List.Count-1 downto 0 do begin
+        P:=PInfoNode(List.Items[i]);
+        ClearTree(P.List);
+        List.Delete(i);
+        P.List.Free;
+        Dispose(P);
+      end;
+    end;
+  end;
+
+var
+  List: TList;
+  DS: TSgtsDatabaseCDS;
+  ParentId: Variant;
+  MeasureTypeId: Variant;
+  Path: String;
+  P: PInfoNode;
+begin
+  DS:=TSgtsDatabaseCDS.Create(CoreIntf);
+  List:=TList.Create;
+  try
+    DS.ProviderName:=SProviderSelectMeasureTypes;
+    with DS.SelectDefs do begin
+      AddInvisible('MEASURE_TYPE_ID');
+      AddInvisible('PATH');
+      AddInvisible('PARENT_ID');
+    end;
+    DS.FilterGroups.Add.Filters.Add('IS_VISUAL',fcEqual,0);
+    DS.Open;
+    if DS.Active and
+       not DS.IsEmpty then begin
+
+      DS.First;
+      while not DS.Eof do begin
+        ParentId:=DS.FieldByName('PARENT_ID').Value;
+        MeasureTypeId:=DS.FieldByName('MEASURE_TYPE_ID').Value;
+        Path:=DS.FieldByName('PATH').AsString;
+        P:=FindNode(ParentId,List);
+        if not Assigned(P) then
+          AddNode(MeasureTypeId,ParentId,Path,List)
+        else
+          AddNode(MeasureTypeId,ParentId,Path,P.List);
+        DS.Next;
+      end;
+
+      FillDataSet(List);
+      
+      FDataSet.First;
+    end;
+  finally
+    ClearTree(List);
+    List.Free;
+    DS.Free;
+  end;
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.ButtonCloseClick(Sender: TObject);
+begin
+  Close;
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.ButtonCycleBeginClick(
+  Sender: TObject);
+var
+  CycleNum: Variant;
+  TryValue: Integer;
+begin
+  CycleNum:=Null;
+  if TryStrToInt(EditCycleBegin.Text,TryValue) then
+    CycleNum:=TryValue;
+  if SelectCycle(CycleNum) then
+    EditCycleBegin.Text:=VarToStrDef(CycleNum,'');
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.ButtonCycleEndClick(
+  Sender: TObject);
+var
+  CycleNum: Variant;
+  TryValue: Integer;
+begin
+  CycleNum:=Null;
+  if TryStrToInt(EditCycleEnd.Text,TryValue) then
+    CycleNum:=TryValue;
+  if SelectCycle(CycleNum) then
+    EditCycleEnd.Text:=VarToStrDef(CycleNum,'');
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.ButtonRecalcClick(Sender: TObject);
+var
+  OldCaption: String;
+begin
+  ButtonRecalc.OnClick:=ButtonBreakClick;
+  OldCaption:=ButtonRecalc.Caption;
+  FGrid.Enabled:=false;
+  PanelPeriod.Enabled:=false;
+  btUpColumns.Enabled:=false;
+  btDownColumns.Enabled:=false;
+  try
+    MemoStatus.Clear;
+    AddStatus('Начало расчета ...');
+    ButtonRecalc.Caption:=SButtonCaptionAbort;
+    if Recalc then begin
+      AddStatus('Расчет окончен успешно.');
+      ShowInfo(SRecalcJournalObservationsSuccess);
+    end else
+      AddStatus('Расчет окончен с ошибками.');
+  finally
+    btUpColumns.Enabled:=true;
+    btDownColumns.Enabled:=true;
+    PanelPeriod.Enabled:=true;
+    FGrid.Enabled:=true;
+    ButtonRecalc.Caption:=OldCaption;
+    ButtonRecalc.OnClick:=ButtonRecalcClick;
+  end;
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.AddStatus(S: String);
+var
+  S1: String;
+begin
+  S1:=Format('%s > %s',[DateTimeToStr(Now),S]);
+  CoreIntf.Log.WriteInfo(S);
+  MemoStatus.Lines.Add(S1);
+  MemoStatus.Update;
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.btDownColumnsClick(
+  Sender: TObject);
+begin
+  FDataSet.MoveData(False);
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.btUpColumnsClick(Sender: TObject);
+begin
+  FDataSet.MoveData(True);
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.ButtonBreakClick(Sender: TObject);
+begin
+  AddStatus('Прекращение расчета ...');
+  FBreaked:=true;
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.FormCloseQuery(Sender: TObject;
+  var CanClose: Boolean);
+begin
+  CanClose:=not FInProcess;
+end;
+
+function TSgtsRecalcJournalObservationsForm.SelectCycle(var CycleNum: Variant): Boolean;
+var
+  AIface: TSgtsRbkCyclesIface;
+  DS: TSgtsCDS;
+  Data: String;
+begin
+  AIface:=TSgtsRbkCyclesIface.Create(CoreIntf);
+  try
+    Result:=false;
+    if AIface.SelectVisible('CYCLE_NUM',CycleNum,Data) then begin
+      DS:=TSgtsCDS.Create(nil);
+      try
+        DS.XMLData:=Data;
+        Result:=DS.Active and not DS.IsEmpty;
+        if Result then
+         CycleNum:=DS.FieldByName('CYCLE_NUM').Value;
+      finally
+        DS.Free;
+      end;
+    end;
+  finally
+    AIface.Free;
+  end;
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.PopupMenuPopup(Sender: TObject);
+begin
+  MenuItemCheckAll.Enabled:=FDataSet.Active and not FDataSet.IsEmpty;
+  MenuItemUncheckAll.Enabled:=FDataSet.Active and not FDataSet.IsEmpty;
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.MenuItemCheckAllClick(
+  Sender: TObject);
+begin
+  CheckAll(true,'CHECK');
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.MenuItemUncheckAllClick(
+  Sender: TObject);
+begin
+  CheckAll(False,'CHECK');
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.CheckAll(FlagCheck: Boolean; FieldName: String);
+begin
+  if FDataSet.Active and
+     not FDataSet.IsEmpty then begin
+    FDataSet.BeginUpdate(true);
+    try
+      FDataSet.First;
+      while not FDataSet.Eof do begin
+        FDataSet.Edit;
+        FDataSet.FieldByName(FieldName).Value:=Integer(FlagCheck);
+        FDataSet.Post;
+        FDataSet.Next;
+      end;
+    finally
+      FDataSet.EndUpdate(true);
+    end;
+  end;
+end;
+
+function TSgtsRecalcJournalObservationsForm.CheckCount: Integer;
+begin
+  Result:=0;
+  FDataSet.BeginUpdate(true);
+  try
+    FDataSet.First;
+    while not FDataSet.Eof do begin
+      if Boolean(FDataSet.FieldByName('CHECK').AsInteger) then
+        Inc(Result);      
+      FDataSet.Next;
+    end;
+  finally
+    FDataSet.EndUpdate;
+  end;
+end;
+
+function TSgtsRecalcJournalObservationsForm.Recalc: Boolean;
+var
+  i: Integer;
+  OldCursor: TCursor;
+  CycleMin: Integer;
+  CycleMax: Integer;
+  Checked: Boolean;
+  NCount: Integer;
+  CycleId: Integer;
+  CycleNum: Integer;
+  B: TBookmark;
+begin
+  Result:=false;
+  FBreaked:=false;
+  OldCursor:=Screen.Cursor;
+  Screen.Cursor:=crHourGlass;
+  NCount:=CheckCount;
+  CoreIntf.MainForm.Progress(0,NCount,0);
+  FInProcess:=false;
+  try
+    FInProcess:=true;
+
+    FDataSetCycles.Close;
+    FDataSetCycles.FilterGroups.Clear;
+    if TryStrToInt(EditCycleBegin.Text,CycleMin) then
+      FDataSetCycles.FilterGroups.Add.Filters.Add('CYCLE_NUM',fcEqualGreater,CycleMin);
+    if TryStrToInt(EditCycleEnd.Text,CycleMax) then
+      FDataSetCycles.FilterGroups.Add.Filters.Add('CYCLE_NUM',fcEqualLess,CycleMax);
+    FDataSetCycles.Open;
+
+    if FDataSetCycles.Active and not FDataSetCycles.IsEmpty then begin
+
+      B:=FDataSet.GetBookmark;
+      
+      CheckAll(false,'SUCCESS');
+
+      FDataSetCycles.First;
+      while not FDataSetCycles.Eof do begin
+        Application.ProcessMessages;
+        if FBreaked then break;
+
+        CycleId:=FDataSetCycles.FieldByName('CYCLE_ID').Value;
+        CycleNum:=FDataSetCycles.FieldByName('CYCLE_NUM').AsInteger;
+
+        AddStatus(Format('Цикл %s',[IntToStr(CycleNum)]));
+
+        i:=1;
+        FDataSet.First;
+        while not FDataSet.Eof do begin
+          Application.ProcessMessages;
+          if FBreaked then break;
+
+          FGrid.UpdateRowNumber;
+                                                              
+          Checked:=Boolean(FDataSet.FieldByName('CHECK').AsInteger);
+          if Checked then begin
+            AddStatus(Format('%s ...',[FDataSet.FieldByName('PATH').AsString]));
+            Result:=RecalcCurrent(CycleId);
+            if Result then
+              AddStatus('успешно расчитан.')
+            else
+              AddStatus('расчитан с ошибкой.');
+            Update;
+            CoreIntf.MainForm.Progress(0,NCount,i);
+            inc(i);
+          end;
+          FDataSet.Next;
+        end;
+
+        FDataSetCycles.Next;
+      end;
+
+      if not FBreaked then begin
+        if Assigned(B) and FDataSet.BookmarkValid(B) then
+          FDataSet.GotoBookmark(B);
+      end;
+
+    end;
+    Result:=Result and not FBreaked;
+  finally
+    FInProcess:=false;
+    FGrid.UpdateRowNumber;
+    Screen.Cursor:=OldCursor;
+    CoreIntf.MainForm.Progress(0,0,0);
+  end;
+end;
+
+function TSgtsRecalcJournalObservationsForm.RecalcCurrent(CycleId: Variant): Boolean;
+var
+  Database: ISgtsDatabase;
+  DS: TSgtsDatabaseCDS;
+  OldCursor: TCursor;
+  Success: Boolean;
+  MeasureTypeId: Variant;
+begin
+  Result:=false;
+  Database:=nil;
+  OldCursor:=Screen.Cursor;
+  Screen.Cursor:=crHourGlass;
+  try
+    if Assigned(CoreIntf.DatabaseModules.Current) then
+      Database:=CoreIntf.DatabaseModules.Current.Database;
+    if Assigned(Database) then begin
+      if FDataSet.Active and not FDataSet.IsEmpty then begin
+
+        MeasureTypeId:=FDataSet.FieldByName('MEASURE_TYPE_ID').Value;
+
+        FDataSet.Edit;
+        FDataSet.FieldByName('SUCCESS').AsInteger:=0;
+        FDataSet.Post;
+
+        DS:=TSgtsDatabaseCDS.Create(CoreIntf);
+        try
+          DS.ProviderName:=SProviderConfirmAll;
+          with DS.ExecuteDefs do begin
+            AddValue('MEASURE_TYPE_ID',MeasureTypeId);
+            AddValue('CYCLE_ID',CycleId);
+            AddValue('WHO_CONFIRM',Database.AccountId);
+            AddValue('MORE',Null);
+            AddValue('WITH_CONFIRM',Null);
+          end;
+          DS.StopException:=true;
+          DS.Execute;
+          Success:=DS.ExecuteSuccess;
+        finally
+          DS.Free;
+        end;
+
+        FDataSet.Edit;
+        FDataSet.FieldByName('SUCCESS').AsInteger:=Integer(Success);
+        FDataSet.Post;
+
+        Result:=Success;
+
+      end;
+    end;
+  finally
+    Screen.Cursor:=OldCursor;
+  end;
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.GridKeyDown(Sender: TObject;
+  var Key: Word; Shift: TShiftState);
+begin
+  if Key=VK_SPACE then
+    GridDblClick(nil);
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.GridCellClick(Column: TColumn);
+begin
+  GridDblClick(nil);
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.GridDblClick(Sender: TObject);
+var
+  Flag: Boolean;
+begin
+  if FDataSet.Active and
+     not FDataSet.IsEmpty and
+     (FGrid.SelectedIndex in [0]) then begin
+    Flag:=Boolean(FDataSet.FieldByName('CHECK').AsInteger);
+    FDataSet.Edit;
+    FDataSet.FieldByName('CHECK').AsInteger:=Integer(not Flag);
+    FDataSet.Post;
+  end;
+end;
+
+procedure TSgtsRecalcJournalObservationsForm.CMDialogKey(var Message: TCMDialogKey);
+begin
+  with Message do
+    if  (CharCode = VK_ESCAPE) and
+        (KeyDataToShiftState(Message.KeyData) = []) then begin
+      if FInProcess then
+        FBreaked:=true;
+    end else
+      inherited;
+end;
+
+
+end.

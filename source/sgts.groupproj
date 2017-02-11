@@ -1,0 +1,124 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{79678889-141d-417d-8d16-40e860e87e63}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Projects Include="core.bpl\core.dproj" />
+    <Projects Include="kgesimport.dll\kgesimport.dproj" />
+    <Projects Include="objects.bpl\objects.dproj" />
+    <Projects Include="oraado.dll\oraado.dproj" />
+    <Projects Include="plan.dll\plan.dproj" />
+    <Projects Include="report.bpl\report.dproj" />
+    <Projects Include="sgts.exe\sgts.dproj" />
+    <Projects Include="sqledit.exe\sqledit.dproj" />
+    <Projects Include="tbledit.exe\tbledit.dproj" />
+    <Projects Include="test.dll\test.dproj" />
+  </ItemGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Default.Personality</Borland.Personality>
+    <Borland.ProjectType />
+    <BorlandProject>
+<BorlandProject xmlns=""><Default.Personality></Default.Personality></BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <Target Name="objects">
+    <MSBuild Projects="objects.bpl\objects.dproj" Targets="" />
+  </Target>
+  <Target Name="objects:Clean">
+    <MSBuild Projects="objects.bpl\objects.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="objects:Make">
+    <MSBuild Projects="objects.bpl\objects.dproj" Targets="Make" />
+  </Target>
+  <Target Name="report">
+    <MSBuild Projects="report.bpl\report.dproj" Targets="" />
+  </Target>
+  <Target Name="report:Clean">
+    <MSBuild Projects="report.bpl\report.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="report:Make">
+    <MSBuild Projects="report.bpl\report.dproj" Targets="Make" />
+  </Target>
+  <Target Name="core">
+    <MSBuild Projects="core.bpl\core.dproj" Targets="" />
+  </Target>
+  <Target Name="core:Clean">
+    <MSBuild Projects="core.bpl\core.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="core:Make">
+    <MSBuild Projects="core.bpl\core.dproj" Targets="Make" />
+  </Target>
+  <Target Name="sgts">
+    <MSBuild Projects="sgts.exe\sgts.dproj" Targets="" />
+  </Target>
+  <Target Name="sgts:Clean">
+    <MSBuild Projects="sgts.exe\sgts.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="sgts:Make">
+    <MSBuild Projects="sgts.exe\sgts.dproj" Targets="Make" />
+  </Target>
+  <Target Name="oraado">
+    <MSBuild Projects="oraado.dll\oraado.dproj" Targets="" />
+  </Target>
+  <Target Name="oraado:Clean">
+    <MSBuild Projects="oraado.dll\oraado.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="oraado:Make">
+    <MSBuild Projects="oraado.dll\oraado.dproj" Targets="Make" />
+  </Target>
+  <Target Name="sqledit">
+    <MSBuild Projects="sqledit.exe\sqledit.dproj" Targets="" />
+  </Target>
+  <Target Name="sqledit:Clean">
+    <MSBuild Projects="sqledit.exe\sqledit.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="sqledit:Make">
+    <MSBuild Projects="sqledit.exe\sqledit.dproj" Targets="Make" />
+  </Target>
+  <Target Name="tbledit">
+    <MSBuild Projects="tbledit.exe\tbledit.dproj" Targets="" />
+  </Target>
+  <Target Name="tbledit:Clean">
+    <MSBuild Projects="tbledit.exe\tbledit.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="tbledit:Make">
+    <MSBuild Projects="tbledit.exe\tbledit.dproj" Targets="Make" />
+  </Target>
+  <Target Name="kgesimport">
+    <MSBuild Projects="kgesimport.dll\kgesimport.dproj" Targets="" />
+  </Target>
+  <Target Name="kgesimport:Clean">
+    <MSBuild Projects="kgesimport.dll\kgesimport.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="kgesimport:Make">
+    <MSBuild Projects="kgesimport.dll\kgesimport.dproj" Targets="Make" />
+  </Target>
+  <Target Name="plan">
+    <MSBuild Projects="plan.dll\plan.dproj" Targets="" />
+  </Target>
+  <Target Name="plan:Clean">
+    <MSBuild Projects="plan.dll\plan.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="plan:Make">
+    <MSBuild Projects="plan.dll\plan.dproj" Targets="Make" />
+  </Target>
+  <Target Name="test">
+    <MSBuild Projects="test.dll\test.dproj" Targets="" />
+  </Target>
+  <Target Name="test:Clean">
+    <MSBuild Projects="test.dll\test.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="test:Make">
+    <MSBuild Projects="test.dll\test.dproj" Targets="Make" />
+  </Target>
+  <Target Name="Build">
+    <CallTarget Targets="objects;report;core;sgts;oraado;sqledit;tbledit;kgesimport;plan;test" />
+  </Target>
+  <Target Name="Clean">
+    <CallTarget Targets="objects:Clean;report:Clean;core:Clean;sgts:Clean;oraado:Clean;sqledit:Clean;tbledit:Clean;kgesimport:Clean;plan:Clean;test:Clean" />
+  </Target>
+  <Target Name="Make">
+    <CallTarget Targets="objects:Make;report:Make;core:Make;sgts:Make;oraado:Make;sqledit:Make;tbledit:Make;kgesimport:Make;plan:Make;test:Make" />
+  </Target>
+  <Import Condition="Exists('$(MSBuildBinPath)\Borland.Group.Targets')" Project="$(MSBuildBinPath)\Borland.Group.Targets" />
+</Project>

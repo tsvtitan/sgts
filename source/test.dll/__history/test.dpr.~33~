@@ -1,0 +1,22 @@
+library test;
+
+{$R *.res}
+                           
+uses
+  SgtsPlanGraphFm in 'SgtsPlanGraphFm.pas' {SgtsPlanGraphForm},
+  SgtsTestInterface in 'SgtsTestInterface.pas',
+  SgtsRbkTestEditFm in 'SgtsRbkTestEditFm.pas',
+  SgtsRbkTestFm in 'SgtsRbkTestFm.pas',
+  SgtsTest in 'SgtsTest.pas',
+  SgtsTestFm in 'SgtsTestFm.pas' {SgtsTestForm},
+  SgtsChildFm in '..\core.bpl\SgtsChildFm.pas' {SgtsChildForm},
+  SgtsDataEditFm in '..\core.bpl\SgtsDataEditFm.pas' {SgtsDataEditForm},
+  SgtsDataFm in '..\core.bpl\SgtsDataFm.pas' {SgtsDataForm},
+  SgtsDataGridFm in '..\core.bpl\SgtsDataGridFm.pas' {SgtsDataGridForm},
+  SgtsFm in '..\core.bpl\SgtsFm.pas' {SgtsForm};
+
+exports
+  InitInterface;
+      
+begin
+end.

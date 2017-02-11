@@ -1,0 +1,21 @@
+/* Создание процедуры удаления алгоритма у  вида измерения */
+
+CREATE OR REPLACE PROCEDURE D_MEASURE_TYPE_ALGORITHM
+( 
+  OLD_MEASURE_TYPE_ID IN INTEGER, 
+  OLD_ALGORITHM_ID IN INTEGER 
+) 
+AS 
+BEGIN 
+  DELETE FROM MEASURE_TYPE_ALGORITHMS 
+        WHERE MEASURE_TYPE_ID=OLD_MEASURE_TYPE_ID 
+          AND ALGORITHM_ID=OLD_ALGORITHM_ID; 
+  COMMIT;         
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+

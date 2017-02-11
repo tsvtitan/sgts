@@ -1,0 +1,8 @@
+/* Обновление полевого журнала */
+
+BEGIN
+   DELETE FROM JOURNAL_FIELDS
+         WHERE MEASURE_TYPE_ID = 70024 AND DATE_OBSERVATION = TO_DATE ('08.02.2006', 'DD.MM.YYYY');
+
+   COMMIT;
+END;

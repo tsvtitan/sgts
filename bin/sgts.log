@@ -1,0 +1,144 @@
+08.01.11 23:30:26.906 [Info]: [Core]: --------------------------------------------------
+08.01.11 23:30:26.906 [Info]: [Core]: Dir=E:\Work\sgts\bin
+08.01.11 23:30:26.906 [Info]: [Core]: Command line="E:\Work\sgts\bin\sgts.exe" 
+08.01.11 23:30:26.906 [Info]: [Core]: Mode=smDefault
+08.01.11 23:30:26.906 [Info]: [Core]: Module=E:\Work\sgts\bin\sgts.exe version=1.2.0.1 size=44032
+08.01.11 23:30:26.906 [Info]: [Core]: Module=E:\Work\sgts\bin\midas.dll version=11.0.2902.10471 size=360448
+08.01.11 23:30:26.906 [Info]: [Core]: Module=E:\Work\sgts\bin\objects.bpl version=1.2.0.1 size=1064448
+08.01.11 23:30:26.906 [Info]: [Core]: Module=E:\Work\sgts\bin\report.bpl version=1.2.0.1 size=2416128
+08.01.11 23:30:26.921 [Info]: [Core]: Module=E:\Work\sgts\bin\core.bpl version=1.2.0.1 size=2795008
+08.01.11 23:30:26.921 [Info]: [Core]: Module=E:\Work\sgts\bin\rtl100.bpl version=11.0.2902.10471 size=853504
+08.01.11 23:30:26.921 [Info]: [Core]: Module=E:\Work\sgts\bin\vcl100.bpl version=11.0.2902.10471 size=1874944
+08.01.11 23:30:26.921 [Info]: [Core]: Module=E:\Work\sgts\bin\dsnap100.bpl version=11.0.2902.10471 size=248320
+08.01.11 23:30:26.921 [Info]: [Core]: Module=E:\Work\sgts\bin\dbrtl100.bpl version=11.0.2902.10471 size=295936
+08.01.11 23:30:26.921 [Info]: [Core]: Module=E:\Work\sgts\bin\vcldb100.bpl version=11.0.2902.10471 size=274432
+08.01.11 23:30:26.921 [Info]: [Core]: Module=E:\Work\sgts\bin\vclx100.bpl version=11.0.2902.10471 size=198656
+08.01.11 23:30:26.921 [Info]: [Core]: Module=E:\Work\sgts\bin\vclsmp100.bpl version=11.0.2902.10471 size=64000
+08.01.11 23:30:26.921 [Info]: [Core]: Module=E:\Work\sgts\bin\vcljpg100.bpl version=11.0.2902.10471 size=97792
+08.01.11 23:30:26.921 [Info]: [Core]: Module=E:\Work\sgts\bin\tee7100.bpl version=7.0.10.0 size=630272
+08.01.11 23:30:26.921 [Info]: [Core]: Module=E:\Work\sgts\bin\teedb7100.bpl version=7.0.10.0 size=110080
+08.01.11 23:30:26.921 [Info]: [Core]: Module=E:\Work\sgts\bin\teeui7100.bpl version=7.0.10.0 size=551424
+08.01.11 23:30:26.921 [Info]: [Core]: Config text=
+[Core]
+Title=С Г Т С
+Splash=splash.jpg
+
+[DatabaseModules]
+OracleSgts=1
+OracleTest=1
+
+[OracleSgts]
+Caption=Основная БД (Oracle SGTS)
+FileName=oraado.dll
+ConnectionString=Provider=OraOLEDB.Oracle.1;Password=1;Persist Security Info=True;User ID=SGTS;Data Source=EMPTY;Extended Properties=""
+ConnectionTimeout=300
+LogPermissions=0
+OutputDir=u:\bin\output
+#MaxOutputRecords=100000
+FileProviders=providers.txt
+
+[OracleTest]
+Caption=Дополнительная БД (Oracle TEST)
+FileName=oraado.dll
+ConnectionString=Provider=OraOLEDB.Oracle.1;Password=1;Persist Security Info=True;User ID=SGTS;Data Source=TEST;Extended Properties=""
+ConnectionTimeout=300
+OutputDir=u:\bin\output
+#MaxOutputRecords=1000
+FileProviders=providers.txt
+
+[ReportModules]
+OracleReports=1
+OracleReports1=1
+
+[OracleReports]
+Caption=Oracle Reports
+FileName=orarpt.dll
+Filter=Файлы отчета (*.rep)|*.rep
+#FileRuntime=E:\oracle\ora83\BIN\RWRUN60.EXE
+ReportWindow=ui60SDIdocument_W32
+
+[OracleReports1]
+Caption=Oracle Reports1
+FileName=orarpt.dll
+Filter=Файлы отчета (*.*)|*.*
+
+[InterfaceModules]
+TestModule=1
+KgesImportModule=1
+PlanModule=1
+
+[TestModule]
+Caption=Тестовый модуль
+FileName=test.dll
+
+[PlanModule]
+Caption=Модуль планирования
+FileName=plan.dll
+
+[KgesImportModule]
+Caption=Модуль импорта для Красноярской ГЭС
+FileName=kgesimport.dll
+
+[Login]
+LastDatabase=Основная БД (Oracle SGTS)
+UserName=Разработчик
+Password=
+AutoLogon=0
+Left=482
+Top=433
+Width=315
+Height=158
+WindowState=0
+
+[Log]
+FileName=sgts.log
+Mode=1
+
+[ReportDesigner]
+IniFile=sgtsrd.ini
+
+[Menu]
+Помощь\Инструкция для Исполнителя=help.doc
+
+
+08.01.11 23:30:26.953 [Info]: [Splash]: Form create
+08.01.11 23:30:26.953 [Info]: [Splash]: Show
+08.01.11 23:30:26.984 [Info]: [OracleSgts]: Load module=oraado.dll start...
+08.01.11 23:30:26.984 [Info]: [OracleSgts]: Load module=oraado.dll version=1.2.0.1 size=239616 success
+08.01.11 23:30:27.031 [Info]: [OracleSgts]: Load module=oraado.dll init success
+08.01.11 23:30:27.031 [Info]: [OracleTest]: Load module=oraado.dll start...
+08.01.11 23:30:27.031 [Info]: [OracleTest]: Load module=oraado.dll version=1.2.0.1 size=239616 success
+08.01.11 23:30:27.046 [Info]: [OracleTest]: Load module=oraado.dll init success
+08.01.11 23:30:27.046 [Info]: [OracleReports]: Load module=orarpt.dll start...
+08.01.11 23:30:27.109 [Error]: [OracleReports]: Load module=orarpt.dll failed=Не найден указанный модуль
+08.01.11 23:30:27.109 [Info]: [OracleReports1]: Load module=orarpt.dll start...
+08.01.11 23:30:27.109 [Error]: [OracleReports1]: Load module=orarpt.dll failed=Не найден указанный модуль
+08.01.11 23:30:27.109 [Info]: [TestModule]: Load module=test.dll start...
+08.01.11 23:30:27.125 [Info]: [TestModule]: Load module=test.dll version=1.2.0.1 size=36352 success
+08.01.11 23:30:27.125 [Info]: [TestModule]: Load module=test.dll init success
+08.01.11 23:30:27.125 [Info]: [KgesImportModule]: Load module=kgesimport.dll start...
+08.01.11 23:30:27.125 [Info]: [KgesImportModule]: Load module=kgesimport.dll version=1.2.0.1 size=188416 success
+08.01.11 23:30:27.125 [Info]: [KgesImportModule]: Load module=kgesimport.dll init success
+08.01.11 23:30:27.125 [Info]: [PlanModule]: Load module=plan.dll start...
+08.01.11 23:30:27.140 [Info]: [PlanModule]: Load module=plan.dll version=1.2.0.1 size=187904 success
+08.01.11 23:30:27.140 [Info]: [PlanModule]: Load module=plan.dll init success
+08.01.11 23:30:28.156 [Info]: [Login]: Form create
+08.01.11 23:30:28.156 [Info]: [Login]: Show
+08.01.11 23:30:43.750 [Info]: [OracleSgts]: Login Account=Разработчик start...
+08.01.11 23:30:50.000 [Error]: [OracleSgts]: Login Account=Разработчик failed=Неверный пользователь или пароль.
+08.01.11 23:30:50.000 [Error]: [Core]: Exception=Не удается найти указанного поставщика. Вероятно, он установлен неправильно
+08.01.11 23:30:57.218 [Info]: [Login]: Form destroy
+08.01.11 23:30:57.218 [Info]: [TestModule]: Unload module=test.dll start...
+08.01.11 23:30:57.218 [Info]: [TestModule]: Unload module=test.dll success
+08.01.11 23:30:57.218 [Info]: [KgesImportModule]: Unload module=kgesimport.dll start...
+08.01.11 23:30:57.218 [Info]: [KgesImportModule]: Unload module=kgesimport.dll success
+08.01.11 23:30:57.218 [Info]: [PlanModule]: Unload module=plan.dll start...
+08.01.11 23:30:57.218 [Info]: [PlanModule]: Unload module=plan.dll success
+08.01.11 23:30:57.218 [Info]: [OracleReports]: Unload module=orarpt.dll start...
+08.01.11 23:30:57.218 [Error]: [OracleReports]: Unload module=orarpt.dll failed=Не найден указанный модуль
+08.01.11 23:30:57.218 [Info]: [OracleReports1]: Unload module=orarpt.dll start...
+08.01.11 23:30:57.218 [Error]: [OracleReports1]: Unload module=orarpt.dll failed=Не найден указанный модуль
+08.01.11 23:30:57.218 [Info]: [OracleSgts]: Unload module=oraado.dll start...
+08.01.11 23:30:57.218 [Info]: [OracleSgts]: Unload module=oraado.dll success
+08.01.11 23:30:57.218 [Info]: [OracleTest]: Unload module=oraado.dll start...
+08.01.11 23:30:57.234 [Info]: [OracleTest]: Unload module=oraado.dll success

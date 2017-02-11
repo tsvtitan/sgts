@@ -1,0 +1,23 @@
+/* Создание просмотра температуры бетона напряженно-деформированного состояния */
+
+CREATE OR REPLACE VIEW S_NDS_TEMP_CONCRETE
+AS 
+SELECT JO.CYCLE_NUM,
+       TO_NUMBER (JO.POINT_NAME) AS POINT_NAME,
+       JO.CONVERTER_NAME,
+       JO.TYPE,
+       JO.OBJECT_PATHS,
+       JO.COORDINATE_Z,
+       JO.DATE_OBSERVATION,
+       JO.VALUE_TEMPERATURE,
+       JO.MEASURE_TYPE_ID
+  FROM S_NDS_JOURNAL_OBSERVATIONS JO
+ WHERE NOT JO.VALUE_TEMPERATURE IS NULL
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

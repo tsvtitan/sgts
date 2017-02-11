@@ -1,0 +1,16 @@
+/* Создание таблицы документов */
+
+CREATE TABLE DOCUMENTS
+(
+  DOCUMENT_ID INTEGER NOT NULL, 
+  NAME VARCHAR2(100) NOT NULL,
+  DESCRIPTION VARCHAR2(250),
+  FILE_NAME VARCHAR2(250) NOT NULL,
+  PRIMARY KEY (DOCUMENT_ID)
+)
+
+--
+
+/* Фиксация изменений */
+
+COMMIT

@@ -1,0 +1,252 @@
+unit SgtsMTPlanTreeFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, DB, Grids, DBGrids,
+  SgtsFm, SgtsChildFm, SgtsCoreIntf, SgtsDatabaseCDS, SgtsProviders, ComCtrls,
+  DBTables, ExtCtrls, ImgList, SgtsDataFm, SgtsDataTreeFm, Menus, ToolWin,
+  DBCtrls, SgtsMTScheduleFrm,SgtsDataInsertFm, SgtsDataEditFmIntf, Unit2,SgtsDataInsertFmIntf;
+
+type
+  TSgtsMTPlanIface=class;
+
+  TSgtsMTTreeForm = class(TSgtsDataTreeForm)
+    Splitter1: TSplitter;
+    Panel1: TPanel;
+    PanelCaption: TPanel;
+    LabelCaption: TLabel;
+    Bevel1: TBevel;
+    Bevel3: TBevel;
+    Panel2: TPanel;
+    PageControlInfo: TPageControl;
+    TabSheetSchedule: TTabSheet;
+    TabSheetPlan: TTabSheet;
+  private
+    { Private declarations }
+    FDataSet: TSgtsDatabaseCDS;
+
+    procedure ActivateScheduleFrame;
+
+    function GetIface: TSgtsMTPlanIface;
+  public
+    { Public declarations }
+    SgtsMTScheduleFrame: TSgtsMTScheduleFrame;
+
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+
+    property Iface: TSgtsMTPlanIface read GetIface;
+
+    procedure UpdateButtons; virtual;
+
+  end;
+
+
+  TSgtsMTPlanIface = class(TSgtsDataTreeIface)
+  private
+    FOldObjectId: Variant;
+    function GetForm: TSgtsMTTreeForm;
+  protected
+    procedure DataSetAfterScroll(DataSet: TDataSet); override;
+  public
+    procedure Init; override;
+    property Form: TSgtsMTTreeForm read GetForm;
+  end;
+
+
+  TSgtsRbkMTPlanInsertIface=class(TSgtsDataInsertIface)
+  public
+    procedure Init; override;
+  end;
+
+
+var
+  SgtsMTTreeForm: TSgtsMTTreeForm;
+
+implementation
+
+{$R *.dfm}
+
+uses SgtsConsts, SgtsDatabaseIntf, SgtsRbkTestEditFm,
+     SgtsDialogs, SgtsCDS, SgtsGetRecordsConfig;
+
+{TSgtsMTPlanIface}
+
+
+
+
+
+
+
+
+
+procedure TSgtsMTPlanIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsMTTreeForm;
+  InterfaceName:='Планирование видов измерения';
+
+  with DataSet do begin
+    ProviderName:='MEASURE_TYPES';
+    with SelectDefs do begin
+      AddKey('MEASURE_TYPE_ID');
+      Add('NAME','Наименование');
+      AddInvisible('MEASURE_TYPE_ID');
+      AddInvisible('PARENT_ID');
+      AddInvisible('NAME');
+      AddInvisible('PRIORITY');
+    end;
+    KeyFieldName:='MEASURE_TYPE_ID';
+    ViewFieldName:='NAME';
+    ParentFieldName:='PARENT_ID';
+    CheckProvider:=false;
+  end;
+
+  MenuPath:=Format(SFunctionsMenu,['Планирование видов измерения']);
+  MenuIndex:=1004;
+  with Permissions do begin
+    AddDefault(SPermissionNameShow);
+  end;
+end;
+
+function TSgtsMTPlanIface.GetForm: TSgtsMTTreeForm;
+begin
+  Result:=TSgtsMTTreeForm(inherited Form);
+end;
+
+
+procedure TSgtsMTPlanIface.DataSetAfterScroll(DataSet: TDataSet);
+var
+  NewObjectId: Variant;
+  OldCursor: TCursor;
+begin
+  inherited DataSetAfterScroll(DataSet);
+  if DataSet.Active and not DataSet.IsEmpty then begin
+    if Assigned(Form) then begin
+      with Form do begin
+        NewObjectId:=DataSet.FieldByName('MEASURE_TYPE_ID').AsInteger;
+        if (FOldObjectId<>NewObjectId) then begin
+
+          OldCursor:=Screen.Cursor;
+          Screen.Cursor:=crHourGlass;
+          try
+
+            Form.LabelCaption.Caption:=DataSet.FieldByName('NAME').AsString;
+            ActivateScheduleFrame;
+            FOldObjectId:=NewObjectId;
+          finally
+            Screen.Cursor:=OldCursor;
+          end;
+        end;
+      end;
+    end;
+  end else
+  //UpdateButtons;
+end;
+
+
+function TSgtsMTTreeForm.GetIface: TSgtsMTPlanIface;
+begin
+  Result:=TSgtsMTPlanIface(inherited Iface);
+end;
+
+
+procedure TSgtsMTTreeForm.UpdateButtons;
+begin
+  {if Assigned(Form) then begin
+    with Form do begin
+      //UpdateMenuByButtons(MenuDataEdit);
+    end;
+  end;}
+end;
+
+
+
+{TSgtsMTTreeForm}
+
+constructor TSgtsMTTreeForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+
+  FDataSet:=TSgtsDataBaseCDS.Create(ACoreIntf);
+  FDataSet.ProviderName:='MEASURE_TYPES';
+
+  with FDataSet.SelectDefs do begin
+    AddInvisible('MEASURE_TYPE_ID');
+    AddInvisible('PARENT_ID');
+    AddInvisible('NAME');
+    AddInvisible('PRIORITY');
+  end;
+
+  FDataSet.CheckProvider:=false;
+  DataSource.DataSet:=FDataSet;
+  FDataSet.Close;
+  FDataSet.Open;
+  FDataSet.Orders.Add('PRIORITY', otAsc);
+  //ShowInfo('Record count = '+IntToStr(FDataSet.RecordCount));
+
+  SgtsMTScheduleFrame:=TSgtsMTScheduleFrame.Create(Self);
+  with SgtsMTScheduleFrame do begin
+    Name:='SgtsMTScheduleFrame';
+    Parent:=TabSheetSchedule;
+    with DataSet do begin
+      ProviderName:='S_MEASURE_ROUTES';
+      with SelectDefs do begin
+        Add('ROUTE_NAME','Маршрут');
+        AddInvisible('MEASURE_TYPE_ID');
+        AddInvisible('ROUTE_ID');
+      end;
+    end;
+  end;
+  SgtsMTScheduleFrame.InitByCore(CoreIntf);
+
+  PageControlInfo.ActivePage:=TabSheetSchedule;
+
+end;
+
+destructor TSgtsMTTreeForm.Destroy;
+begin
+  inherited Destroy;
+end;
+
+
+procedure TSgtsMTTreeForm.ActivateScheduleFrame;
+var
+  AObjectId: Variant;
+begin
+  AObjectId:=Iface.DataSet.FieldByName('MEASURE_TYPE_ID').Value;
+  with SgtsMTScheduleFrame do begin
+    CloseData;
+    with DataSet do begin
+      FilterGroups.Clear;
+      FilterGroups.Add.Filters.Add('MEASURE_TYPE_ID',fcEqual,AObjectId);
+    end;
+    OpenData;
+  end;
+end;
+
+
+
+{ TSgtsRbkMTPlanInsertIface }
+
+procedure TSgtsRbkMTPlanInsertIface.Init;
+begin
+  inherited Init;
+  FormClass:=TForm2;
+  InterfaceName:='Создание план - графика';
+  {with DataSet do begin
+    ProviderName:='I_TEST';
+    with ExecuteDefs do begin
+      AddKey('TEST_ID').ProviderName:='GET_TEST_ID';
+      AddEdit('NAME','EditName','LabelName',true);
+      AddMemo('DESCRIPTION','MemoNote','LabelNote',false);
+    end;
+    CheckProvider:=false;
+  end;
+}
+end;
+
+
+end.

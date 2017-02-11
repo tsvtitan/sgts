@@ -1,0 +1,38 @@
+inherited SgtsJrnGridForm: TSgtsJrnGridForm
+  Left = 547
+  Top = 165
+  Width = 449
+  Caption = #1046#1091#1088#1085#1072#1083
+  Constraints.MinWidth = 430
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited BevelStatus: TBevel
+    Width = 441
+  end
+  inherited StatusBar: TStatusBar
+    Width = 441
+  end
+  inherited PanelView: TPanel
+    Width = 406
+    inherited GridPattern: TDBGrid
+      Width = 400
+    end
+  end
+  inherited PanelButton: TPanel
+    Width = 441
+    DesignSize = (
+      441
+      39)
+    inherited ButtonCancel: TButton
+      Left = 360
+    end
+    inherited ButtonOk: TButton
+      Left = 278
+    end
+  end
+  inherited MainMenu: TMainMenu
+    inherited MenuData: TMenuItem
+      Caption = #1046#1091#1088#1085#1072#1083
+    end
+  end
+end

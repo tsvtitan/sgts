@@ -1,0 +1,53 @@
+unit SgtsAboutFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ExtCtrls, jpeg,
+  SgtsDialogFm, SgtsFm,
+  SgtsAboutFmIntf, SgtsCoreIntf;
+
+type
+  TSgtsAboutForm = class(TSgtsDialogForm)
+    Image: TImage;
+    BevelBottom: TBevel;
+    LabelCorporation: TLabel;
+    LabelPermissions: TLabel;
+    LabelTitle: TLabel;
+    BevelTop: TBevel;
+    LabelVersion: TLabel;
+  private
+    { Private declarations }
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+  end;
+
+  TSgtsAboutIface=class(TSgtsDialogIface,ISgtsAboutForm)
+  protected
+    function GetFormClass: TSgtsFormClass; override;
+  end;
+
+var
+  SgtsAboutForm: TSgtsAboutForm;
+
+implementation
+
+{$R *.dfm}
+
+{ TSgtsAboutIface }
+
+function TSgtsAboutIface.GetFormClass: TSgtsFormClass;
+begin
+  Result:=TSgtsAboutForm;
+end;
+
+{ TSgtsAboutForm }
+
+constructor TSgtsAboutForm.Create(ACoreIntf: ISgtsCore); 
+begin
+  inherited Create(ACoreIntf);
+  LabelTitle.Caption:=ACoreIntf.Title;
+end;
+
+end.

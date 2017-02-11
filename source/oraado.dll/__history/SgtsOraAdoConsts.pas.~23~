@@ -1,0 +1,303 @@
+unit SgtsOraAdoConsts;
+
+interface
+
+const
+  MaxVarchar2=4000;
+  MaxOutputRecords=100000;
+
+resourcestring
+  SInvalidUserNameOrPassword='Неверный пользователь или пароль.';
+
+  SConnectionParamDataSource='DATA_SOURCE';
+  SConnectionParamUserName='USER_NAME';
+  SConnectionParamPassword='PASSWORD';
+
+  SConnectionParamDataSourceDesc='База данных СГТС';
+  SConnectionParamUserNameDesc='Пользователь БД (Администратор)';
+  SConnectionParamPasswordDesc='Пароль пользователя БД';
+
+  SDbDataSource='';
+  SDbUserName='';
+  SDbPassword='';
+
+  SConnectionUserId='User ID';
+  SConnectionPassword='Password';
+  SConnectionDataSource='Data Source';
+
+  SConfigParamConnectionString='ConnectionString';
+  SConfigParamConnectionTimeout='ConnectionTimeout';
+  SConfigParamLogPermissions='LogPermissions';
+  SConfigParamOutputDir='OutputDir';
+  SConfigParamMaxOutputRecords='MaxOutputRecords';
+  SConfigParamFileProviders='FileProviders';
+
+  SORA='ORA-';
+  SSPPrmsLob='SPPrmsLob';
+  SSPPrmsLob='SPPrmsLob';
+  SSPPrmDefVal='SPPrmDefVal';
+
+  SReturn=#13#10;
+  SReturn2=#13#10#13#10;
+  SMinus2='--';
+  SBegin='BEGIN';
+  SEnd='END';
+  SCommit='COMMIT';
+  SCommit1='COMMIT;';
+  SEnd1='END;';
+  SFrom='FROM';
+  SWhere='WHERE';
+  SSpace=' ';
+  SNull='NULL';
+  SSequence='SEQUENCE';
+  SY='Y';
+  SN='N';
+  SCycle='CYCLE';
+  SNoCycle='NOCYCLE';
+  SOrder='ORDER';
+  SNoOrder='NOORDER';
+
+  SFieldAccountId='ACCOUNT_ID';
+  SFieldPassword='PASS';
+  SFieldDbUser='DB_USER';
+  SFieldDbPass='DB_PASS';
+  SFieldName='NAME';
+  SFieldRoleId='ROLE_ID';
+  SFieldMaxId='MAX_ID';
+  SFieldPersonnelId='PERSONNEL_ID';
+  SFieldFirstName='FIRST_NAME';
+  SFieldSecondName='SECOND_NAME';
+  SFieldLastName='LAST_NAME';
+  SFieldPermissionId='PERMISSION_ID';
+  SFieldDivisionId='DIVISION_ID';
+  SFieldObjectId='OBJECT_ID';
+  SFieldUnionType='UNION_TYPE';
+  SFieldPointManagementId='POINT_MANAGEMENT_ID';
+  SFieldPersonnelManagementId='PERSONNEL_MANAGEMENT_ID';
+  SFieldTreeId='TREE_ID';
+  SFieldTreeParentId='TREE_PARENT_ID';
+  SFieldParentId='PARENT_ID';
+  SFieldUnionId='UNION_ID';
+  SFieldUnionParentId='UNION_PARENT_ID';
+  SFieldPointTypeId='POINT_TYPE_ID';
+  SFieldPointId='POINT_ID';
+  SFieldRouteId='ROUTE_ID';
+  SFieldMeasureTypeId='MEASURE_TYPE_ID';
+  SFieldInstrumentTypeId='INSTRUMENT_TYPE_ID';
+  SFieldInstrumentId='INSTRUMENT_ID';
+  SFieldMeasureUnitId='MEASURE_UNIT_ID';
+  SFieldCycleId='CYCLE_ID';
+  SFieldPlanId='PLAN_ID';
+  SFieldGraphId='GRAPH_ID';
+  SFieldObjectTreeId='OBJECT_TREE_ID';
+  SFieldAlgorithmId='ALGORITHM_ID';
+  SFieldLevelId='LEVEL_ID';
+  SFieldParamId='PARAM_ID';
+  SFieldJournalFieldId='JOURNAL_FIELD_ID';
+  SFieldPersonnelName='PERSONNEL_NAME';
+  SFieldJournalObservationId='JOURNAL_OBSERVATION_ID';
+  SFieldFileReportId='FILE_REPORT_ID';
+  SFieldBaseReportId='BASE_REPORT_ID';
+  SFieldDocumentId='DOCUMENT_ID';
+  SFieldComponentId='COMPONENT_ID';
+  SFieldDeviceId='DEVICE_ID';
+  SFieldDrawingId='DRAWING_ID';
+  SFieldConverterPassportId='CONVERTER_PASSPORT_ID';
+  SFieldInstrumentPassportId='INSTRUMENT_PASSPORT_ID';
+  SFieldPointPassportId='POINT_PASSPORT_ID';
+  SFieldObjectPassportId='OBJECT_PASSPORT_ID';
+  SFieldIncrementBy='INCREMENT_BY';
+  SFieldMinValue='MIN_VALUE';
+  SFieldMaxValue='MAX_VALUE';
+  SFieldCycleFlag='CYCLE_FLAG';
+  SFieldOrderFlag='ORDER_FLAG';
+  SFieldCacheSize='CACHE_SIZE';
+  SFieldLastNumber='LAST_NUMBER';
+  SFieldInterfaceReportId='INTERFACE_REPORT_ID';
+  SFieldCheckingId='CHECKING_ID';
+  SFieldCutId='CUT_ID';
+  SFieldGroupId='GROUP_ID';
+  SFieldDefectViewId='DEFECT_VIEW_ID';
+  SFieldJournalCheckupId='JOURNAL_CHECKUP_ID';
+  SFieldDocCheckupId='DOC_CHECKUP_ID';
+  SFieldCriteriaId='CRITERIA_ID';
+
+  SProviderAliasSelectAccounts='S_ACCOUNTS';
+  SProviderAliasSelectRoles='S_ROLES';
+  SProviderAliasSelectPersonnels='S_PERSONNELS';
+  SProviderAliasSelectPersonnelOnlyPerformers='S_PERSONNEL_ONLY_PERFORMERS';
+  SProviderAliasSelectPermissions='S_PERMISSIONS';
+  SProviderAliasSelectRolesAndAccounts='ACCOUNTS';
+  SProviderAliasSelectAccountsRoles='S_ACCOUNTS_ROLES';
+  SProviderAliasSelectDivisions='S_DIVISIONS';
+  SProviderAliasSelectObjects='S_OBJECTS';
+  SProviderAliasSelectPersonnelManagement='S_PERSONNEL_MANAGEMENT';
+  SProviderAliasSelectPointManagement='S_POINT_MANAGEMENT';
+  SProviderAliasSelectPointTypes='S_POINT_TYPES';
+  SProviderAliasSelectPoints='S_POINTS';
+  SProviderAliasSelectRoutes='S_ROUTES';
+  SProviderAliasSelectMeasureTypes='S_MEASURE_TYPES';
+  SProviderAliasSelectInstrumentTypes='S_INSTRUMENT_TYPES';
+  SProviderAliasSelectInstruments='S_INSTRUMENTS';
+  SProviderAliasSelectMeasureUnits='S_MEASURE_UNITS';
+  SProviderAliasSelectInstrumentUnits='S_INSTRUMENT_UNITS';
+  SProviderAliasSelectRoutePoints='S_ROUTE_POINTS';
+  SProviderAliasSelectMeasureTypeRoutes='S_MEASURE_TYPE_ROUTES';
+  SProviderAliasSelectMeasureTypeInstruments='S_MEASURE_TYPE_INSTRUMENTS';
+  SProviderAliasSelectPersonnelRoutes='S_PERSONNEL_ROUTES';
+  SProviderAliasSelectCycles='S_CYCLES';
+  SProviderAliasSelectPlans='S_PLANS';
+  SProviderAliasSelectGraphs='S_GRAPHS';
+  SProviderAliasSelectObjectTrees='S_OBJECT_TREES';
+  SProviderAliasSelectAlgorithms='S_ALGORITHMS';
+  SProviderAliasSelectMeasureTypeAlgorithms='S_MEASURE_TYPE_ALGORITHMS';
+  SProviderAliasSelectLevels='S_LEVELS';
+  SProviderAliasSelectParams='S_PARAMS';
+  SProviderAliasSelectMeasureTypeParams='S_MEASURE_TYPE_PARAMS';
+  SProviderAliasSelectParamLevels='S_PARAM_LEVELS';
+  SProviderAliasSelectJournalFields='S_JOURNAL_FIELDS';
+  SProviderAliasSelectJournalObservations='S_JOURNAL_OBSERVATIONS';
+  SProviderAliasSelectMeasureTypePersonnels='S_MEASURE_TYPE_PERSONNELS';
+  SProviderAliasSelectFileReports='S_FILE_REPORTS';
+  SProviderAliasSelectBaseReports='S_BASE_REPORTS';
+  SProviderAliasSelectRouteObjects='S_ROUTE_OBJECTS';
+  SProviderAliasSelectMeasureTypePoints='S_MEASURE_TYPE_POINTS';
+  SProviderAliasSelectRouteConverters='S_ROUTE_CONVERTERS';
+  SProviderAliasSelectMeasureTypeConverters='S_MEASURE_TYPE_CONVERTERS';
+  SProviderAliasSelectParamInstruments='S_PARAM_INSTRUMENTS';
+  SProviderAliasSelectDocuments='S_DOCUMENTS';
+  SProviderAliasSelectPointDocuments='S_POINT_DOCUMENTS';
+  SProviderAliasSelectConverters='S_CONVERTERS';
+  SProviderAliasSelectComponents='S_COMPONENTS';
+  SProviderAliasSelectDevices='S_DEVICES';
+  SProviderAliasSelectDevicePoints='S_DEVICE_POINTS';
+  SProviderAliasSelectDrawings='S_DRAWINGS';
+  SProviderAliasSelectObjectDrawings='S_OBJECT_DRAWINGS';
+  SProviderAliasSelectObjectDocuments='S_OBJECT_DOCUMENTS';
+  SProviderAliasSelectConverterPassports='S_CONVERTER_PASSPORTS';
+  SProviderAliasSelectInstrumentPassports='S_INSTRUMENT_PASSPORTS';
+  SProviderAliasSelectPointPassports='S_POINT_PASSPORTS';
+  SProviderAliasSelectObjectPassports='S_OBJECT_PASSPORTS';
+  SProviderAliasSelectInstrumentComponents='S_INSTRUMENT_COMPONENTS';
+  SProviderAliasSelectJournalActions='S_JOURNAL_ACTIONS';
+  SProviderAliasSelectMeasureTypeUnits='S_MEASURE_TYPE_UNITS';
+  SProviderAliasSelectInterfaceReports='S_INTERFACE_REPORTS';
+  SProviderAliasSelectCheckings='S_CHECKINGS';
+  SProviderAliasSelectCuts='S_CUTS';
+  SProviderAliasSelectPointInstruments='S_POINT_INSTRUMENTS';
+  SProviderAliasSelectGmoJournalObservations='S_GMO_JOURNAL_OBSERVATIONS';
+  SProviderAliasSelectPzmJournalObservationsGmo='S_PZM_JOURNAL_OBSERVATIONS_GMO';
+  SProviderAliasSelectFltJournalObservationsGmo='S_FLT_JOURNAL_OBSERVATIONS_GMO';
+  SProviderAliasSelectHmzJournalObservationsGmo='S_HMZ_JOURNAL_OBSERVATIONS_GMO';
+  SProviderAliasSelectHmzIntensity='S_HMZ_INTENSITY';
+  SProviderAliasSelectTvlJournalObservationsGmo='S_TVL_JOURNAL_OBSERVATIONS_GMO';
+  SProviderAliasSelectIndJournalObservationsGmo='S_IND_JOURNAL_OBSERVATIONS_GMO';
+  SProviderAliasSelectSl1JournalObservationsGmo='S_SL1_JOURNAL_OBSERVATIONS_GMO';
+  SProviderAliasSelectSlwJournalObservationsGmo='S_SLW_JOURNAL_OBSERVATIONS_GMO';
+  SProviderAliasSelectSlfJournalObservationsGmo='S_SLF_JOURNAL_OBSERVATIONS_GMO';
+  SProviderAliasSelectOtvJournalObservationsGmo='S_OTV_JOURNAL_OBSERVATIONS_GMO';
+  SProviderAliasSelectSosJournalObservationsGmo='S_SOS_JOURNAL_OBSERVATIONS_GMO';
+  SProviderAliasSelectGroups='S_GROUPS';
+  SProviderAliasSelectGroupObjects='S_GROUP_OBJECTS';
+  SProviderAliasSelectDefectViews='S_DEFECT_VIEWS';
+  SProviderAliasSelectJournalCheckups='S_JOURNAL_CHECKUPS';
+  SProviderAliasSelectDocCheckups='S_DOC_CHECKUPS';
+  SProviderAliasSelectCriterias='S_CRITERIAS';
+  
+
+  SProviderAliasInsertAccount='ACCOUNTS';
+  SProviderAliasInsertRole='ACCOUNTS';
+  SProviderAliasInsertPersonnel='PERSONNELS';
+  SProviderAliasInsertPermission='PERMISSIONS';
+  SProviderAliasInsertAccountRole='ACCOUNTS_ROLES';
+  SProviderAliasInsertDivision='DIVISIONS';
+  SProviderAliasInsertObject='OBJECTS';
+  SProviderAliasInsertPersonnelManagement='';
+  SProviderAliasInsertPointManagement='';
+  SProviderAliasInsertPointType='POINT_TYPES';
+  SProviderAliasInsertPoint='POINTS';
+  SProviderAliasInsertRoute='ROUTES';
+  SProviderAliasInsertMeasureType='MEASURE_TYPES';
+  SProviderAliasInsertInstrumentType='INSTRUMENT_TYPES';
+  SProviderAliasInsertInstrument='INSTRUMENTS';
+  SProviderAliasInsertMeasureUnit='MEASURE_UNITS';
+  SProviderAliasInsertInstrumentUnit='INSTRUMENT_UNITS';
+  SProviderAliasInsertRoutePoint='ROUTE_POINTS';
+  SProviderAliasInsertMeasureTypeRoute='MEASURE_TYPE_ROUTES';
+  SProviderAliasInsertMeasureTypeInstrument='MEASURE_TYPE_INSTRUMENTS';
+  SProviderAliasInsertPersonnelRoute='PERSONNEL_ROUTES';
+  SProviderAliasInsertCycle='CYCLES';
+  SProviderAliasInsertPlan='PLANS';
+  SProviderAliasInsertGraph='GRAPHS';
+  SProviderAliasInsertObjectTree='OBJECT_TREES';
+  SProviderAliasInsertAlgorithm='ALGORITHMS';
+  SProviderAliasInsertMeasureTypeAlgorithm='MEASURE_TYPE_ALGORITHMS';
+  SProviderAliasInsertLevel='LEVELS';
+  SProviderAliasInsertParam='PARAMS';
+  SProviderAliasInsertMeasureTypeParam='MEASURE_TYPE_PARAMS';
+  SProviderAliasInsertParamLevel='PARAM_LEVELS';
+  SProviderAliasInsertJournalField='JOURNAL_FIELDS';
+  SProviderAliasInsertJournalObservation='JOURNAL_OBSERVATIONS';
+  SProviderAliasInsertFileReport='FILE_REPORTS';
+  SProviderAliasInsertBaseReport='BASE_REPORTS';
+  SProviderAliasInsertParamInstrument='PARAM_INSTRUMENTS';
+  SProviderAliasInsertDocument='DOCUMENTS';
+  SProviderAliasInsertPointDocument='POINT_DOCUMENTS';
+  SProviderAliasInsertConverter='CONVERTERS';
+  SProviderAliasInsertComponent='COMPONENTS';
+  SProviderAliasInsertDevice='DEVICES';
+  SProviderAliasInsertDevicePoint='DEVICE_POINTS';
+  SProviderAliasInsertDrawing='DRAWINGS';
+  SProviderAliasInsertObjectDrawing='OBJECT_DRAWINGS';
+  SProviderAliasInsertObjectDocument='OBJECT_DOCUMENTS';
+  SProviderAliasInsertConverterPassport='CONVERTER_PASSPORTS';
+  SProviderAliasInsertInstrumentPassport='INSTRUMENT_PASSPORTS';
+  SProviderAliasInsertPointPassport='POINT_PASSPORTS';
+  SProviderAliasInsertObjectPassport='OBJECT_PASSPORTS';
+  SProviderAliasInsertInterfaceReport='INTERFACE_REPORT';
+  SProviderAliasInsertChecking='CHECKINGS';
+  SProviderAliasInsertCut='CUTS';
+  SProviderAliasInsertPointInstrument='POINT_INSTRUMENTS';
+  SProviderAliasInsertGroup='GROUPS';
+  SProviderAliasInsertGroupObject='GROUP_OBJECTS';
+  SProviderAliasInsertDefectView='DEFECT_VIEWS';
+  SProviderAliasInsertJournalCheckup='JOURNAL_CHECKUPS';
+  SProviderAliasInsertDocCheckup='DOC_CHECKUPS';
+  SProviderAliasInsertCriteria='CRITERIAS';
+
+  SProviderKeyQueryInsertPersonnelManagement='(SELECT COUNT(*)+1 AS GET_TREE_ID FROM S_PERSONNEL_MANAGEMENT)';
+  SProviderKeyQueryDual='DUAL';
+
+  SSqlGetRecordsCount='SELECT COUNT(*) FROM (%s)';
+  SSqlGetRecords='SELECT %s FROM %s%s%s%s%s';
+  SSqlGetNewId1='SELECT GET_%s AS MAX_ID FROM %s';
+  SSqlGetNewId2='SELECT %s AS MAX_ID FROM %s';
+  SSqlExecuteInsert='INSERT INTO %s (%s) VALUES (%s);';
+  SSqlExecuteUpdate='UPDATE %s SET %s WHERE %s';
+  SSqlExecuteDelete='DELETE FROM %s WHERE %s';
+
+  SSqlGetUserParams='SELECT ACCOUNT_ID, PASS, DB_USER, DB_PASS, PERSONNEL_ID, '+
+                    'PERSONNEL_NAME, FIRST_NAME, SECOND_NAME, LAST_NAME '+
+                    'FROM S_ACCOUNTS WHERE NAME=%s AND IS_ROLE=0';
+  SSqlGetRoles='SELECT A.NAME, AR.ROLE_ID '+
+               'FROM ACCOUNTS_ROLES AR, ACCOUNTS A '+
+               'WHERE (AR.ROLE_ID = A.ACCOUNT_ID) AND (AR.ACCOUNT_ID=%s)';
+  SSqlGetPermission='SELECT INTERFACE, PERMISSION, PERMISSION_VALUE FROM PERMISSIONS '+
+                    'WHERE (ACCOUNT_ID=%s OR ACCOUNT_ID IN (%s))';
+  SSqlGetObjectType='SELECT OBJECT_TYPE FROM USER_OBJECTS WHERE UPPER(OBJECT_NAME)=UPPER(%s)';
+  SSqlGetSequence='SELECT * FROM USER_SEQUENCES WHERE UPPER(SEQUENCE_NAME)=UPPER(%s)';
+  SSqlDropSequence='DROP SEQUENCE %s';
+  SSqlCreateSequence='CREATE SEQUENCE %s'+#13#10+
+                     'START WITH %s'+#13#10+
+                     'INCREMENT BY %s'+#13#10+
+                     'MAXVALUE %s'+#13#10+
+                     'MINVALUE %s'+#13#10+
+                     '%s'+#13#10+
+                     'CACHE %s'+#13#10+
+                     '%s';
+   SSqlDeleteFromTable='DELETE FROM %s';                     
+   SSqlGetAccountAdjustment='SELECT ADJUSTMENT FROM ACCOUNTS WHERE ACCOUNT_ID=%s';
+
+implementation
+
+end.

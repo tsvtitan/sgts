@@ -1,0 +1,38 @@
+/* Создание просмотра видов измерения */
+
+CREATE OR REPLACE VIEW S_MEASURE_TYPES
+AS
+SELECT     MT1.MEASURE_TYPE_ID,
+           MT1.PARENT_ID,
+           MT1.NAME,
+           MT1.DESCRIPTION,
+           MT1.DATE_BEGIN,
+           MT1.IS_ACTIVE,
+           MT1.PRIORITY,
+           MT1.IS_VISUAL,
+           MT1.IS_BASE,
+           MT2.NAME AS PARENT_NAME,
+           LEVEL AS "LEVEL",
+           MT3.PATH
+      FROM MEASURE_TYPES MT1,
+           MEASURE_TYPES MT2,
+           (SELECT     MT.MEASURE_TYPE_ID,
+                       SUBSTR (MAX (SYS_CONNECT_BY_PATH (MT.NAME, '\')), 2) AS PATH
+                  FROM MEASURE_TYPES MT
+            START WITH MT.PARENT_ID IS NULL
+            CONNECT BY MT.PARENT_ID = PRIOR MT.MEASURE_TYPE_ID
+              GROUP BY MT.MEASURE_TYPE_ID) MT3
+     WHERE MT1.PARENT_ID = MT2.MEASURE_TYPE_ID(+)
+       AND MT1.MEASURE_TYPE_ID = MT3.MEASURE_TYPE_ID
+START WITH MT1.PARENT_ID IS NULL
+CONNECT BY MT1.PARENT_ID = PRIOR MT1.MEASURE_TYPE_ID
+  ORDER BY LEVEL,
+           MT1.PRIORITY
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+
+

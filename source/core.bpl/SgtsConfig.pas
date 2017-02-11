@@ -1,0 +1,224 @@
+unit SgtsConfig;
+
+interface
+
+uses Classes, IniFiles,
+     SgtsCoreObj,
+     SgtsConfigIntf, SgtsCoreIntf;
+
+type
+
+
+  TSgtsConfig=class(TSgtsCoreObj,ISgtsConfig)
+  private
+    FConfig: TMemIniFile;
+    FFileName: String;
+
+    function GetText: String;
+  protected
+    function _GetFileName: String;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+
+    procedure LoadFromStream(Stream: TStream);
+    procedure SaveToStream(Stream: TStream);
+    procedure LoadFromFile(const FileName: string);
+    procedure SaveToFile(const FileName: string);
+    procedure UpdateFile;
+    procedure LoadFromString(const S: String);
+
+    procedure Write(const Section,Param: String; Value: Variant; Mode: TSgtsConfigMode=cmDefault);
+    function Read(const Section,Param: String; Default: Variant; Mode: TSgtsConfigMode=cmDefault): Variant;
+
+    procedure ReadSection(const Section: String; Strings: TStrings);
+    procedure ReadSectionValues(const Section: String; Strings: TStrings);
+
+    property Text: String read GetText;
+    property FileName: String read FFileName;
+  end;
+
+implementation
+
+uses SysUtils, Variants, TypInfo,
+     SgtsUtils, SgtsBase64;
+
+{ TSgtsConfig }
+
+constructor TSgtsConfig.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+  FConfig:=TMemIniFile.Create('');
+end;
+
+destructor TSgtsConfig.Destroy; 
+begin
+  FreeAndNil(FConfig);
+  inherited Destroy;
+end;
+
+procedure TSgtsConfig.LoadFromStream(Stream: TStream);
+var
+  List: TStringList;
+begin
+  List := TStringList.Create;
+  try
+    List.LoadFromStream(Stream);
+    FConfig.SetStrings(List);
+  finally
+    List.Free;
+  end;
+end;
+
+procedure TSgtsConfig.SaveToStream(Stream: TStream);
+var
+  List: TStringList;
+begin
+  List := TStringList.Create;
+  try
+    FConfig.GetStrings(List);
+    List.SaveToStream(Stream);
+  finally
+    List.Free;
+  end;
+end;
+
+procedure TSgtsConfig.LoadFromFile(const FileName: string);
+var
+  fs: TFileStream;
+begin
+  fs:=nil;
+  try
+    fs:=TFileStream.Create(FileName,fmOpenRead);
+    LoadFromStream(fs);
+    FFileName:=FileName;
+  finally
+    fs.Free;
+  end;
+end;
+
+procedure TSgtsConfig.SaveToFile(const FileName: string);
+var
+  fs: TFileStream;
+begin
+  fs:=nil;
+  try
+    fs:=TFileStream.Create(FileName,fmCreate);
+    SaveToStream(fs);
+  finally
+    fs.Free;
+  end;
+end;
+
+function TSgtsConfig._GetFileName: String;
+begin
+  Result:=FFileName;
+end;
+
+procedure TSgtsConfig.Write(const Section,Param: String; Value: Variant; Mode: TSgtsConfigMode=cmDefault);
+begin
+  case VarType(Value) of
+     varSmallint, varInteger, varShortInt, varByte, varWord, varLongWord, varInt64: begin
+       FConfig.WriteInteger(Section,Param,Value);
+     end;
+     varOleStr, varStrArg, varString: begin
+       case Mode of
+         cmDefault: FConfig.WriteString(Section,Param,Value);
+         cmBase64: FConfig.WriteString(Section,Param,StrToBase64(Value));
+       end;
+     end;
+     varBoolean: begin
+       FConfig.WriteBool(Section,Param,Value);
+     end;
+     varSingle, varDouble, varCurrency: begin
+       FConfig.WriteFloat(Section,Param,Value);
+     end;
+     varDate: begin
+       FConfig.WriteDateTime(Section,Param,Value);
+     end;
+  else
+    case Mode of
+      cmDefault: FConfig.WriteString(Section,Param,VarToStrDef(Value,''));
+      cmBase64: FConfig.WriteString(Section,Param,StrToBase64(VarToStrDef(Value,''))); 
+    end;
+  end;
+end;
+
+function TSgtsConfig.Read(const Section,Param: String; Default: Variant; Mode: TSgtsConfigMode=cmDefault): Variant;
+var
+  V: Word;
+  S: String;
+begin
+  V:=VarType(Default);
+  case V of
+     varSmallint, varInteger, varShortInt, varByte, varWord, varLongWord, varInt64: begin
+       Result:=FConfig.ReadInteger(Section,Param,Default);
+     end;
+     varOleStr, varStrArg, varString: begin
+       case Mode of
+         cmDefault: Result:=FConfig.ReadString(Section,Param,Default);
+         cmBase64: Result:=Base64ToStr(FConfig.ReadString(Section,Param,StrToBase64(Default)));
+       end;
+     end;
+     varBoolean: begin
+       Result:=FConfig.ReadBool(Section,Param,Default);
+     end;
+     varSingle, varDouble, varCurrency: begin
+       Result:=FConfig.ReadFloat(Section,Param,Default);
+     end;
+     varDate: begin
+       Result:=FConfig.ReadDateTime(Section,Param,Default);
+     end;
+  else
+    S:=FConfig.ReadString(Section,Param,VarToStrDef(Default,''));
+    case Mode of
+//      cmDefault: Result:=VarAsType(S,V);
+//      cmBase64: Result:=VarAsType(Base64ToStr(S),V);
+      cmDefault: Result:=S;
+      cmBase64: Result:=Base64ToStr(S);
+    end;
+  end;
+end;
+
+procedure TSgtsConfig.ReadSection(const Section: String; Strings: TStrings);
+begin
+  FConfig.ReadSection(Section,Strings);
+end;
+
+procedure TSgtsConfig.ReadSectionValues(const Section: String; Strings: TStrings);
+begin
+  FConfig.ReadSectionValues(Section,Strings);
+end;
+
+procedure TSgtsConfig.UpdateFile;
+begin
+  SaveToFile(FFileName);
+end;
+
+procedure TSgtsConfig.LoadFromString(const S: String);
+var
+  Stream: TStringStream;
+begin
+  Stream:=TStringStream.Create(S);
+  try
+    Stream.Position:=0;
+    LoadFromStream(Stream);
+  finally
+    Stream.Free;
+  end;
+end;
+
+function TSgtsConfig.GetText: String;
+var
+  List: TStringList;
+begin
+  List := TStringList.Create;
+  try
+    FConfig.GetStrings(List);
+    Result:=List.Text;
+  finally
+    List.Free;
+  end;
+end;
+
+end.

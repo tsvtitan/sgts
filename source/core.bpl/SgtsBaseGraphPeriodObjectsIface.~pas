@@ -1,0 +1,156 @@
+unit SgtsBaseGraphPeriodObjectsIface;
+
+interface
+
+uses Classes, Contnrs,
+     SgtsCoreIntf, SgtsBaseGraphPeriodIface,
+     SgtsBaseGraphPeriodObjectsRefreshFm;
+
+type
+  TSgtsBaseGraphPeriodObjectsIface=class;
+
+
+  TSgtsBaseGraphPeriodObjectsIface=class(TSgtsBaseGraphPeriodIface)
+  private
+    function GetRefreshIface: TSgtsBaseGraphPeriodObjectsRefreshIface;
+  protected
+    procedure CreateAllSeriesByAxisParams; override;
+    procedure CreateDataSetFilters; override;
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+    destructor Destroy; override;
+    procedure Init; override;
+
+    property RefreshIface: TSgtsBaseGraphPeriodObjectsRefreshIface read GetRefreshIface;
+  end;
+
+implementation
+
+uses Sysutils, Variants,
+     SgtsConsts, SgtsGraphFm, SgtsGetRecordsConfig, SgtsBaseGraphRefreshFm, SgtsConfig,
+     SgtsGraphChartSeriesDefs, SgtsUtils, SgtsBaseGraphPeriodRefreshFm, SgtsDatabaseCDS,
+     SgtsBaseGraphFm;
+
+{ TSgtsBaseGraphPeriodObjectsIface }
+
+constructor TSgtsBaseGraphPeriodObjectsIface.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+end;
+
+destructor TSgtsBaseGraphPeriodObjectsIface.Destroy; 
+begin
+  inherited Destroy;
+end;
+
+procedure TSgtsBaseGraphPeriodObjectsIface.Init;
+begin
+  inherited Init;
+  RefreshClass:=TSgtsBaseGraphPeriodObjectsRefreshIface;
+end;
+
+function TSgtsBaseGraphPeriodObjectsIface.GetRefreshIface: TSgtsBaseGraphPeriodObjectsRefreshIface;
+begin
+  Result:=TSgtsBaseGraphPeriodObjectsRefreshIface(inherited RefreshIface);
+end;
+
+procedure TSgtsBaseGraphPeriodObjectsIface.CreateAllSeriesByAxisParams;
+
+  procedure CreateAxisByFiltersWithOutHistory(Param: TSgtsBaseGraphAxisParam);
+  var
+    Filter: TSgtsBaseGraphObjectFilter;
+    S: String;
+    Str: TStringList;
+    i: Integer;
+  begin
+    Str:=TStringList.Create;
+    try
+      DefaultDataSet.Filter:='';
+      DefaultDataSet.Filtered:=false;
+      for i:=0 to FFilters.Count-1 do begin
+        Filter:=FFilters.Items[i];
+        S:=Format('%s=%s',[Filter.FieldName,QuotedStr(VarToStrDef(Filter.Value,''))]);
+        Str.Add(S);
+        CreateSeriesByAxisParams(RefreshIface.LeftAxisParams,atLeftBottom,Param,true,DefaultDataSet,S,Filter.Caption);
+        CreateSeriesByAxisParams(RefreshIface.RightAxisParams,atRightBottom,Param,true,DefaultDataSet,S,Filter.Caption);
+      end;
+      S:=GetFilterString(Str,'OR');
+      CreateSeriesByAxisParams(RefreshIface.LeftAxisParams,atLeftBottom,Param,false,DefaultDataSet,S);
+      CreateSeriesByAxisParams(RefreshIface.RightAxisParams,atRightBottom,Param,false,DefaultDataSet,S);
+      for i:=0 to FFilters.Count-1 do begin
+        DefaultDataSet.SelectDefs.AddInvisible(FFilters.Items[i].FieldName);
+      end;
+    finally
+      Str.Free;
+    end;
+  end;
+  
+var
+  Param: TSgtsBaseGraphAxisParam;
+  Filter: TSgtsBaseGraphObjectFilter;
+  Str: TStringList;
+  History: TSgtsBaseGraphHistory;
+  DataSet: TSgtsDatabaseCDS;
+  S: String;
+  S1: String;
+  i,j: Integer;
+begin
+  if Assigned(RefreshIface) then begin
+    FFilters.Fill;
+    ClearHistoryDataSets;
+    Param:=RefreshIface.BottomAxisParams.GetFirstCheck;
+    if Assigned(Param) then begin
+      if RefreshIface.Histories.Count>0 then begin
+        if FFilters.Count>0 then begin
+          CreateAxisByFiltersWithOutHistory(Param);
+          for i:=0 to RefreshIface.Histories.Count-1 do begin
+            History:=RefreshIface.Histories.Items[i];
+            DataSet:=CreateDataSet(ProviderName);
+            HistoryDataSets.Add(DataSet);
+            Str:=TStringList.Create;
+            try
+              for j:=0 to FFilters.Count-1 do begin
+                Filter:=FFilters.Items[j];
+                S:=Format('%s=%s',[Filter.FieldName,QuotedStr(VarToStrDef(Filter.Value,''))]);
+                Str.Add(S);
+                S1:=Format('%s. %s',[Filter.Caption,History.Caption]);
+                CreateSeriesByAxisParams(RefreshIface.LeftAxisParams,atLeftBottom,Param,true,DataSet,S,S1,false);
+                CreateSeriesByAxisParams(RefreshIface.RightAxisParams,atRightBottom,Param,true,DataSet,S,S1,false);
+              end;
+              S:=GetFilterString(Str,'OR');
+              CreateSeriesByAxisParams(RefreshIface.LeftAxisParams,atLeftBottom,Param,false,DataSet,S,History.Caption,false);
+              CreateSeriesByAxisParams(RefreshIface.RightAxisParams,atRightBottom,Param,false,DataSet,S,History.Caption,false);
+              for j:=0 to FFilters.Count-1 do begin
+                DataSet.SelectDefs.AddInvisible(FFilters.Items[j].FieldName);
+              end;
+            finally
+              Str.Free;
+            end;
+          end;
+        end else
+          inherited CreateAllSeriesByAxisParams;
+      end else begin
+        if FFilters.Count>0 then begin
+          CreateAxisByFiltersWithOutHistory(Param);
+        end else
+          inherited CreateAllSeriesByAxisParams;
+      end;
+    end;
+  end;
+end;
+
+procedure TSgtsBaseGraphPeriodObjectsIface.CreateDataSetFilters;
+var
+  i: Integer;
+begin
+  inherited CreateDataSetFilters;
+  if Assigned(RefreshIface) then begin
+    for i:=0 to DataSets.Count-1 do begin
+      with DataSets.Items[i].FilterGroups.Add do begin
+        Filters.Add('GROUP_ID',fcEqual,RefreshIface.GroupId);
+      end;
+    end;
+  end;
+end;
+
+end.

@@ -1,0 +1,13 @@
+unit SgtsReportDesign;
+
+interface
+
+uses frxDesgn;
+
+type
+
+  TSgts
+
+implementation
+
+end.

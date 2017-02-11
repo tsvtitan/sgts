@@ -1,0 +1,24 @@
+unit SgtsFastReportFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, SgtsReportFm;
+
+type
+  TSgtsReportForm1 = class(TSgtsReportForm)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  SgtsReportForm1: TSgtsReportForm1;
+
+implementation
+
+{$R *.dfm}
+
+end.

@@ -1,0 +1,271 @@
+unit SgtsFunDivisionIfaces;
+
+interface
+
+uses DB, SgtsExecuteDefs, SgtsRbkDivisionEditFm;
+
+type
+  TSgtsFunDivisionInsertIface=class(TSgtsRbkDivisionInsertIface)
+  private
+    FTreeId: TSgtsExecuteDefKey;
+    FTreeParentIdDef: TSgtsExecuteDefCalc;
+    function GetTreeParentId(Def: TSgtsExecuteDefCalc): Variant;
+  protected
+    function GetPriority: Variant; override;
+  public
+    procedure Init; override;
+    function CanShow: Boolean; override;
+    procedure SetDefValues; override;
+  end;
+
+  TSgtsFunDivisionInsertChildIface=class(TSgtsRbkDivisionInsertChildIface)
+  private
+    FTreeId: TSgtsExecuteDefKey;
+    FTreeParentIdDef: TSgtsExecuteDefCalc;
+    function GetTreeParentId(Def: TSgtsExecuteDefCalc): Variant;
+  protected
+    function GetPriority: Variant; override;
+  public
+    procedure Init; override;
+    function CanShow: Boolean; override;
+    procedure SetDefValues; override;
+  end;
+
+  TSgtsFunDivisionUpdateIface=class(TSgtsRbkDivisionUpdateIface)
+  private
+    function GetTreeParentId(Def: TSgtsExecuteDefCalc): Variant;
+  protected
+    function GetPriority: Variant; override;
+  public
+    procedure Init; override;
+    procedure SetDefValues; override;
+  end;
+
+  TSgtsFunDivisionDeleteIface=class(TSgtsRbkDivisionDeleteIface)
+  private
+    FDivisionIdDef: TSgtsExecuteDefKeyLink;
+    FNameDef: TSgtsExecuteDefInvisible;
+  protected
+  public
+    procedure Init; override;
+    procedure SetDefValues; override;
+  end;
+
+
+implementation
+
+uses Variants, SysUtils,
+     SgtsConsts, SgtsProviderConsts, SgtsFunPersonnelManagementFm,
+     SgtsCDS, SgtsUtils, SgtsDataIfaceIntf;
+
+function InternalGetTreeParentId(IfaceIntf: ISgtsDataIface; Def: TSgtsExecuteDefCalc; ParentIdDef: TSgtsExecuteDefEditLink): Variant;
+var
+  DS: TSgtsCDS;
+begin
+  Result:=Def.DefaultValue;
+  if VarIsNull(ParentIdDef.Value) then
+    Result:=Null;
+  if Assigned(IfaceIntf) and not VarIsNull(ParentIdDef.Value) then begin
+    DS:=TSgtsCDS.Create(nil);
+    try
+      DS.Data:=IfaceIntf.DataSet.Data;
+      DS.Filter:=Format('UNION_ID=%s AND UNION_TYPE=%d',[VarToStrDef(ParentIdDef.Value,'NULL'),Integer(utDivision)]);
+      DS.Filtered:=true;
+      if DS.Active and not DS.IsEmpty then
+        Result:=DS.FieldByName('TREE_ID').Value;
+    finally
+      DS.Free;
+    end;
+  end;
+end;
+
+function InternalGetPriority(IfaceIntf: ISgtsDataIface; ParentIdDef: TSgtsExecuteDefEditLink): Variant;
+var
+  DS: TSgtsCDS;
+  ParentId: Variant;
+begin
+  Result:=1;
+  with IfaceIntf do begin
+    if DataSet.Active and not DataSet.IsEmpty then begin
+      ParentId:=ParentIdDef.Value;
+      DS:=TSgtsCDS.Create(nil);
+      try
+        DS.Data:=DataSet.Data;
+        DS.AddIndexDef('PRIORITY',tsAsc);
+        DS.Filter:=Format('UNION_PARENT_ID=%s AND UNION_TYPE=%d',[iff(VarIsNull(ParentId),'NULL',VarToStr(ParentId)),Integer(utDivision)]);
+        DS.Filtered:=true;
+        DS.SetIndexBySort('PRIORITY',tsAsc);
+        DS.Last;
+        Result:=DS.FieldByName('PRIORITY').AsInteger+1;
+      finally
+        DS.Free;
+      end;
+    end;
+  end;
+end;
+
+{ TSgtsFunDivisionInsertIface }
+
+procedure TSgtsFunDivisionInsertIface.Init; 
+begin
+  inherited Init;
+  with DataSet.ExecuteDefs do begin
+    IdDef.Twins.Add('UNION_ID');
+    AddInvisible('UNION_TYPE',ptUnknown).Value:=utDivision;
+    ParentIdDef.Twins.Add('UNION_PARENT_ID');
+    FTreeId:=AddKey('TREE_ID',ptUnknown);
+    FTreeId.ProviderName:=SProviderInsertPersonnelManagement;
+    FTreeParentIdDef:=AddCalc('TREE_PARENT_ID',GetTreeParentId,ptUnknown);
+  end;
+end;
+
+function TSgtsFunDivisionInsertIface.CanShow: Boolean;
+begin
+  Result:=inherited CanShow and
+          Assigned(IfaceIntf) and
+          IfaceIntf.DataSet.Active;
+  if Result then
+    if not IfaceIntf.DataSet.IsEmpty then begin
+      with IfaceIntf.DataSet do
+        Result:=TSgtsFunPersonnelManagementIfaceUnionType(FieldByName('UNION_TYPE').AsInteger)=utDivision;
+    end;
+end;
+
+procedure TSgtsFunDivisionInsertIface.SetDefValues;
+begin
+  inherited SetDefValues;
+  if Assigned(IfaceIntf) then begin
+    with IfaceIntf.DataSet do begin
+      ParentIdDef.DefaultValue:=FieldByName('UNION_PARENT_ID').Value;
+      ParentIdDef.SetDefaults;
+      PriorityDef.DefaultValue:=GetPriority;
+      PriorityDef.SetDefaults;
+      FTreeParentIdDef.DefaultValue:=FieldByName('TREE_PARENT_ID').Value;
+      FTreeParentIdDef.SetDefaults;
+    end;
+  end;
+end;
+
+function TSgtsFunDivisionInsertIface.GetPriority: Variant;
+begin
+  Result:=InternalGetPriority(IfaceIntf,ParentIdDef);
+end;
+
+function TSgtsFunDivisionInsertIface.GetTreeParentId(Def: TSgtsExecuteDefCalc): Variant;
+begin
+  Result:=InternalGetTreeParentId(IfaceIntf,Def,ParentIdDef);
+end;
+
+{ TSgtsFunDivisionInsertChildIface }
+
+procedure TSgtsFunDivisionInsertChildIface.Init;
+begin
+  inherited Init;
+  with DataSet.ExecuteDefs do begin
+    IdDef.Twins.Add('UNION_ID');
+    AddInvisible('UNION_TYPE',ptUnknown).Value:=utDivision;
+    ParentIdDef.Twins.Add('UNION_PARENT_ID');
+    FTreeId:=AddKey('TREE_ID',ptUnknown);
+    FTreeId.ProviderName:=SProviderInsertPersonnelManagement;
+    FTreeParentIdDef:=AddCalc('TREE_PARENT_ID',GetTreeParentId,ptUnknown);
+  end;
+end;
+
+function TSgtsFunDivisionInsertChildIface.CanShow: Boolean;
+begin
+  Result:=inherited CanShow and
+          Assigned(IfaceIntf) and
+          IfaceIntf.DataSet.Active and
+          not IfaceIntf.DataSet.IsEmpty;
+  if Result then
+    with IfaceIntf.DataSet do
+      Result:=TSgtsFunPersonnelManagementIfaceUnionType(FieldByName('UNION_TYPE').AsInteger) in [utDivision];
+end;
+
+procedure TSgtsFunDivisionInsertChildIface.SetDefValues;
+begin
+  inherited SetDefValues;
+  if Assigned(IfaceIntf) then begin
+    with IfaceIntf.DataSet do begin
+      ParentIdDef.DefaultValue:=FieldByName('UNION_ID').Value;
+      ParentIdDef.SetDefaults;
+      PriorityDef.DefaultValue:=GetPriority;
+      PriorityDef.SetDefaults;
+      FTreeParentIdDef.DefaultValue:=FieldByName('TREE_ID').Value;
+      FTreeParentIdDef.SetDefaults;
+    end;
+  end;
+end;
+
+function TSgtsFunDivisionInsertChildIface.GetPriority: Variant;
+begin
+  Result:=InternalGetPriority(IfaceIntf,ParentIdDef);
+end;
+
+function TSgtsFunDivisionInsertChildIface.GetTreeParentId(Def: TSgtsExecuteDefCalc): Variant;
+begin
+  Result:=InternalGetTreeParentId(IfaceIntf,Def,ParentIdDef);
+end;
+
+{ TSgtsFunDivisionUpdateIface }
+
+procedure TSgtsFunDivisionUpdateIface.Init;
+begin
+  inherited Init;
+  with DataSet.ExecuteDefs do begin
+    IdDef.Twins.Add('UNION_ID');
+    AddInvisible('UNION_TYPE',ptUnknown).Value:=utDivision;
+    ParentIdDef.Twins.Add('UNION_PARENT_ID');
+    AddKeyLink('TREE_ID',ptUnknown);
+    AddCalc('TREE_PARENT_ID',GetTreeParentId,ptUnknown);
+  end;
+end;
+
+procedure TSgtsFunDivisionUpdateIface.SetDefValues;
+begin
+  inherited SetDefValues;
+  if Assigned(IfaceIntf) then begin
+    with IfaceIntf.DataSet do begin
+      ParentIdDef.DefaultValue:=FieldByName('UNION_PARENT_ID').Value;
+      ParentIdDef.SetDefaults;
+    end;
+  end;
+end;
+
+function TSgtsFunDivisionUpdateIface.GetPriority: Variant;
+begin
+  Result:=InternalGetPriority(IfaceIntf,ParentIdDef);
+end;
+
+function TSgtsFunDivisionUpdateIface.GetTreeParentId(Def: TSgtsExecuteDefCalc): Variant;
+begin
+  Result:=InternalGetTreeParentId(IfaceIntf,Def,ParentIdDef);
+end;
+
+{ TSgtsFunDivisionDeleteIface }
+
+procedure TSgtsFunDivisionDeleteIface.Init;
+begin
+  inherited Init;
+  with DataSet.ExecuteDefs do begin
+    FDivisionIdDef:=TSgtsExecuteDefKeyLink(Find('DIVISION_ID'));
+    FNameDef:=TSgtsExecuteDefInvisible(Find('NAME'));
+    AddKeyLink('TREE_ID').ParamType:=ptUnknown;
+  end;
+end;
+
+procedure TSgtsFunDivisionDeleteIface.SetDefValues;
+begin
+  inherited SetDefValues;
+  if Assigned(IfaceIntf) then begin
+    with IfaceIntf.DataSet do begin
+      FDivisionIdDef.DefaultValue:=FieldByName('UNION_ID').Value;
+      FDivisionIdDef.SetDefaults;
+
+      FNameDef.DefaultValue:=FieldByName('NAME_EX').Value;
+      FNameDef.SetDefaults;
+    end;
+  end;
+end;
+
+end.

@@ -1,0 +1,288 @@
+/* Создание типа объекта Отвесов журнала наблюдений */
+
+CREATE OR REPLACE TYPE OTV_JOURNAL_OBSERVATION_OBJECT AS OBJECT
+(
+  CYCLE_ID INTEGER,
+  CYCLE_NUM INTEGER,
+  DATE_OBSERVATION DATE,
+  MEASURE_TYPE_ID INTEGER,
+  POINT_ID INTEGER,
+  POINT_NAME INTEGER,
+  CONVERTER_ID INTEGER,
+  CONVERTER_NAME VARCHAR2(100),
+  DATE_ENTER DATE,
+  COUNTING_OUT_AXIS_X FLOAT,  
+  COUNTING_OUT_AXIS_Y FLOAT,  
+  OFFSET_X_WITH_BEGIN_OBSERV FLOAT,
+  OFFSET_Y_WITH_BEGIN_OBSERV FLOAT,
+  CURRENT_OFFSET_X FLOAT,
+  CURRENT_OFFSET_Y FLOAT,
+  GROUP_NAME VARCHAR2(100),
+  MARH_GRAP_OR_ANCHOR_PLUMB FLOAT,
+  OBJECT_PATHS VARCHAR2(1000),
+  COORDINATE_Z FLOAT,
+  DESCRIPTION VARCHAR2(250)
+)
+
+--
+
+/* Создание типа таблицы Отвесов журнала наблюдений */
+
+CREATE OR REPLACE TYPE OTV_JOURNAL_OBSERVATION_TABLE 
+AS TABLE OF OTV_JOURNAL_OBSERVATION_OBJECT
+
+--
+
+/* Создание функции просмотра Отвесов в журнале наблюдений */
+
+CREATE OR REPLACE FUNCTION GET_OTV_JOURNAL_OBSERVATIONS
+(
+  MEASURE_TYPE_ID INTEGER,
+  IS_CLOSE INTEGER
+)
+RETURN OTV_JOURNAL_OBSERVATION_TABLE
+PIPELINED
+IS
+  INC2 OTV_JOURNAL_OBSERVATION_OBJECT:=OTV_JOURNAL_OBSERVATION_OBJECT(NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+                                                                      NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+            														  NULL,NULL,NULL,NULL);
+  NUM_MIN INTEGER:=NULL;
+  NUM_MAX INTEGER:=NULL;
+BEGIN
+  FOR INC IN (SELECT MIN(CYCLE_NUM) AS NUM_MIN, MAX(CYCLE_NUM) AS NUM_MAX 
+                FROM CYCLES
+               WHERE IS_CLOSE=GET_OTV_JOURNAL_OBSERVATIONS.IS_CLOSE) LOOP
+    NUM_MIN:=INC.NUM_MIN;
+	NUM_MAX:=INC.NUM_MAX;    			   
+    EXIT;			   
+  END LOOP;			    
+   
+  FOR INC1 IN (SELECT /*+ INDEX (JO) INDEX (C) INDEX (P) INDEX (RP) INDEX (CR) */
+                      JO.DATE_OBSERVATION,
+                      JO.MEASURE_TYPE_ID,
+                      JO.CYCLE_ID,
+                      C.CYCLE_NUM,
+                      JO.POINT_ID,
+                      P.NAME AS POINT_NAME,
+                      CR.CONVERTER_ID,
+                      CR.NAME AS CONVERTER_NAME,
+					  CR.DATE_ENTER,
+  					  MIN(DECODE(JO.PARAM_ID,17157,JF.VALUE,NULL)) AS COUNTING_OUT_AXIS_X,  
+  					  MIN(DECODE(JO.PARAM_ID,17158,JF.VALUE,NULL)) AS COUNTING_OUT_AXIS_Y,  
+  					  MIN(DECODE(JO.PARAM_ID,17161,JF.VALUE,NULL)) AS OFFSET_X_WITH_BEGIN_OBSERV,
+  					  MIN(DECODE(JO.PARAM_ID,17162,JF.VALUE,NULL)) AS OFFSET_Y_WITH_BEGIN_OBSERV,
+  					  MIN(DECODE(JO.PARAM_ID,17163,JF.VALUE,NULL)) AS CURRENT_OFFSET_X,
+  					  MIN(DECODE(JO.PARAM_ID,17164,JF.VALUE,NULL)) AS CURRENT_OFFSET_Y,
+					  (SELECT MIN(CP.VALUE) FROM CONVERTER_PASSPORTS CP, COMPONENTS CM 
+                        WHERE CP.COMPONENT_ID=CM.COMPONENT_ID
+                          AND CM.CONVERTER_ID=CR.CONVERTER_ID
+                          AND CM.PARAM_ID=16140 /* Группа отвеса */ ) AS GROUP_NAME,
+					  (SELECT TO_NUMBER(REPLACE(CP.VALUE,',','.'),'FM99999.9999') FROM CONVERTER_PASSPORTS CP, COMPONENTS CM 
+                        WHERE CP.COMPONENT_ID=CM.COMPONENT_ID
+                          AND CM.CONVERTER_ID=CR.CONVERTER_ID
+                          AND CM.PARAM_ID=16142 /* Отм. зацепа или якоря отвеса */ ) AS MARH_GRAP_OR_ANCHOR_PLUMB,
+					  OT.OBJECT_PATHS,
+					  P.COORDINATE_Z,
+					  JF.NOTE
+					  
+                 FROM JOURNAL_OBSERVATIONS JO, JOURNAL_FIELDS JF, CYCLES C, POINTS P,
+                      ROUTE_POINTS RP, CONVERTERS CR,
+                      (SELECT OT1.OBJECT_ID, SUBSTR(MAX(SYS_CONNECT_BY_PATH(O1.NAME,'\')),2) AS OBJECT_PATHS
+                         FROM OBJECT_TREES OT1, OBJECTS O1
+                        WHERE OT1.OBJECT_ID=O1.OBJECT_ID
+                        START WITH OT1.PARENT_ID IS NULL
+                      CONNECT BY OT1.PARENT_ID=PRIOR OT1.OBJECT_TREE_ID
+					    GROUP BY OT1.OBJECT_ID) OT
+                WHERE JO.JOURNAL_FIELD_ID=JF.JOURNAL_FIELD_ID
+				  AND JO.CYCLE_ID=C.CYCLE_ID
+                  AND JO.POINT_ID=P.POINT_ID
+                  AND RP.POINT_ID=JO.POINT_ID
+                  AND CR.CONVERTER_ID=P.POINT_ID 
+				  AND P.OBJECT_ID=OT.OBJECT_ID
+                  AND JO.MEASURE_TYPE_ID=GET_OTV_JOURNAL_OBSERVATIONS.MEASURE_TYPE_ID
+                  AND JO.PARAM_ID IN (17157, /* Отсчет по оси X */
+                                      17158, /* Отсчет по оси Y */
+                                      17161, /* Смещение по X с нач. набл. */
+                                      17162, /* Смещение по Y с нач. набл. */
+                                      17163, /* Текущее смещ. по X */
+                                      17164 /* Текущее смещ. по Y */)
+                  AND C.CYCLE_NUM>=NUM_MIN AND C.CYCLE_NUM<=NUM_MAX
+				  AND C.IS_CLOSE=GET_OTV_JOURNAL_OBSERVATIONS.IS_CLOSE								  
+				GROUP BY JO.DATE_OBSERVATION, JO.MEASURE_TYPE_ID, JO.CYCLE_ID, C.CYCLE_NUM, JO.POINT_ID, 
+				         P.NAME, CR.CONVERTER_ID, CR.NAME, JO.GROUP_ID, RP.PRIORITY, CR.DATE_ENTER, 
+						 OT.OBJECT_PATHS, P.COORDINATE_Z, JF.NOTE
+                ORDER BY JO.DATE_OBSERVATION, JO.GROUP_ID, RP.PRIORITY) LOOP
+				
+	INC2.CYCLE_ID:=INC1.CYCLE_ID;
+	INC2.CYCLE_NUM:=INC1.CYCLE_NUM;
+	INC2.DATE_OBSERVATION:=INC1.DATE_OBSERVATION;
+	INC2.MEASURE_TYPE_ID:=INC1.MEASURE_TYPE_ID;
+	INC2.POINT_ID:=INC1.POINT_ID;
+	INC2.POINT_NAME:=INC1.POINT_NAME;
+	INC2.CONVERTER_ID:=INC1.CONVERTER_ID;
+	INC2.CONVERTER_NAME:=INC1.CONVERTER_NAME;
+	INC2.DATE_ENTER:=INC1.DATE_ENTER;
+	INC2.COUNTING_OUT_AXIS_X:=INC1.COUNTING_OUT_AXIS_X;  
+	INC2.COUNTING_OUT_AXIS_Y:=INC1.COUNTING_OUT_AXIS_Y;  
+	INC2.OFFSET_X_WITH_BEGIN_OBSERV:=INC1.OFFSET_X_WITH_BEGIN_OBSERV;
+	INC2.OFFSET_Y_WITH_BEGIN_OBSERV:=INC1.OFFSET_Y_WITH_BEGIN_OBSERV;
+	INC2.CURRENT_OFFSET_X:=INC1.CURRENT_OFFSET_X;
+	INC2.CURRENT_OFFSET_Y:=INC1.CURRENT_OFFSET_Y;
+	INC2.GROUP_NAME:=INC1.GROUP_NAME;
+	INC2.MARH_GRAP_OR_ANCHOR_PLUMB:=INC1.MARH_GRAP_OR_ANCHOR_PLUMB;
+	INC2.OBJECT_PATHS:=INC1.OBJECT_PATHS;
+	INC2.COORDINATE_Z:=INC1.COORDINATE_Z;
+	INC2.DESCRIPTION:=INC1.NOTE;
+	
+    PIPE ROW (INC2);
+  END LOOP;	
+  RETURN;
+END;
+
+--
+
+/* Создание просмотра Отвесы в теле плотины в журнале наблюдений старых данных */
+
+CREATE MATERIALIZED VIEW S_OTV_JOURNAL_OBSERVATIONS_O1
+NOLOGGING
+NOCACHE
+NOPARALLEL
+BUILD DEFERRED
+REFRESH COMPLETE
+START WITH TO_DATE('01.06.2007','DD.MM.YYYY')
+DISABLE QUERY REWRITE AS
+SELECT * FROM TABLE(GET_OTV_JOURNAL_OBSERVATIONS(4621,1))
+
+--
+
+/* Обновление просмотра Отвесы в теле плотины в журнале наблюдений старых данных */
+
+BEGIN
+  DBMS_REFRESH.REFRESH('S_OTV_JOURNAL_OBSERVATIONS_O1');
+END;
+
+--
+
+/* Создание индекса на цикл просмотра Отвесы в теле плотины в журнале наблюдений старых данных */
+
+CREATE INDEX IDX_OTV_JO_O1_1
+ ON S_OTV_JOURNAL_OBSERVATIONS_O1(CYCLE_ID)
+
+--
+
+/* Создание индекса на дату наблюдения просмотра Отвесы в теле плотины в журнале наблюдений старых данных */
+
+CREATE INDEX IDX_OTV_JO_O1_2
+ ON S_OTV_JOURNAL_OBSERVATIONS_O1(DATE_OBSERVATION)
+
+--
+
+/* Создание индекса на вид измерения просмотра Отвесы в теле плотины в журнале наблюдений старых данных */
+
+CREATE INDEX IDX_OTV_JO_O1_3
+ ON S_OTV_JOURNAL_OBSERVATIONS_O1(MEASURE_TYPE_ID)
+
+--
+
+/* Создание просмотра Отвесы в теле плотины в журнале наблюдений новых данных */
+
+CREATE OR REPLACE VIEW S_OTV_JOURNAL_OBSERVATIONS_N1
+AS
+  SELECT * FROM TABLE(GET_OTV_JOURNAL_OBSERVATIONS(4621,0))
+
+--
+
+/* Создание просмотра Отвесы в теле плотины в журнале наблюдений */
+
+CREATE OR REPLACE VIEW S_OTV_JOURNAL_OBSERVATIONS_1
+AS
+  SELECT JFO1.*
+    FROM S_OTV_JOURNAL_OBSERVATIONS_O1 JFO1
+   UNION
+  SELECT JFN1.*
+    FROM S_OTV_JOURNAL_OBSERVATIONS_N1 JFN1
+
+--
+
+
+
+/* Создание просмотра Отвесы в корпусе ЗРУ в журнале наблюдений старых данных */
+
+CREATE MATERIALIZED VIEW S_OTV_JOURNAL_OBSERVATIONS_O2
+NOLOGGING
+NOCACHE
+NOPARALLEL
+BUILD DEFERRED
+REFRESH COMPLETE
+START WITH TO_DATE('01.06.2007','DD.MM.YYYY')
+DISABLE QUERY REWRITE AS
+SELECT * FROM TABLE(GET_OTV_JOURNAL_OBSERVATIONS(4622,1))
+
+--
+
+/* Обновление просмотра Отвесы в корпусе ЗРУ в журнале наблюдений старых данных */
+
+BEGIN
+  DBMS_REFRESH.REFRESH('S_OTV_JOURNAL_OBSERVATIONS_O2');
+END;
+
+--
+
+/* Создание индекса на цикл просмотра Отвесы в корпусе ЗРУ в журнале наблюдений старых данных */
+
+CREATE INDEX IDX_OTV_JO_O2_1
+ ON S_OTV_JOURNAL_OBSERVATIONS_O2(CYCLE_ID)
+
+--
+
+/* Создание индекса на дату наблюдения просмотра Отвесы в корпусе ЗРУ в журнале наблюдений старых данных */
+
+CREATE INDEX IDX_OTV_JO_O2_2
+ ON S_OTV_JOURNAL_OBSERVATIONS_O2(DATE_OBSERVATION)
+
+--
+
+/* Создание индекса на вид измерения просмотра Отвесы в корпусе ЗРУ в журнале наблюдений старых данных */
+
+CREATE INDEX IDX_OTV_JO_O2_3
+ ON S_OTV_JOURNAL_OBSERVATIONS_O2(MEASURE_TYPE_ID)
+
+--
+
+/* Создание просмотра Отвесы в корпусе ЗРУ в журнале наблюдений новых данных */
+
+CREATE OR REPLACE VIEW S_OTV_JOURNAL_OBSERVATIONS_N2
+AS
+  SELECT * FROM TABLE(GET_OTV_JOURNAL_OBSERVATIONS(4622,0))
+
+--
+
+/* Создание просмотра Отвесы в корпусе ЗРУ в журнале наблюдений */
+
+CREATE OR REPLACE VIEW S_OTV_JOURNAL_OBSERVATIONS_2
+AS
+  SELECT JFO2.*
+    FROM S_OTV_JOURNAL_OBSERVATIONS_O2 JFO2
+   UNION
+  SELECT JFN2.*
+    FROM S_OTV_JOURNAL_OBSERVATIONS_N2 JFN2
+
+--
+
+
+/* Создание просмотра Отвесов в журнале наблюдений */
+
+CREATE OR REPLACE VIEW S_OTV_JOURNAL_OBSERVATIONS
+AS
+  SELECT JF1.*
+    FROM S_OTV_JOURNAL_OBSERVATIONS_1 JF1
+   UNION
+  SELECT JF2.*
+    FROM S_OTV_JOURNAL_OBSERVATIONS_2 JF2
+
+--
+
+
+/* Фиксация изменений БД */
+
+COMMIT

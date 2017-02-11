@@ -1,0 +1,25 @@
+/* Создание процедуры изменения группы */
+
+CREATE OR REPLACE PROCEDURE U_GROUP
+( 
+  GROUP_ID IN INTEGER, 
+  NAME IN VARCHAR2, 
+  DESCRIPTION IN VARCHAR2, 
+  OLD_GROUP_ID IN INTEGER 
+) 
+AS 
+BEGIN 
+  UPDATE GROUPS  
+     SET GROUP_ID=U_GROUP.GROUP_ID, 
+         NAME=U_GROUP.NAME,  
+         DESCRIPTION=U_GROUP.DESCRIPTION  
+   WHERE GROUP_ID=OLD_GROUP_ID; 
+  COMMIT;         
+END;
+
+--
+
+/* Фиксация изменений */
+
+COMMIT
+

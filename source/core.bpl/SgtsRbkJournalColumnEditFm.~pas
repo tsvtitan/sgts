@@ -1,0 +1,120 @@
+unit SgtsRbkJournalColumnEditFm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, ToolWin, ImgList, Menus, ExtCtrls, StdCtrls,
+  SgtsDataEditFm, SgtsDataInsertFm, SgtsDataUpdateFm, SgtsDataDelete,
+  SgtsFm, SgtsControls, SgtsCoreIntf;
+
+type
+  TSgtsRbkJournalColumnEditForm = class(TSgtsDataEditForm)
+    LabelAlgorithm: TLabel;
+    EditAlgorithm: TEdit;
+    ButtonAlgorithm: TButton;
+    LabelViewName: TLabel;
+    LabelDescription: TLabel;
+    EditViewName: TEdit;
+    MemoDescription: TMemo;
+    GroupBoxDetermination: TGroupBox;
+    PanelDetermination: TPanel;
+    MemoDetermination: TMemo;
+    LabelName: TLabel;
+    EditName: TEdit;
+  private
+    { Private declarations }
+  public
+    constructor Create(ACoreIntf: ISgtsCore); override;
+  end;
+
+  TSgtsRbkJournalColumnInsertIface=class(TSgtsDataInsertIface)
+  public
+    procedure Init; override;
+  end;
+
+  TSgtsRbkJournalColumnUpdateIface=class(TSgtsDataUpdateIface)
+  public
+    procedure Init; override;
+  end;
+
+  TSgtsRbkJournalColumnDeleteIface=class(TSgtsDataDeleteIface)
+  public
+    procedure Init; override;
+  end;
+
+var
+  SgtsRbkJournalColumnRoleEditForm: TSgtsRbkJournalColumnEditForm;
+
+implementation
+
+uses DBClient, DateUtils,
+     SgtsIface, SgtsConsts, SgtsProviderConsts,
+     SgtsDatabaseCDS, SgtsDialogs, SgtsExecuteDefs,
+     SgtsRbkAlgorithmsFm;
+
+{$R *.dfm}
+
+{ TSgtsRbkJournalColumnInsertIface }
+
+procedure TSgtsRbkJournalColumnInsertIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkJournalColumnEditForm;
+  InterfaceName:=SInterfaceJournalColumnInsert;
+  with DataSet do begin
+    ProviderName:=SProviderInsertJournalColumn;
+    with ExecuteDefs do begin
+      AddEditLink('JOURNAL_COLUMN_ID','EditAlgorithm','LabelAlgorithm','ButtonAlgorithm',
+                  TSgtsRbkAlgorithmsIface,'ALGORITHM_NAME','NAME','ALGORITHM_ID',true);
+      AddEdit('NAME','EditName','LabelName',true);
+      AddMemo('DESCRIPTION','MemoDescription','LabelDescription',false);
+      AddMemo('DETERMINATION','MemoDetermination','LabelDescription',true);
+      AddEdit('VIEW_NAME','EditViewName','LabelViewName',true);
+    end;
+  end;
+end;
+
+{ TSgtsRbkJournalColumnUpdateIface }
+
+procedure TSgtsRbkJournalColumnUpdateIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkJournalColumnEditForm;
+  InterfaceName:=SInterfaceJournalColumnUpdate;
+  with DataSet do begin
+    ProviderName:=SProviderUpdateJournalColumn;
+    with ExecuteDefs do begin
+      AddEditLink('JOURNAL_COLUMN_ID','EditAlgorithm','LabelAlgorithm','ButtonAlgorithm',
+                  TSgtsRbkAlgorithmsIface,'ALGORITHM_NAME','NAME','ALGORITHM_ID',true,true);
+      AddEdit('NAME','EditName','LabelName',true);
+      AddMemo('DESCRIPTION','MemoDescription','LabelDescription',false);
+      AddEdit('VIEW_NAME','EditViewName','LabelViewName',true);
+      AddMemo('DETERMINATION','MemoDetermination','LabelDescription',true);
+    end;
+  end;
+end;
+
+{ TSgtsRbkJournalColumnDeleteIface }
+
+procedure TSgtsRbkJournalColumnDeleteIface.Init;
+begin
+  inherited Init;
+  InterfaceName:=SInterfaceJournalColumnDelete;
+  DeleteQuestion:='Удалить текущие колонки журнала?';
+  with DataSet do begin
+    ProviderName:=SProviderDeleteJournalColumn;
+    with ExecuteDefs do begin
+      AddKeyLink('JOURNAL_COLUMN_ID');
+    end;
+  end;      
+end;
+
+{ TSgtsRbkJournalColumnEditForm }
+
+constructor TSgtsRbkJournalColumnEditForm.Create(ACoreIntf: ISgtsCore);
+begin
+  inherited Create(ACoreIntf);
+end;
+
+end.

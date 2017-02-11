@@ -1,0 +1,367 @@
+unit SgtsSelectDefs;
+
+interface
+
+uses Classes, Contnrs, DB, Graphics, Types, SgtsVariants;
+
+type
+  TSgtsSelectDefs=class;
+  TSgtsSelectDef=class;
+
+  TSgtsSelectDefCalcProc=function(Def: TSgtsSelectDef): Variant of object;
+  TSgtsSelectDefDrawProc=procedure(Def: TSgtsSelectDef; Canvas: TCanvas; Rect: TRect) of object;
+
+  TSgtsSelectDefAlignment=(daDefault,daLeft,daRight,daCenter);
+
+  TSgtsSelectDefFuncType=(ftNone,ftSum);
+
+  TSgtsSelectDef=class(TObject)
+  private
+    FSelectDefs: TSgtsSelectDefs;
+    FName: String;
+    FAlignment: TSgtsSelectDefAlignment;
+    FIsKey: Boolean;
+    FWidth: Integer;
+    FVisible: Boolean;
+    FFieldKind: TFieldKind;
+    FCalcProc: TSgtsSelectDefCalcProc;
+    FCalcName: String;
+    FDataType: TFieldType;
+    FSize: Integer;
+    FPrecision: Integer;
+    FDuplicates: TStringList;
+    FCaption: string;
+    FDisplayFormat: string;
+    FField: TField;
+    FDrawProc: TSgtsSelectDefDrawProc;
+    FGroup: Integer;
+    FFuncType: TSgtsSelectDefFuncType;
+    function GetIndex: Integer;
+  protected
+    procedure DefaultDrawCheck(Def: TSgtsSelectDef; Canvas: TCanvas; Rect: TRect);
+    procedure DefaultDrawRadio(Def: TSgtsSelectDef; Canvas: TCanvas; Rect: TRect);
+  public
+    constructor Create(ASelectDefs: TSgtsSelectDefs); reintroduce;
+    destructor Destroy; override;
+
+    property Name: String read FName write FName;
+    property Alignment: TSgtsSelectDefAlignment read FAlignment write FAlignment;
+    property IsKey: Boolean read FIsKey write FIsKey;
+    property Width: Integer read FWidth write FWidth;
+    property Visible: Boolean read FVisible write FVisible;
+    property FieldKind: TFieldKind read FFieldKind write FFieldKind;
+    property CalcProc: TSgtsSelectDefCalcProc read FCalcProc write FCalcProc;
+    property CalcName: String read FCalcName write FCalcName;
+    property DataType: TFieldType read FDataType write FDataType;
+    property Size: Integer read FSize write FSize;
+    property Precision: Integer read FPrecision write FPrecision;
+    property Duplicates: TStringList read FDuplicates;
+    property Caption: string read FCaption write FCaption;
+    property DisplayFormat: string read FDisplayFormat write FDisplayFormat;
+    property Field: TField read FField write FField;
+    property DrawProc: TSgtsSelectDefDrawProc read FDrawProc write FDrawProc;
+    property Index: Integer read GetIndex;
+    property Group: Integer read FGroup write FGroup;
+    property FuncType: TSgtsSelectDefFuncType read FFuncType write FFuncType;
+  end;
+
+  TSgtsSelectDefClass=class of TSgtsSelectDef;
+
+  TSgtsSelectDefs=class(TObjectList)
+  private
+    function GetItems(Index: Integer): TSgtsSelectDef;
+    procedure SetItems(Index: Integer; Value: TSgtsSelectDef);
+  protected
+    function GetSelectDefClass: TSgtsSelectDefClass; virtual;
+  public
+    function Find(const Name: string): TSgtsSelectDef;
+    function FindByCaption(const Caption: String): TSgtsSelectDef;
+    function Duplicate(const Source,Dest: string): Boolean;
+    function Add(const Name,Caption: string; Width: Integer=0): TSgtsSelectDef;
+    function AddInvisible(const Name: string): TSgtsSelectDef;
+    function AddKey(const Name: string): TSgtsSelectDef;
+    function AddCalc(const Name,Caption,CalcName: string; CalcProc: TSgtsSelectDefCalcProc;
+                     DataType: TFieldType; Size: Integer=0; Width: Integer=0; AddCalc: Boolean=true): TSgtsSelectDef;
+    function AddCalcInvisible(const Name: String; CalcProc: TSgtsSelectDefCalcProc; DataType: TFieldType; Size: Integer=0): TSgtsSelectDef;
+    function AddDraw(const Name, Caption, CalcName: String; DrawProc: TSgtsSelectDefDrawProc; Width: Integer=0): TSgtsSelectDef;
+    function AddDrawCheck(const Name, Caption, CalcName: String; Width: Integer=0; AddCalc: Boolean=true): TSgtsSelectDef;
+    function AddDrawRadio(const Name, Caption, CalcName: String; Width: Integer=0; AddCalc: Boolean=true): TSgtsSelectDef;
+    function FindCalcNameByName(const Name: string): String;
+    procedure AddByStrings(Strings: TStrings; IsClear: Boolean=true);
+    procedure CopyFrom(Source: TSgtsSelectDefs; IsClear: Boolean=true);
+
+    property Items[Index: Integer]: TSgtsSelectDef read GetItems write SetItems;
+  end;
+
+implementation
+
+uses Windows, SysUtils;
+
+{ TSgtsSelectDef }
+
+constructor TSgtsSelectDef.Create(ASelectDefs: TSgtsSelectDefs);
+begin
+  inherited Create;
+  FSelectDefs:=ASelectDefs;
+  FDuplicates:=TStringList.Create;
+  FGroup:=-1;
+end;
+
+destructor TSgtsSelectDef.Destroy;
+begin
+  FDuplicates.Free;
+  inherited Destroy;
+end;
+
+procedure TSgtsSelectDef.DefaultDrawCheck(Def: TSgtsSelectDef; Canvas: TCanvas; Rect: TRect);
+var
+  NewRect: TRect;
+  FCalcDef: TSgtsSelectDef;
+begin
+  FCalcDef:=FSelectDefs.Find(Def.CalcName);
+  if Assigned(FCalcDef) and Assigned(FCalcDef.Field) then begin
+    if FCalcDef.Field.DataSet.Active and not FCalcDef.Field.DataSet.IsEmpty then begin
+      NewRect.Right:=Rect.Right;
+      NewRect.Left:=Rect.Left;
+      NewRect.Top:=Rect.Top+2;
+      NewRect.Bottom:=Rect.Bottom-2;
+      if Boolean(FCalcDef.Field.AsInteger) then
+        DrawFrameControl(Canvas.Handle,NewRect,DFC_BUTTON,DFCS_CHECKED)
+      else
+        DrawFrameControl(Canvas.Handle,NewRect,DFC_BUTTON,DFCS_BUTTONCHECK);
+    end;
+  end;
+end;
+
+procedure TSgtsSelectDef.DefaultDrawRadio(Def: TSgtsSelectDef; Canvas: TCanvas; Rect: TRect);
+var
+  NewRect: TRect;
+  FCalcDef: TSgtsSelectDef;
+begin
+  FCalcDef:=FSelectDefs.Find(Def.CalcName);
+  if Assigned(FCalcDef) and Assigned(FCalcDef.Field) then begin
+    if FCalcDef.Field.DataSet.Active and not FCalcDef.Field.DataSet.IsEmpty then begin
+      NewRect.Right:=Rect.Right;
+      NewRect.Left:=Rect.Left;
+      NewRect.Top:=Rect.Top+3;
+      NewRect.Bottom:=Rect.Bottom-2;
+      if Boolean(FCalcDef.Field.AsInteger) then
+        DrawFrameControl(Canvas.Handle,NewRect,DFC_BUTTON,DFCS_BUTTONRADIO or DFCS_CHECKED)
+      else
+        DrawFrameControl(Canvas.Handle,NewRect,DFC_BUTTON,DFCS_BUTTONRADIO);
+    end;
+  end;
+end;
+
+function TSgtsSelectDef.GetIndex: Integer;
+begin
+  Result:=-1;
+  if Assigned(FSelectDefs) then
+    Result:=FSelectDefs.IndexOf(Self);
+end;
+
+{ TSgtsSelectDefs }
+
+function TSgtsSelectDefs.GetItems(Index: Integer): TSgtsSelectDef;
+begin
+  Result:=TSgtsSelectDef(inherited Items[Index]);
+end;
+
+procedure TSgtsSelectDefs.SetItems(Index: Integer; Value: TSgtsSelectDef);
+begin
+  inherited Items[Index]:=Value;
+end;
+
+function TSgtsSelectDefs.Find(const Name: string): TSgtsSelectDef;
+var
+  i: Integer;
+begin
+  Result:=nil;
+  for i:=0 to Count-1 do
+    if AnsiSameText(Items[i].Name,Name) then begin
+      Result:=Items[i];
+      exit;
+    end;
+end;
+
+function TSgtsSelectDefs.FindByCaption(const Caption: String): TSgtsSelectDef;
+var
+  i: Integer;
+begin
+  Result:=nil;
+  for i:=0 to Count-1 do
+    if AnsiSameText(Items[i].Caption,Caption) then begin
+      Result:=Items[i];
+      exit;
+    end;
+end;
+
+function TSgtsSelectDefs.Duplicate(const Source,Dest: string): Boolean;
+var
+  Def: TSgtsSelectDef;
+begin
+  Result:=false;
+  Def:=Find(Source);
+  if Assigned(Def) then
+    Result:=Def.Duplicates.Add(Dest)<>-1;
+end;
+
+function TSgtsSelectDefs.GetSelectDefClass: TSgtsSelectDefClass;
+begin
+  Result:=TSgtsSelectDef;
+end;
+
+function TSgtsSelectDefs.Add(const Name,Caption: string; Width: Integer=0): TSgtsSelectDef;
+begin
+  Result:=nil;
+  if not Assigned(Find(Name)) then begin
+    Result:=GetSelectDefClass.Create(Self);
+    Result.Name:=Name;
+    Result.Caption:=Caption;
+    Result.Width:=Width;
+    Result.Visible:=true;
+    inherited Add(Result);
+  end;
+end;
+
+function TSgtsSelectDefs.AddInvisible(const Name: string): TSgtsSelectDef;
+begin
+  Result:=Add(Name,'');
+  if Assigned(Result) then
+    Result.Visible:=false;
+end;
+
+function TSgtsSelectDefs.AddKey(const Name: string): TSgtsSelectDef;
+begin
+  Result:=AddInvisible(Name);
+  if Assigned(Result) then
+    Result.IsKey:=true;
+end;
+
+function TSgtsSelectDefs.AddCalc(const Name,Caption,CalcName: string; CalcProc: TSgtsSelectDefCalcProc;
+                                 DataType: TFieldType; Size: Integer=0; Width: Integer=0; AddCalc: Boolean=true): TSgtsSelectDef;
+begin
+  Result:=Add(Name,Caption,Width);
+  if Assigned(Result) then begin
+    Result.FieldKind:=fkCalculated;
+    Result.CalcName:=CalcName;
+    Result.CalcProc:=CalcProc;
+    Result.DataType:=DataType;
+    Result.Size:=Size;
+    if AddCalc then
+      AddInvisible(CalcName);
+  end;
+end;
+
+function TSgtsSelectDefs.AddCalcInvisible(const Name: String; CalcProc: TSgtsSelectDefCalcProc;
+                                          DataType: TFieldType; Size: Integer=0): TSgtsSelectDef;
+begin
+  Result:=Add(Name,'',0);
+  if Assigned(Result) then begin
+    Result.FieldKind:=fkCalculated;
+    Result.CalcName:=Name;
+    Result.CalcProc:=CalcProc;
+    Result.DataType:=DataType;
+    Result.Size:=Size;
+    Result.Visible:=false;
+  end;
+end;
+
+function TSgtsSelectDefs.AddDraw(const Name, Caption, CalcName: String; DrawProc: TSgtsSelectDefDrawProc; Width: Integer=0): TSgtsSelectDef;
+begin
+  Result:=Add(Name,Caption,Width);
+  if Assigned(Result) then begin
+    Result.FieldKind:=fkCalculated;
+    Result.CalcName:=CalcName;
+    Result.CalcProc:=nil;
+    Result.DrawProc:=DrawProc;
+    Result.DataType:=ftString;
+    Result.Size:=1;
+  end;
+end;
+
+function TSgtsSelectDefs.AddDrawCheck(const Name, Caption, CalcName: String; Width: Integer=0; AddCalc: Boolean=true): TSgtsSelectDef;
+begin
+  Result:=AddDraw(Name,Caption,CalcName,nil,Width);
+  if Assigned(Result) then begin
+    Result.DrawProc:=Result.DefaultDrawCheck;
+    if AddCalc then
+      AddInvisible(CalcName);
+  end;
+end;
+
+function TSgtsSelectDefs.AddDrawRadio(const Name, Caption, CalcName: String; Width: Integer=0; AddCalc: Boolean=true): TSgtsSelectDef;
+begin
+  Result:=AddDraw(Name,Caption,CalcName,nil,Width);
+  if Assigned(Result) then begin
+    Result.DrawProc:=Result.DefaultDrawRadio;
+    if AddCalc then
+      AddInvisible(CalcName);
+  end;
+end;
+
+{function TSgtsSelectDefs.FindCalcByName(const CalcName: string): TSgtsSelectDef;
+var
+  i: Integer;
+begin
+  Result:=nil;
+  for i:=0 to Count-1 do begin
+    if AnsiSameText(Items[i].CalcName,CalcName) then begin
+      Result:=Items[i];
+      exit;
+    end;
+  end;
+end;}
+
+function TSgtsSelectDefs.FindCalcNameByName(const Name: string): String;
+var
+  FDef: TSgtsSelectDef;
+begin
+  Result:=Name;
+  FDef:=Find(Name);
+  if Assigned(FDef) then
+    Result:=FDef.CalcName;
+end;
+
+procedure TSgtsSelectDefs.AddByStrings(Strings: TStrings; IsClear: Boolean=true);
+var
+  i: Integer;
+begin
+  if IsClear then
+    Clear;
+  for i:=0 to Strings.Count-1 do
+    AddInvisible(Strings[i]);
+end;
+
+procedure TSgtsSelectDefs.CopyFrom(Source: TSgtsSelectDefs; IsClear: Boolean=true);
+var
+  i: Integer;
+  ItemSource: TSgtsSelectDef;
+  Item: TSgtsSelectDef;
+begin
+  if IsClear then
+    Clear;
+  if Assigned(Source) then begin
+    for i:=0 to Source.Count-1 do begin
+      ItemSource:=Source.Items[i];
+      Item:=Add(ItemSource.Name,ItemSource.Caption,ItemSource.Width);
+      if Assigned(Item) then begin
+        Item.Alignment:=ItemSource.Alignment;
+        Item.IsKey:=ItemSource.IsKey;
+        Item.Visible:=ItemSource.Visible;
+        Item.FieldKind:=ItemSource.FieldKind;
+        Item.CalcProc:=ItemSource.CalcProc;
+        Item.CalcName:=ItemSource.CalcName;
+        Item.DataType:=ItemSource.DataType;
+        Item.Size:=ItemSource.Size;
+        Item.Precision:=ItemSource.Precision;
+        Item.Duplicates.Assign(ItemSource.Duplicates);
+        Item.DisplayFormat:=ItemSource.DisplayFormat;
+        Item.Field:=ItemSource.Field;
+        Item.DrawProc:=ItemSource.DrawProc;
+      end;
+    end;
+  end;
+end;
+
+end.

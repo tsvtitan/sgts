@@ -1,0 +1,126 @@
+unit SgtsRbkMTPlanGridEditFm;
+
+interface
+
+uses
+   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+   Dialogs, ComCtrls, ToolWin, ImgList, Menus, ExtCtrls, StdCtrls, DB,
+   SgtsDataEditFm, SgtsDataInsertFm, SgtsDataUpdateFm, SgtsDataDelete,
+   SgtsFm, SgtsControls, SgtsCoreIntf, SgtsMTPlanTreeFm;
+   
+type
+  TSgtsRbkPlanGridEditForm = class(TSgtsDataEditForm)
+    EditYear: TEdit;
+    ToolButtonEdit: TToolButton;
+    LabelYear: TLabel;
+    procedure ToolButtonEditClick(Sender: TObject);
+    procedure FormPaint(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+  TSgtsRbkMTPlanInsertIface=class(TSgtsDataInsertIface)
+  public
+    procedure Init; override;
+  end;
+
+  TSgtsRbkMTPlanUpdateIface=class(TSgtsDataUpdateIface)
+  public
+    procedure Init; override;
+  end;
+
+  TSgtsRbkMTPlanDeleteIface=class(TSgtsDataDeleteIface)
+  public
+    procedure Init; override;
+  end;
+
+var
+  SgtsRbkPlanGridEditForm: TSgtsRbkPlanGridEditForm;
+
+implementation
+uses DBClient,
+     SgtsIface, SgtsConsts, SgtsProviderConsts, SgtsDatabaseCDS,
+     SgtsDialogs, SgtsExecuteDefs, SgtsCDS,SgtsGetRecordsConfig;
+
+{$R *.dfm}
+
+
+{ TSgtsRbkPlanGridEditForm }
+
+procedure TSgtsRbkPlanGridEditForm.FormPaint(Sender: TObject);
+begin
+  inherited;
+  if Caption='Изменение план-графика на год'  then
+       ToolButtonEdit.Enabled:=not ToolButtonOk.Enabled;
+end;
+
+procedure TSgtsRbkPlanGridEditForm.ToolButtonEditClick(Sender: TObject);
+var
+  AIface: TSgtsMTPlanIface;
+  Buffer: String;
+begin
+  ToolButtonOkClick(nil);
+    if EditYear.Text<>'' and EditYear.Text='-' then begin
+    AIface:=TSgtsMTPlanIface.Create(CoreIntf);
+    AIface.Year:=StrToInt(EditYear.Text);
+    AIface.SelectVisible('',0,Buffer);
+end;
+end;
+
+
+
+{ TSgtsRbkMTPlanInsertIface }
+
+procedure TSgtsRbkMTPlanInsertIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkPlanGridEditForm;
+  InterfaceName:='Создание план-графика на год';
+  with DataSet do begin
+    ProviderName:='I_PLAN_GRAPH';
+    with ExecuteDefs do begin
+      AddEditInteger('YEAR', 'EditYear','LabelYear',true);
+    end;
+    CheckProvider:=false;
+  end;
+end;
+
+{ TSgtsRbkMTPlanUpdateIface }
+
+procedure TSgtsRbkMTPlanUpdateIface.Init;
+begin
+  inherited Init;
+  FormClass:=TSgtsRbkPlanGridEditForm;
+  InterfaceName:='Изменение план-графика на год';
+  with DataSet do begin
+
+    ProviderName:='U_PLAN_GRAPH';
+    with ExecuteDefs do begin
+      AddKeyLink('PLAN_GRAPH_ID');
+      AddEditInteger('YEAR', 'EditYear','LabelYear',true);
+    end;
+    CheckProvider:=false;
+  end;
+end;
+
+
+{ TSgtsRbkMTPlanDeleteIface }
+
+procedure TSgtsRbkMTPlanDeleteIface.Init;
+begin
+  inherited Init;
+  InterfaceName:='Удаление план-графика';
+  DeleteQuestion:='Удалить план-графика на %YEAR год?';
+  with DataSet do begin
+    ProviderName:='D_PLAN_GRAPH';
+    with ExecuteDefs do begin
+      AddKeyLink('PLAN_GRAPH_ID');
+      AddInvisible('YEAR').ParamType:=ptUnknown;
+    end;
+    CheckProvider:=false;
+  end;
+end;
+end.
+
